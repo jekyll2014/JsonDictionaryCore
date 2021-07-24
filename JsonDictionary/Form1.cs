@@ -1288,15 +1288,11 @@ namespace JsonDictionaryCore
 
             if (_lastExSelectedNode != null)
             {
-                _lastExSelectedNode.NodeFont = new Font(treeView_examples.Font.FontFamily, treeView_examples.Font.Size,
-                    FontStyle.Regular);
                 _lastExSelectedNode.BackColor = Color.White;
             }
 
             _lastExSelectedNode = currentNode;
-            currentNode.NodeFont =
-                new Font(treeView_examples.Font.FontFamily, treeView_examples.Font.Size, FontStyle.Bold);
-            currentNode.BackColor = Color.LimeGreen;
+            currentNode.BackColor = Color.DodgerBlue;
 
             ExClearSearch();
 
@@ -1317,7 +1313,16 @@ namespace JsonDictionaryCore
                 {
                     var pathList = new StringBuilder();
                     var fileNameList = new StringBuilder();
-                    var recordValue = BeautifyJson(valueGroup.Key, _reformatJson);
+                    var recordValue = "";
+
+                    try
+                    {
+                        recordValue = BeautifyJson(valueGroup.Key, _reformatJson);
+                    }
+                    catch
+                    {
+                        recordValue = valueGroup.Key;
+                    }
 
                     foreach (var record in valueGroup)
                     {
