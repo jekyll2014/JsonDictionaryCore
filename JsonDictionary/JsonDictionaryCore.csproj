@@ -41,6 +41,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
+    <ApplicationIcon>jd.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Content Include="descriptions.json">
