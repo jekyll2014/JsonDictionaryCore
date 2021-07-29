@@ -640,7 +640,7 @@
             // 
             this.label_edit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.label_edit.AutoSize = true;
-            this.label_edit.Location = new System.Drawing.Point(564, 73);
+            this.label_edit.Location = new System.Drawing.Point(564, 72);
             this.label_edit.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label_edit.Name = "label_edit";
             this.label_edit.Size = new System.Drawing.Size(111, 15);
@@ -651,7 +651,7 @@
             // 
             this.label_descSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.label_descSave.AutoSize = true;
-            this.label_descSave.Location = new System.Drawing.Point(500, 73);
+            this.label_descSave.Location = new System.Drawing.Point(500, 72);
             this.label_descSave.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label_descSave.Name = "label_descSave";
             this.label_descSave.Size = new System.Drawing.Size(175, 15);
