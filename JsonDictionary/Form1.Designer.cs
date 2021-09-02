@@ -39,7 +39,8 @@
             this.checkBox_loadDbOnStart = new System.Windows.Forms.CheckBox();
             this.checkBox_alwaysOnTop = new System.Windows.Forms.CheckBox();
             this.checkBox_showPreview = new System.Windows.Forms.CheckBox();
-            this.checkBox_reformatJson = new System.Windows.Forms.CheckBox();
+            this.checkBox_beautifyJson = new System.Windows.Forms.CheckBox();
+            this.checkBox_reformatJsonBrackets = new System.Windows.Forms.CheckBox();
             this.button_saveDb = new System.Windows.Forms.Button();
             this.button_loadDb = new System.Windows.Forms.Button();
             this.button_collectDatabase = new System.Windows.Forms.Button();
@@ -145,7 +146,8 @@
             this.splitContainer_buttons.Panel1.Controls.Add(this.checkBox_loadDbOnStart);
             this.splitContainer_buttons.Panel1.Controls.Add(this.checkBox_alwaysOnTop);
             this.splitContainer_buttons.Panel1.Controls.Add(this.checkBox_showPreview);
-            this.splitContainer_buttons.Panel1.Controls.Add(this.checkBox_reformatJson);
+            this.splitContainer_buttons.Panel1.Controls.Add(this.checkBox_beautifyJson);
+            this.splitContainer_buttons.Panel1.Controls.Add(this.checkBox_reformatJsonBrackets);
             this.splitContainer_buttons.Panel1.Controls.Add(this.button_saveDb);
             this.splitContainer_buttons.Panel1.Controls.Add(this.button_loadDb);
             this.splitContainer_buttons.Panel1.Controls.Add(this.button_collectDatabase);
@@ -162,7 +164,7 @@
             // checkBox_vsCode
             // 
             this.checkBox_vsCode.AutoSize = true;
-            this.checkBox_vsCode.Location = new System.Drawing.Point(6, 183);
+            this.checkBox_vsCode.Location = new System.Drawing.Point(6, 204);
             this.checkBox_vsCode.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.checkBox_vsCode.Name = "checkBox_vsCode";
             this.checkBox_vsCode.Size = new System.Drawing.Size(89, 19);
@@ -186,7 +188,7 @@
             // checkBox_alwaysOnTop
             // 
             this.checkBox_alwaysOnTop.AutoSize = true;
-            this.checkBox_alwaysOnTop.Location = new System.Drawing.Point(6, 210);
+            this.checkBox_alwaysOnTop.Location = new System.Drawing.Point(6, 229);
             this.checkBox_alwaysOnTop.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.checkBox_alwaysOnTop.Name = "checkBox_alwaysOnTop";
             this.checkBox_alwaysOnTop.Size = new System.Drawing.Size(101, 19);
@@ -198,7 +200,7 @@
             // checkBox_showPreview
             // 
             this.checkBox_showPreview.AutoSize = true;
-            this.checkBox_showPreview.Location = new System.Drawing.Point(6, 157);
+            this.checkBox_showPreview.Location = new System.Drawing.Point(6, 179);
             this.checkBox_showPreview.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.checkBox_showPreview.Name = "checkBox_showPreview";
             this.checkBox_showPreview.Size = new System.Drawing.Size(99, 19);
@@ -207,17 +209,29 @@
             this.checkBox_showPreview.UseVisualStyleBackColor = true;
             this.checkBox_showPreview.CheckedChanged += new System.EventHandler(this.CheckBox_showPreview_CheckedChanged);
             // 
-            // checkBox_reformatJson
+            // checkBox_beautifyJson
             // 
-            this.checkBox_reformatJson.AutoSize = true;
-            this.checkBox_reformatJson.Location = new System.Drawing.Point(6, 130);
-            this.checkBox_reformatJson.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.checkBox_reformatJson.Name = "checkBox_reformatJson";
-            this.checkBox_reformatJson.Size = new System.Drawing.Size(106, 19);
-            this.checkBox_reformatJson.TabIndex = 7;
-            this.checkBox_reformatJson.Text = "Reformat JSON";
-            this.checkBox_reformatJson.UseVisualStyleBackColor = true;
-            this.checkBox_reformatJson.CheckedChanged += new System.EventHandler(this.CheckBox_reformatJson_CheckedChanged);
+            this.checkBox_beautifyJson.AutoSize = true;
+            this.checkBox_beautifyJson.Location = new System.Drawing.Point(6, 129);
+            this.checkBox_beautifyJson.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.checkBox_beautifyJson.Name = "checkBox_beautifyJson";
+            this.checkBox_beautifyJson.Size = new System.Drawing.Size(100, 19);
+            this.checkBox_beautifyJson.TabIndex = 7;
+            this.checkBox_beautifyJson.Text = "Beautify JSON";
+            this.checkBox_beautifyJson.UseVisualStyleBackColor = true;
+            this.checkBox_beautifyJson.CheckedChanged += new System.EventHandler(this.CheckBox_beautifyJson_CheckedChanged);
+            // 
+            // checkBox_reformatJsonBrackets
+            // 
+            this.checkBox_reformatJsonBrackets.AutoSize = true;
+            this.checkBox_reformatJsonBrackets.Location = new System.Drawing.Point(6, 154);
+            this.checkBox_reformatJsonBrackets.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.checkBox_reformatJsonBrackets.Name = "checkBox_reformatJsonBrackets";
+            this.checkBox_reformatJsonBrackets.Size = new System.Drawing.Size(153, 19);
+            this.checkBox_reformatJsonBrackets.TabIndex = 7;
+            this.checkBox_reformatJsonBrackets.Text = "Reformat JSON brackets";
+            this.checkBox_reformatJsonBrackets.UseVisualStyleBackColor = true;
+            this.checkBox_reformatJsonBrackets.CheckedChanged += new System.EventHandler(this.CheckBox_reformatJsonBrackets_CheckedChanged);
             // 
             // button_saveDb
             // 
@@ -640,7 +654,7 @@
             // 
             this.label_edit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.label_edit.AutoSize = true;
-            this.label_edit.Location = new System.Drawing.Point(564, 72);
+            this.label_edit.Location = new System.Drawing.Point(564, 69);
             this.label_edit.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label_edit.Name = "label_edit";
             this.label_edit.Size = new System.Drawing.Size(111, 15);
@@ -651,7 +665,7 @@
             // 
             this.label_descSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.label_descSave.AutoSize = true;
-            this.label_descSave.Location = new System.Drawing.Point(500, 72);
+            this.label_descSave.Location = new System.Drawing.Point(500, 69);
             this.label_descSave.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label_descSave.Name = "label_descSave";
             this.label_descSave.Size = new System.Drawing.Size(175, 15);
@@ -775,7 +789,7 @@
         private System.Windows.Forms.Button button_ExAdjustRows;
         private System.Windows.Forms.CheckBox checkBox_alwaysOnTop;
         private System.Windows.Forms.CheckBox checkBox_showPreview;
-        private System.Windows.Forms.CheckBox checkBox_reformatJson;
+        private System.Windows.Forms.CheckBox checkBox_reformatJsonBrackets;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.Button button_ExClearSearch;
@@ -802,6 +816,7 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_foldAll;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_treeCopy;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_treeDelete;
+        private System.Windows.Forms.CheckBox checkBox_beautifyJson;
     }
 }
 

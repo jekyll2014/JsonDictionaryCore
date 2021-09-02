@@ -26,7 +26,7 @@ namespace JsonDictionaryCore
             {
                 File.WriteAllText(fileName, JsonConvert.SerializeObject(data, formatted ? Formatting.Indented : Formatting.None));
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -67,7 +67,7 @@ namespace JsonDictionaryCore
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -141,7 +141,7 @@ namespace JsonDictionaryCore
                     bf.Serialize(file, data);
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }

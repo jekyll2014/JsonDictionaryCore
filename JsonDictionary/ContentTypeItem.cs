@@ -7,9 +7,9 @@ namespace JsonDictionaryCore
     {
         internal class ContentTypeItem
         {
-            public string FileTypeMask;
-            public string PropertyTypeName;
-            public JsoncContentType FileType;
+            public string FileTypeMask; // file mask
+            public string PropertyTypeName; // name of the array contains a group of certain definitions
+            public JsoncContentType FileType; // file type enum
 
             public ContentTypeItem()
             {

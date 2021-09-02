@@ -1,12 +1,6 @@
 ﻿// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
-using JsonDictionary.Properties;
-
-using JsonEditorForm;
-
-using JsonPathParserLib;
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -21,63 +15,69 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+using JsonDictionaryCore.Properties;
+
+using JsonEditorForm;
+
+using JsonPathParserLib;
+
 using static JsonDictionaryCore.JsonIo;
 
 namespace JsonDictionaryCore
 {
     public partial class Form1 : Form
     {
-        private readonly List<Form1.ContentTypeItem> _fileTypes = new List<Form1.ContentTypeItem>
+        private readonly List<ContentTypeItem> _fileTypes = new List<ContentTypeItem>
         {
-            new Form1.ContentTypeItem
+            new ContentTypeItem
             {
                 FileTypeMask = "dataviews.jsonc",
                 PropertyTypeName = "dataviews",
                 FileType = JsoncContentType.DataViews
             },
-            new Form1.ContentTypeItem
+            new ContentTypeItem
             {
                 FileTypeMask = "events.jsonc",
                 PropertyTypeName = "events",
                 FileType = JsoncContentType.Events
             },
-            new Form1.ContentTypeItem
+            new ContentTypeItem
             {
                 FileTypeMask = "layout.jsonc",
                 PropertyTypeName = "layout",
                 FileType = JsoncContentType.Layout
             },
-            new Form1.ContentTypeItem
+            new ContentTypeItem
             {
                 FileTypeMask = "rules.jsonc",
                 PropertyTypeName = "rules",
                 FileType = JsoncContentType.Rules
             },
-            new Form1.ContentTypeItem
+            new ContentTypeItem
             {
                 FileTypeMask = "tools.jsonc",
                 PropertyTypeName = "tools",
                 FileType = JsoncContentType.Tools
             },
-            new Form1.ContentTypeItem
+            new ContentTypeItem
             {
                 FileTypeMask = "strings.jsonc",
                 PropertyTypeName = "strings",
                 FileType = JsoncContentType.Strings
             },
-            new Form1.ContentTypeItem
+            new ContentTypeItem
             {
                 FileTypeMask = "patch.jsonc",
                 PropertyTypeName = "patch",
                 FileType = JsoncContentType.Patch
             },
-            new Form1.ContentTypeItem
+            new ContentTypeItem
             {
                 FileTypeMask = "search.jsonc",
                 PropertyTypeName = "search",
                 FileType = JsoncContentType.Search
             },
-            new Form1.ContentTypeItem
+            new ContentTypeItem
             {
                 FileTypeMask = "combo.jsonc",
                 PropertyTypeName = "combo",
@@ -86,7 +86,6 @@ namespace JsonDictionaryCore
         };
 
         // pre-defined constants
-
         private const string DefaultVersionCaption = "Any";
         private const string VersionTagName = ".contentVersion";
         private const char TableListDelimiter = ';';
@@ -102,7 +101,8 @@ namespace JsonDictionaryCore
         private string _fileMask = "*.jsonc";
 
         // behavior options
-        private static bool _reformatJson;
+        private static bool _reformatJsonBrackets;
+        private static bool _beautifyJson;
         private bool _showPreview;
         private bool _alwaysOnTop;
         private bool _loadDbOnStart;
@@ -195,16 +195,15 @@ namespace JsonDictionaryCore
         }
 
         #region GUI
-
         #region System events
-
         public Form1()
         {
             InitializeComponent();
 
             FormCaption = DefaultEditorFormCaption;
 
-            checkBox_reformatJson.Checked = _reformatJson = Settings.Default.ReformatJson;
+            checkBox_reformatJsonBrackets.Checked = _reformatJsonBrackets = Settings.Default.ReformatJson;
+            checkBox_beautifyJson.Checked = _beautifyJson = Settings.Default.BeautifyJson;
             checkBox_showPreview.Checked = _showPreview = Settings.Default.ShowPreview;
             checkBox_alwaysOnTop.Checked = _alwaysOnTop = Settings.Default.AlwaysOnTop;
             checkBox_loadDbOnStart.Checked = _loadDbOnStart = Settings.Default.LoadDbOnStartUp;
@@ -274,7 +273,8 @@ namespace JsonDictionaryCore
             SaveJson(_nodeDescription, DefaultDescriptionFileName, true);
 
             Settings.Default.LastRootFolder = folderBrowserDialog1.SelectedPath;
-            Settings.Default.ReformatJson = _reformatJson;
+            Settings.Default.ReformatJson = _reformatJsonBrackets;
+            Settings.Default.BeautifyJson = _beautifyJson;
             Settings.Default.ShowPreview = _showPreview;
             Settings.Default.AlwaysOnTop = _alwaysOnTop;
             Settings.Default.LoadDbOnStartUp = _loadDbOnStart;
@@ -303,11 +303,9 @@ namespace JsonDictionaryCore
 
             Settings.Default.Save();
         }
-
         #endregion
 
         #region Main page
-
         private void Button_loadDb_Click(object sender, EventArgs e)
         {
             openFileDialog1.FileName = "";
@@ -364,7 +362,7 @@ namespace JsonDictionaryCore
                     {
                         startOperationTime = DateTime.Now;
                         FlushLog();
-                        toolStripStatusLabel1.Text = "Processing " + param.ContentType.ToString() + " collection";
+                        toolStripStatusLabel1.Text = "Processing " + param.ContentType + " collection";
                     });
 
                     FlattenCollection(jsonPropertiesCollection, param.ContentType, param.ItemName, param.ParentNames);
@@ -372,7 +370,7 @@ namespace JsonDictionaryCore
                     Invoke((MethodInvoker)delegate
                     {
                         endTime = DateTime.Now;
-                        _textLog.AppendLine(param.ContentType.ToString() + " processing time: " + endTime.Subtract(startOperationTime).TotalSeconds);
+                        _textLog.AppendLine(param.ContentType + " processing time: " + endTime.Subtract(startOperationTime).TotalSeconds);
                     });
                 });
 
@@ -446,9 +444,14 @@ namespace JsonDictionaryCore
             GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
         }
 
-        private void CheckBox_reformatJson_CheckedChanged(object sender, EventArgs e)
+        private void CheckBox_beautifyJson_CheckedChanged(object sender, EventArgs e)
         {
-            _reformatJson = checkBox_reformatJson.Checked;
+            checkBox_reformatJsonBrackets.Enabled = _beautifyJson = checkBox_beautifyJson.Checked;
+        }
+
+        private void CheckBox_reformatJsonBrackets_CheckedChanged(object sender, EventArgs e)
+        {
+            _reformatJsonBrackets = checkBox_reformatJsonBrackets.Checked;
         }
 
         private void CheckBox_showPreview_CheckedChanged(object sender, EventArgs e)
@@ -471,12 +474,9 @@ namespace JsonDictionaryCore
         {
             _useVsCode = checkBox_vsCode.Checked;
         }
-
-
         #endregion
 
         #region Tree
-
         private void TreeView_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             if (e.Button != MouseButtons.Right)
@@ -517,7 +517,8 @@ namespace JsonDictionaryCore
 
         private void TreeView_examples_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            if (e == null) return;
+            if (e == null)
+                return;
 
             textBox_description.ReadOnly = true;
             label_descSave.Visible = false;
@@ -603,7 +604,7 @@ namespace JsonDictionaryCore
             if (treeView_examples.SelectedNode == null)
                 return;
 
-            if (MessageBox.Show("Are you sure to remove the selected node?", "Remove node", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            if (MessageBox.Show("Are you sure to remove the selected node and all of it's samples?", "Remove node", MessageBoxButtons.YesNo) != DialogResult.Yes)
                 return;
 
             ActivateUiControls(false);
@@ -620,7 +621,6 @@ namespace JsonDictionaryCore
         }
 
         #region Prevent_treenode_collapse
-
         private void TreeView_MouseDown(object sender, MouseEventArgs e)
         {
             _isDoubleClick = e.Clicks > 1;
@@ -634,14 +634,10 @@ namespace JsonDictionaryCore
             _isDoubleClick = false;
             e.Cancel = true;
         }
-
         #endregion
-
-
         #endregion
 
         #region Examples Grid
-
         private void DataGridView_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
         {
             if (e.Button != MouseButtons.Right)
@@ -724,7 +720,8 @@ namespace JsonDictionaryCore
 
         private void CopySample()
         {
-            if (dataGridView_examples == null) return;
+            if (dataGridView_examples == null)
+                return;
 
             if (dataGridView_examples.SelectedCells.Count == 1)
             {
@@ -748,23 +745,18 @@ namespace JsonDictionaryCore
             var rowList = cellRowList.Distinct().ToArray();
             foreach (var rowNumber in rowList)
             {
-                var jsonPaths = dataGridView_examples.Rows[rowNumber].Cells[3]?.Value?.ToString().Split(new[] { TableListDelimiter }, StringSplitOptions.RemoveEmptyEntries);
+                var jsonPath = _exampleLinkCollection.FirstOrDefault(n => n.Key == _lastExSelectedNode.Name).Key;
                 var jsonSample = dataGridView_examples.Rows[rowNumber].Cells[1]?.Value?.ToString();
 
-                if (jsonPaths?.Length > 0)
-                {
-                    var jsonPath = JsonPathDiv + jsonPaths[0];
-                    var samplesCollection = _exampleLinkCollection.Where(n => n.Key == jsonPath);
-                    samplesCollection.FirstOrDefault().Value.RemoveAll(n => n.Value == CompactJson(jsonSample));
-                }
+                //var jsonPath = JsonPathDiv + jsonPaths[0];
+                var samplesCollection = _exampleLinkCollection.Where(n => n.Key == jsonPath);
+                samplesCollection.FirstOrDefault().Value.RemoveAll(n => n.Value == CompactJson(jsonSample));
             }
 
         }
-
         #endregion
 
         #region FileList
-
         private void ListBox_fileList_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.C && e.Control)
@@ -822,7 +814,8 @@ namespace JsonDictionaryCore
 
         private void CopyFileName()
         {
-            if (listBox_fileList == null) return;
+            if (listBox_fileList == null)
+                return;
 
             Clipboard.SetText(listBox_fileList.SelectedItem.ToString());
         }
@@ -830,7 +823,7 @@ namespace JsonDictionaryCore
         // don't work. need tree path to find all samples. Change ListToTree to add actual paths
         private void DeleteSampleForFile()
         {
-            if (MessageBox.Show("Do you want to delete all selected samples for all files?", "Delete samples", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            if (MessageBox.Show("Do you want to delete all selected samples for selected file?", "Delete samples", MessageBoxButtons.YesNo) != DialogResult.Yes)
                 return;
 
             var jsonPaths = dataGridView_examples.Rows[dataGridView_examples.SelectedCells[0].RowIndex].Cells[3]?.Value?.ToString().Split(new[] { TableListDelimiter }, StringSplitOptions.RemoveEmptyEntries);
@@ -950,11 +943,9 @@ namespace JsonDictionaryCore
                 }
             }
         }
-
         #endregion
 
         #region Helpers
-
         private BlockingCollection<JsonProperty> RunFileCollection(string collectionPath, string fileMask)
         {
             // Searching project files                        
@@ -1015,15 +1006,15 @@ namespace JsonDictionaryCore
             };
 
             var jsonProperties = parser.ParseJsonToPathList(jsonStr, out var endPos, out var errorFound)
-                .Where(item => item.PropertyType != PropertyType.Comment
-                    && item.PropertyType != PropertyType.EndOfArray
-                    && item.PropertyType != PropertyType.EndOfObject
-                    && item.PropertyType != PropertyType.Error
-                    && item.PropertyType != PropertyType.Unknown)
+                .Where(item => item.JsonPropertyType != JsonPropertyTypes.Comment
+                    && item.JsonPropertyType != JsonPropertyTypes.EndOfArray
+                    && item.JsonPropertyType != JsonPropertyTypes.EndOfObject
+                    && item.JsonPropertyType != JsonPropertyTypes.Error
+                    && item.JsonPropertyType != JsonPropertyTypes.Unknown)
                 .ToList();
             var version = jsonProperties.Where(n => n.Path == VersionTagName).FirstOrDefault()?.Value ?? "";
 
-            var rootObject = jsonProperties.Where(n => n.PropertyType == PropertyType.Object && string.IsNullOrEmpty(n.Name) && string.IsNullOrEmpty(n.Path)).FirstOrDefault();
+            var rootObject = jsonProperties.Where(n => n.JsonPropertyType == JsonPropertyTypes.Object && string.IsNullOrEmpty(n.Name) && string.IsNullOrEmpty(n.Path)).FirstOrDefault();
             jsonProperties.Remove(rootObject);
 
             Parallel.ForEach(jsonProperties, item =>
@@ -1286,13 +1277,26 @@ namespace JsonDictionaryCore
             var records = exampleLinkCollection[currentNode.Name];
             toolStripStatusLabel1.Text = "Displaying " + records.Count + " records";
 
+            var parentNode = _lastExSelectedNode?.Parent;
             if (_lastExSelectedNode != null)
             {
                 _lastExSelectedNode.BackColor = Color.White;
+
+                while (parentNode != null)
+                {
+                    parentNode.BackColor = Color.White;
+                    parentNode = parentNode.Parent;
+                }
             }
 
             _lastExSelectedNode = currentNode;
             currentNode.BackColor = Color.DodgerBlue;
+            parentNode = currentNode.Parent;
+            while (parentNode != null)
+            {
+                parentNode.BackColor = Color.DodgerBlue;
+                parentNode = parentNode.Parent;
+            }
 
             ExClearSearch();
 
@@ -1317,7 +1321,7 @@ namespace JsonDictionaryCore
 
                     try
                     {
-                        recordValue = BeautifyJson(valueGroup.Key, _reformatJson);
+                        recordValue = _beautifyJson ? BeautifyJson(valueGroup.Key, _reformatJsonBrackets) : valueGroup.Key;
                     }
                     catch
                     {
@@ -1585,7 +1589,7 @@ namespace JsonDictionaryCore
             Refresh();
         }
 
-        private void OpenFile(bool newEditor = false)
+        private void OpenFile(bool standAloneEditor = false)
         {
             if (dataGridView_examples.SelectedCells.Count <= 0 || listBox_fileList.SelectedItems.Count <= 0)
                 return;
@@ -1598,33 +1602,33 @@ namespace JsonDictionaryCore
             if (jsonPaths?.Length >= fileNumber)
             {
                 var jsonPath = jsonPaths[fileNumber];
-                ShowPreviewEditor(fileName, jsonPath, jsonSample, newEditor);
+                ShowPreviewEditor(fileName, jsonPath, jsonSample, standAloneEditor);
             }
         }
 
-        private void ShowPreviewEditor(string fileName, string jsonPath, string sampleText, bool newWindow = false)
+        private void ShowPreviewEditor(string fileName, string jsonPath, string sampleText, bool standAloneEditor = false)
         {
             if (_useVsCode)
             {
                 var lineNumber = GetLineNumberForPath(fileName, jsonPath) + 1;
                 var execParams = "-r -g " + fileName + ":" + lineNumber;
                 VsCodeOpenFile(execParams);
-
                 return;
             }
 
             var textEditor = _sideViewer;
-            if (newWindow)
+            if (standAloneEditor)
             {
                 textEditor = null;
             }
 
-            bool fileLoaded;
+            var fileLoaded = false;
+            var newWindow = false;
             if (textEditor != null && !textEditor.IsDisposed)
             {
-                if (textEditor.SingleLineBrackets != _reformatJson || textEditor.Text != PreViewCaption + fileName)
+                if (textEditor.SingleLineBrackets != _reformatJsonBrackets || textEditor.Text != PreViewCaption + fileName)
                 {
-                    textEditor.SingleLineBrackets = _reformatJson;
+                    textEditor.SingleLineBrackets = _reformatJsonBrackets;
                     fileLoaded = textEditor.LoadJsonFromFile(fileName);
                 }
                 else
@@ -1640,28 +1644,24 @@ namespace JsonDictionaryCore
                     textEditor.Dispose();
                 }
 
-                textEditor = new JsonViewer("", "", newWindow)
+                textEditor = new JsonViewer("", "", standAloneEditor)
                 {
-                    SingleLineBrackets = _reformatJson
+                    SingleLineBrackets = _reformatJsonBrackets
                 };
 
-                if (!newWindow)
-                    textEditor.Closing += OnClosingEditor;
-
+                newWindow = true;
                 fileLoaded = textEditor.LoadJsonFromFile(fileName);
             }
 
-            _sideViewer = textEditor;
+            if (!standAloneEditor)
+                _sideViewer = textEditor;
 
             textEditor.AlwaysOnTop = _alwaysOnTop;
             textEditor.Show();
 
-            if (!fileLoaded)
-                return;
 
-            if (!newWindow)
+            if (!standAloneEditor && newWindow)
             {
-                textEditor.Text = PreViewCaption + fileName;
 
                 if (!(_editorPosition.WinX == 0
                       && _editorPosition.WinY == 0
@@ -1672,6 +1672,19 @@ namespace JsonDictionaryCore
                     textEditor.Width = _editorPosition.WinW;
                     textEditor.Height = _editorPosition.WinH;
                 }
+
+                textEditor.Closing += OnClosingEditor;
+            }
+
+            if (!fileLoaded)
+            {
+                textEditor.Text = "Failed to load " + fileName;
+                return;
+            }
+
+            if (!standAloneEditor)
+            {
+                textEditor.Text = PreViewCaption + fileName;
             }
             else
             {
@@ -1683,11 +1696,9 @@ namespace JsonDictionaryCore
                 textEditor.HighlightText(sampleText);
             }
         }
-
         #endregion
 
         #region Utilities
-
         private static JsoncContentType GetFileTypeFromFileName(string fullFileName,
     IEnumerable<Form1.ContentTypeItem> fileTypes)
         {
@@ -1826,5 +1837,6 @@ namespace JsonDictionaryCore
         }
 
         #endregion
+
     }
 }
