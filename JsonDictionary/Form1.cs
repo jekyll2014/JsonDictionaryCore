@@ -2419,8 +2419,11 @@ namespace JsonDictionaryCore
                     Path = nodePath,
                     Description = nodeDescription,
                     Examples = nodeExamples?
-                    .Where(n => n.ObjectType == JsonPropertyTypes.Property)
+                    .Where(n => n.ObjectType == JsonPropertyTypes.Property
+                    || n.ObjectType == JsonPropertyTypes.ArrayValue
+                    || n.VariableType == JsonValueTypes.String)
                     .Select(n => n.Value)
+                    .Distinct()
                     .OrderBy(n => n)
                     .ToList(),
                     UniqueItemsOnly = true
@@ -2496,7 +2499,9 @@ namespace JsonDictionaryCore
                     Path = nodePath,
                     Description = nodeDescription,
                     Examples = nodeExamples?
-                    .Where(n => n.ObjectType == JsonPropertyTypes.Property)
+                    .Where(n => n.ObjectType == JsonPropertyTypes.Property
+                    || n.ObjectType == JsonPropertyTypes.ArrayValue
+                    || n.VariableType == JsonValueTypes.String)
                     .Select(n => n.Value)
                     .Distinct()
                     .OrderBy(n => n)
@@ -2518,13 +2523,25 @@ namespace JsonDictionaryCore
                 Type = nodeVariableTypes,
                 Path = nodePath,
                 Description = nodeDescription,
-                Examples = nodeExamples?.Select(n => n.Value).Distinct().OrderBy(n => n).ToList()
+                Examples = nodeExamples?
+                    .Where(n => n.ObjectType == JsonPropertyTypes.Property
+                    || n.ObjectType == JsonPropertyTypes.ArrayValue
+                    || n.VariableType == JsonValueTypes.String)
+                    .Select(n => n.Value)
+                    .Distinct()
+                    .OrderBy(n => n)
+                    .ToList(),
             };
 
             // if all property types are "string" create Enum
-            if (!nodeVariableTypes.Any(n => n != "string"))
+            if (nodeVariableTypes.Any(n => n != "object"))
             {
-                propertyNode.Enum = nodeExamples?.Select(n => n.Value).Distinct().OrderBy(n => n).ToList();
+                propertyNode.Enum = nodeExamples?
+                    .Where(n => n.VariableType == JsonValueTypes.String)?
+                    .Select(n => n.Value)?
+                    .Distinct()?
+                    .OrderBy(n => n)?
+                    .ToList();
             }
 
             return propertyNode;
