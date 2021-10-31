@@ -37,9 +37,11 @@
             this.splitContainer_buttons = new System.Windows.Forms.SplitContainer();
             this.checkBox_vsCode = new System.Windows.Forms.CheckBox();
             this.checkBox_loadDbOnStart = new System.Windows.Forms.CheckBox();
+            this.checkBox_schemaSelectionSync = new System.Windows.Forms.CheckBox();
             this.checkBox_alwaysOnTop = new System.Windows.Forms.CheckBox();
             this.checkBox_showPreview = new System.Windows.Forms.CheckBox();
-            this.checkBox_reformatJson = new System.Windows.Forms.CheckBox();
+            this.checkBox_beautifyJson = new System.Windows.Forms.CheckBox();
+            this.checkBox_reformatJsonBrackets = new System.Windows.Forms.CheckBox();
             this.button_saveDb = new System.Windows.Forms.Button();
             this.button_loadDb = new System.Windows.Forms.Button();
             this.button_collectDatabase = new System.Windows.Forms.Button();
@@ -76,11 +78,27 @@
             this.label_edit = new System.Windows.Forms.Label();
             this.label_descSave = new System.Windows.Forms.Label();
             this.textBox_description = new System.Windows.Forms.TextBox();
+            this.tabPage_Schema = new System.Windows.Forms.TabPage();
+            this.textBox_schemaUrl = new System.Windows.Forms.TextBox();
+            this.button_regenerateSchema = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.comboBox_contentVersion = new System.Windows.Forms.ComboBox();
+            this.comboBox_fileType = new System.Windows.Forms.ComboBox();
+            this.splitContainer_schemaMain = new System.Windows.Forms.SplitContainer();
+            this.splitContainer_schemaLeft = new System.Windows.Forms.SplitContainer();
+            this.button_generateSchema = new System.Windows.Forms.Button();
+            this.treeView_leftSchema = new System.Windows.Forms.TreeView();
+            this.splitContainer_schemaRight = new System.Windows.Forms.SplitContainer();
+            this.button_loadSchema = new System.Windows.Forms.Button();
+            this.treeView_rightSchema = new System.Windows.Forms.TreeView();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.button_saveLeftSchema = new System.Windows.Forms.Button();
+            this.button_saveRightSchema = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage_DataCollection.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer_buttons)).BeginInit();
@@ -104,6 +122,17 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView_examples)).BeginInit();
             this.contextMenuStrip_samples.SuspendLayout();
             this.contextMenuStrip_fileList.SuspendLayout();
+            this.tabPage_Schema.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer_schemaMain)).BeginInit();
+            this.splitContainer_schemaMain.Panel1.SuspendLayout();
+            this.splitContainer_schemaMain.Panel2.SuspendLayout();
+            this.splitContainer_schemaMain.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer_schemaLeft)).BeginInit();
+            this.splitContainer_schemaLeft.Panel1.SuspendLayout();
+            this.splitContainer_schemaLeft.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer_schemaRight)).BeginInit();
+            this.splitContainer_schemaRight.Panel1.SuspendLayout();
+            this.splitContainer_schemaRight.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -114,6 +143,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tabControl1.Controls.Add(this.tabPage_DataCollection);
             this.tabControl1.Controls.Add(this.tabPage_SamplesTree);
+            this.tabControl1.Controls.Add(this.tabPage_Schema);
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.tabControl1.Name = "tabControl1";
@@ -143,9 +173,11 @@
             // 
             this.splitContainer_buttons.Panel1.Controls.Add(this.checkBox_vsCode);
             this.splitContainer_buttons.Panel1.Controls.Add(this.checkBox_loadDbOnStart);
+            this.splitContainer_buttons.Panel1.Controls.Add(this.checkBox_schemaSelectionSync);
             this.splitContainer_buttons.Panel1.Controls.Add(this.checkBox_alwaysOnTop);
             this.splitContainer_buttons.Panel1.Controls.Add(this.checkBox_showPreview);
-            this.splitContainer_buttons.Panel1.Controls.Add(this.checkBox_reformatJson);
+            this.splitContainer_buttons.Panel1.Controls.Add(this.checkBox_beautifyJson);
+            this.splitContainer_buttons.Panel1.Controls.Add(this.checkBox_reformatJsonBrackets);
             this.splitContainer_buttons.Panel1.Controls.Add(this.button_saveDb);
             this.splitContainer_buttons.Panel1.Controls.Add(this.button_loadDb);
             this.splitContainer_buttons.Panel1.Controls.Add(this.button_collectDatabase);
@@ -162,7 +194,7 @@
             // checkBox_vsCode
             // 
             this.checkBox_vsCode.AutoSize = true;
-            this.checkBox_vsCode.Location = new System.Drawing.Point(6, 183);
+            this.checkBox_vsCode.Location = new System.Drawing.Point(6, 204);
             this.checkBox_vsCode.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.checkBox_vsCode.Name = "checkBox_vsCode";
             this.checkBox_vsCode.Size = new System.Drawing.Size(89, 19);
@@ -183,10 +215,22 @@
             this.checkBox_loadDbOnStart.UseVisualStyleBackColor = true;
             this.checkBox_loadDbOnStart.CheckedChanged += new System.EventHandler(this.CheckBox_loadDbOnStart_CheckedChanged);
             // 
+            // checkBox_schemaSelectionSync
+            // 
+            this.checkBox_schemaSelectionSync.AutoSize = true;
+            this.checkBox_schemaSelectionSync.Location = new System.Drawing.Point(6, 254);
+            this.checkBox_schemaSelectionSync.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.checkBox_schemaSelectionSync.Name = "checkBox_schemaSelectionSync";
+            this.checkBox_schemaSelectionSync.Size = new System.Drawing.Size(145, 19);
+            this.checkBox_schemaSelectionSync.TabIndex = 10;
+            this.checkBox_schemaSelectionSync.Text = "Schema selection sync";
+            this.checkBox_schemaSelectionSync.UseVisualStyleBackColor = true;
+            this.checkBox_schemaSelectionSync.CheckedChanged += new System.EventHandler(this.CheckBox_schemaSelectionSync_CheckedChanged);
+            // 
             // checkBox_alwaysOnTop
             // 
             this.checkBox_alwaysOnTop.AutoSize = true;
-            this.checkBox_alwaysOnTop.Location = new System.Drawing.Point(6, 210);
+            this.checkBox_alwaysOnTop.Location = new System.Drawing.Point(6, 229);
             this.checkBox_alwaysOnTop.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.checkBox_alwaysOnTop.Name = "checkBox_alwaysOnTop";
             this.checkBox_alwaysOnTop.Size = new System.Drawing.Size(101, 19);
@@ -198,7 +242,7 @@
             // checkBox_showPreview
             // 
             this.checkBox_showPreview.AutoSize = true;
-            this.checkBox_showPreview.Location = new System.Drawing.Point(6, 157);
+            this.checkBox_showPreview.Location = new System.Drawing.Point(6, 179);
             this.checkBox_showPreview.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.checkBox_showPreview.Name = "checkBox_showPreview";
             this.checkBox_showPreview.Size = new System.Drawing.Size(99, 19);
@@ -207,17 +251,31 @@
             this.checkBox_showPreview.UseVisualStyleBackColor = true;
             this.checkBox_showPreview.CheckedChanged += new System.EventHandler(this.CheckBox_showPreview_CheckedChanged);
             // 
-            // checkBox_reformatJson
+            // checkBox_beautifyJson
             // 
-            this.checkBox_reformatJson.AutoSize = true;
-            this.checkBox_reformatJson.Location = new System.Drawing.Point(6, 130);
-            this.checkBox_reformatJson.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.checkBox_reformatJson.Name = "checkBox_reformatJson";
-            this.checkBox_reformatJson.Size = new System.Drawing.Size(106, 19);
-            this.checkBox_reformatJson.TabIndex = 7;
-            this.checkBox_reformatJson.Text = "Reformat JSON";
-            this.checkBox_reformatJson.UseVisualStyleBackColor = true;
-            this.checkBox_reformatJson.CheckedChanged += new System.EventHandler(this.CheckBox_reformatJson_CheckedChanged);
+            this.checkBox_beautifyJson.AutoSize = true;
+            this.checkBox_beautifyJson.Location = new System.Drawing.Point(6, 129);
+            this.checkBox_beautifyJson.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.checkBox_beautifyJson.Name = "checkBox_beautifyJson";
+            this.checkBox_beautifyJson.Size = new System.Drawing.Size(100, 19);
+            this.checkBox_beautifyJson.TabIndex = 7;
+            this.checkBox_beautifyJson.Text = "Beautify JSON";
+            this.checkBox_beautifyJson.UseVisualStyleBackColor = true;
+            this.checkBox_beautifyJson.CheckedChanged += new System.EventHandler(this.CheckBox_beautifyJson_CheckedChanged);
+            // 
+            // checkBox_reformatJsonBrackets
+            // 
+            this.checkBox_reformatJsonBrackets.AutoSize = true;
+            this.checkBox_reformatJsonBrackets.Enabled = false;
+            this.checkBox_reformatJsonBrackets.Location = new System.Drawing.Point(6, 154);
+            this.checkBox_reformatJsonBrackets.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.checkBox_reformatJsonBrackets.Name = "checkBox_reformatJsonBrackets";
+            this.checkBox_reformatJsonBrackets.Size = new System.Drawing.Size(153, 19);
+            this.checkBox_reformatJsonBrackets.TabIndex = 7;
+            this.checkBox_reformatJsonBrackets.Text = "Reformat JSON brackets";
+            this.checkBox_reformatJsonBrackets.UseVisualStyleBackColor = true;
+            this.checkBox_reformatJsonBrackets.CheckedChanged += new System.EventHandler(this.CheckBox_reformatJsonBrackets_CheckedChanged);
+            this.checkBox_reformatJsonBrackets.EnabledChanged += new System.EventHandler(this.CheckBox_reformatJsonBrackets_EnabledChanged);
             // 
             // button_saveDb
             // 
@@ -640,7 +698,7 @@
             // 
             this.label_edit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.label_edit.AutoSize = true;
-            this.label_edit.Location = new System.Drawing.Point(564, 72);
+            this.label_edit.Location = new System.Drawing.Point(564, 52);
             this.label_edit.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label_edit.Name = "label_edit";
             this.label_edit.Size = new System.Drawing.Size(111, 15);
@@ -651,7 +709,7 @@
             // 
             this.label_descSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.label_descSave.AutoSize = true;
-            this.label_descSave.Location = new System.Drawing.Point(500, 72);
+            this.label_descSave.Location = new System.Drawing.Point(500, 52);
             this.label_descSave.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label_descSave.Name = "label_descSave";
             this.label_descSave.Size = new System.Drawing.Size(175, 15);
@@ -671,6 +729,177 @@
             this.textBox_description.TabIndex = 8;
             this.textBox_description.KeyDown += new System.Windows.Forms.KeyEventHandler(this.TextBox_description_KeyDown);
             this.textBox_description.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.TextBox_description_MouseDoubleClick);
+            // 
+            // tabPage_Schema
+            // 
+            this.tabPage_Schema.AutoScroll = true;
+            this.tabPage_Schema.Controls.Add(this.textBox_schemaUrl);
+            this.tabPage_Schema.Controls.Add(this.button_regenerateSchema);
+            this.tabPage_Schema.Controls.Add(this.label2);
+            this.tabPage_Schema.Controls.Add(this.label1);
+            this.tabPage_Schema.Controls.Add(this.comboBox_contentVersion);
+            this.tabPage_Schema.Controls.Add(this.comboBox_fileType);
+            this.tabPage_Schema.Controls.Add(this.splitContainer_schemaMain);
+            this.tabPage_Schema.Location = new System.Drawing.Point(4, 24);
+            this.tabPage_Schema.Name = "tabPage_Schema";
+            this.tabPage_Schema.Size = new System.Drawing.Size(907, 593);
+            this.tabPage_Schema.TabIndex = 2;
+            this.tabPage_Schema.Text = "Schema";
+            this.tabPage_Schema.UseVisualStyleBackColor = true;
+            // 
+            // textBox_schemaUrl
+            // 
+            this.textBox_schemaUrl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBox_schemaUrl.Location = new System.Drawing.Point(411, 3);
+            this.textBox_schemaUrl.Name = "textBox_schemaUrl";
+            this.textBox_schemaUrl.Size = new System.Drawing.Size(358, 23);
+            this.textBox_schemaUrl.TabIndex = 6;
+            // 
+            // button_regenerateSchema
+            // 
+            this.button_regenerateSchema.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button_regenerateSchema.Location = new System.Drawing.Point(775, 2);
+            this.button_regenerateSchema.Name = "button_regenerateSchema";
+            this.button_regenerateSchema.Size = new System.Drawing.Size(129, 23);
+            this.button_regenerateSchema.TabIndex = 5;
+            this.button_regenerateSchema.Text = "Regenerate schema";
+            this.button_regenerateSchema.UseVisualStyleBackColor = true;
+            this.button_regenerateSchema.Click += new System.EventHandler(this.Button_regenerateSchema_Click);
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(187, 6);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(91, 15);
+            this.label2.TabIndex = 4;
+            this.label2.Text = "Content version";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(3, 6);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(51, 15);
+            this.label1.TabIndex = 4;
+            this.label1.Text = "File type";
+            // 
+            // comboBox_contentVersion
+            // 
+            this.comboBox_contentVersion.FormattingEnabled = true;
+            this.comboBox_contentVersion.Location = new System.Drawing.Point(284, 3);
+            this.comboBox_contentVersion.Name = "comboBox_contentVersion";
+            this.comboBox_contentVersion.Size = new System.Drawing.Size(121, 23);
+            this.comboBox_contentVersion.TabIndex = 2;
+            this.comboBox_contentVersion.SelectedIndexChanged += new System.EventHandler(this.ComboBox_contentVersion_SelectedIndexChanged);
+            // 
+            // comboBox_fileType
+            // 
+            this.comboBox_fileType.FormattingEnabled = true;
+            this.comboBox_fileType.Location = new System.Drawing.Point(60, 3);
+            this.comboBox_fileType.Name = "comboBox_fileType";
+            this.comboBox_fileType.Size = new System.Drawing.Size(121, 23);
+            this.comboBox_fileType.TabIndex = 1;
+            this.comboBox_fileType.SelectedIndexChanged += new System.EventHandler(this.ComboBox_fileType_SelectedIndexChanged);
+            // 
+            // splitContainer_schemaMain
+            // 
+            this.splitContainer_schemaMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.splitContainer_schemaMain.Location = new System.Drawing.Point(0, 32);
+            this.splitContainer_schemaMain.Name = "splitContainer_schemaMain";
+            // 
+            // splitContainer_schemaMain.Panel1
+            // 
+            this.splitContainer_schemaMain.Panel1.Controls.Add(this.splitContainer_schemaLeft);
+            // 
+            // splitContainer_schemaMain.Panel2
+            // 
+            this.splitContainer_schemaMain.Panel2.Controls.Add(this.splitContainer_schemaRight);
+            this.splitContainer_schemaMain.Size = new System.Drawing.Size(907, 561);
+            this.splitContainer_schemaMain.SplitterDistance = 449;
+            this.splitContainer_schemaMain.TabIndex = 0;
+            // 
+            // splitContainer_schemaLeft
+            // 
+            this.splitContainer_schemaLeft.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer_schemaLeft.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer_schemaLeft.Name = "splitContainer_schemaLeft";
+            this.splitContainer_schemaLeft.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainer_schemaLeft.Panel1
+            // 
+            this.splitContainer_schemaLeft.Panel1.Controls.Add(this.button_saveLeftSchema);
+            this.splitContainer_schemaLeft.Panel1.Controls.Add(this.button_generateSchema);
+            this.splitContainer_schemaLeft.Panel1.Controls.Add(this.treeView_leftSchema);
+            this.splitContainer_schemaLeft.Size = new System.Drawing.Size(449, 561);
+            this.splitContainer_schemaLeft.SplitterDistance = 219;
+            this.splitContainer_schemaLeft.TabIndex = 0;
+            this.splitContainer_schemaLeft.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.SplitContainer_schemaLeft_SplitterMoved);
+            // 
+            // button_generateSchema
+            // 
+            this.button_generateSchema.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button_generateSchema.Location = new System.Drawing.Point(338, 3);
+            this.button_generateSchema.Name = "button_generateSchema";
+            this.button_generateSchema.Size = new System.Drawing.Size(108, 23);
+            this.button_generateSchema.TabIndex = 1;
+            this.button_generateSchema.Text = "Generate schema";
+            this.button_generateSchema.UseVisualStyleBackColor = true;
+            this.button_generateSchema.Click += new System.EventHandler(this.Button_generateSchema_Click);
+            // 
+            // treeView_leftSchema
+            // 
+            this.treeView_leftSchema.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.treeView_leftSchema.Location = new System.Drawing.Point(0, 0);
+            this.treeView_leftSchema.Name = "treeView_leftSchema";
+            this.treeView_leftSchema.Size = new System.Drawing.Size(449, 219);
+            this.treeView_leftSchema.TabIndex = 0;
+            this.treeView_leftSchema.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.TreeView_leftSchema_AfterSelect);
+            // 
+            // splitContainer_schemaRight
+            // 
+            this.splitContainer_schemaRight.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer_schemaRight.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer_schemaRight.Name = "splitContainer_schemaRight";
+            this.splitContainer_schemaRight.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainer_schemaRight.Panel1
+            // 
+            this.splitContainer_schemaRight.Panel1.AutoScroll = true;
+            this.splitContainer_schemaRight.Panel1.Controls.Add(this.button_saveRightSchema);
+            this.splitContainer_schemaRight.Panel1.Controls.Add(this.button_loadSchema);
+            this.splitContainer_schemaRight.Panel1.Controls.Add(this.treeView_rightSchema);
+            // 
+            // splitContainer_schemaRight.Panel2
+            // 
+            this.splitContainer_schemaRight.Panel2.AutoScroll = true;
+            this.splitContainer_schemaRight.Size = new System.Drawing.Size(454, 561);
+            this.splitContainer_schemaRight.SplitterDistance = 224;
+            this.splitContainer_schemaRight.TabIndex = 0;
+            this.splitContainer_schemaRight.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.SplitContainer_schemaRight_SplitterMoved);
+            // 
+            // button_loadSchema
+            // 
+            this.button_loadSchema.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button_loadSchema.Location = new System.Drawing.Point(355, 3);
+            this.button_loadSchema.Name = "button_loadSchema";
+            this.button_loadSchema.Size = new System.Drawing.Size(96, 23);
+            this.button_loadSchema.TabIndex = 7;
+            this.button_loadSchema.Text = "Load schema";
+            this.button_loadSchema.UseVisualStyleBackColor = true;
+            this.button_loadSchema.Click += new System.EventHandler(this.Button_loadSchema_Click);
+            // 
+            // treeView_rightSchema
+            // 
+            this.treeView_rightSchema.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.treeView_rightSchema.Location = new System.Drawing.Point(0, 0);
+            this.treeView_rightSchema.Name = "treeView_rightSchema";
+            this.treeView_rightSchema.Size = new System.Drawing.Size(454, 224);
+            this.treeView_rightSchema.TabIndex = 0;
+            this.treeView_rightSchema.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.TreeView_RightSchema_AfterSelect);
             // 
             // openFileDialog1
             // 
@@ -703,6 +932,28 @@
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
             this.toolStripStatusLabel1.Size = new System.Drawing.Size(0, 17);
             // 
+            // button_saveLeftSchema
+            // 
+            this.button_saveLeftSchema.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button_saveLeftSchema.Location = new System.Drawing.Point(338, 32);
+            this.button_saveLeftSchema.Name = "button_saveLeftSchema";
+            this.button_saveLeftSchema.Size = new System.Drawing.Size(108, 23);
+            this.button_saveLeftSchema.TabIndex = 1;
+            this.button_saveLeftSchema.Text = "Save schema";
+            this.button_saveLeftSchema.UseVisualStyleBackColor = true;
+            this.button_saveLeftSchema.Click += new System.EventHandler(this.Button_saveLeftSchema_Click);
+            // 
+            // button_saveRightSchema
+            // 
+            this.button_saveRightSchema.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button_saveRightSchema.Location = new System.Drawing.Point(355, 32);
+            this.button_saveRightSchema.Name = "button_saveRightSchema";
+            this.button_saveRightSchema.Size = new System.Drawing.Size(96, 23);
+            this.button_saveRightSchema.TabIndex = 1;
+            this.button_saveRightSchema.Text = "Save schema";
+            this.button_saveRightSchema.UseVisualStyleBackColor = true;
+            this.button_saveRightSchema.Click += new System.EventHandler(this.Button_saveRightSchema_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -717,6 +968,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "JsonDictionary";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
+            this.Shown += new System.EventHandler(this.Form1_Shown);
             this.tabControl1.ResumeLayout(false);
             this.tabPage_DataCollection.ResumeLayout(false);
             this.splitContainer_buttons.Panel1.ResumeLayout(false);
@@ -744,6 +996,18 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView_examples)).EndInit();
             this.contextMenuStrip_samples.ResumeLayout(false);
             this.contextMenuStrip_fileList.ResumeLayout(false);
+            this.tabPage_Schema.ResumeLayout(false);
+            this.tabPage_Schema.PerformLayout();
+            this.splitContainer_schemaMain.Panel1.ResumeLayout(false);
+            this.splitContainer_schemaMain.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer_schemaMain)).EndInit();
+            this.splitContainer_schemaMain.ResumeLayout(false);
+            this.splitContainer_schemaLeft.Panel1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer_schemaLeft)).EndInit();
+            this.splitContainer_schemaLeft.ResumeLayout(false);
+            this.splitContainer_schemaRight.Panel1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer_schemaRight)).EndInit();
+            this.splitContainer_schemaRight.ResumeLayout(false);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
@@ -775,7 +1039,7 @@
         private System.Windows.Forms.Button button_ExAdjustRows;
         private System.Windows.Forms.CheckBox checkBox_alwaysOnTop;
         private System.Windows.Forms.CheckBox checkBox_showPreview;
-        private System.Windows.Forms.CheckBox checkBox_reformatJson;
+        private System.Windows.Forms.CheckBox checkBox_reformatJsonBrackets;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.Button button_ExClearSearch;
@@ -802,6 +1066,24 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_foldAll;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_treeCopy;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_treeDelete;
+        private System.Windows.Forms.CheckBox checkBox_beautifyJson;
+        private System.Windows.Forms.TabPage tabPage_Schema;
+        private System.Windows.Forms.SplitContainer splitContainer_schemaMain;
+        private System.Windows.Forms.SplitContainer splitContainer_schemaLeft;
+        private System.Windows.Forms.SplitContainer splitContainer_schemaRight;
+        private System.Windows.Forms.TreeView treeView_leftSchema;
+        private System.Windows.Forms.TreeView treeView_rightSchema;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.ComboBox comboBox_contentVersion;
+        private System.Windows.Forms.ComboBox comboBox_fileType;
+        private System.Windows.Forms.Button button_regenerateSchema;
+        private System.Windows.Forms.TextBox textBox_schemaUrl;
+        private System.Windows.Forms.Button button_loadSchema;
+        private System.Windows.Forms.Button button_generateSchema;
+        private System.Windows.Forms.CheckBox checkBox_schemaSelectionSync;
+        private System.Windows.Forms.Button button_saveLeftSchema;
+        private System.Windows.Forms.Button button_saveRightSchema;
     }
 }
 

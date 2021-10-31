@@ -6,7 +6,7 @@ using System.Collections;
 
 namespace JsonDictionaryCore
 {
-    public class SearchItem : ICloneable, IEqualityComparer, IEquatable<SearchItem>
+    public class SearchItem : ICloneable, IEqualityComparer
     {
         public enum SearchCondition
         {

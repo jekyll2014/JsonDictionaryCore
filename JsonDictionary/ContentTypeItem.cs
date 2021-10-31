@@ -5,17 +5,17 @@ namespace JsonDictionaryCore
 {
     public partial class Form1
     {
-        internal class ContentTypeItem
+        public class ContentTypeItem
         {
-            public string FileTypeMask;
-            public string PropertyTypeName;
-            public JsoncContentType FileType;
+            public string FileTypeMask; // file mask
+            public string PropertyTypeName; // name of the array contains a group of certain definitions
+            public string FileType; // file type enum
 
             public ContentTypeItem()
             {
                 FileTypeMask = "";
                 PropertyTypeName = "";
-                FileType = JsoncContentType.Unknown;
+                FileType = "";
             }
         }
     }

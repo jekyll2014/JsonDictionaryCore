@@ -10,42 +10,15 @@ using JsonPathParserLib;
 namespace JsonDictionaryCore
 {
     [DataContract]
-    public enum JsoncContentType
-    {
-        [EnumMember] Unknown,
-        [EnumMember] DataViews,
-        [EnumMember] Events,
-        [EnumMember] Layout,
-        [EnumMember] Rules,
-        [EnumMember] Search,
-        [EnumMember] Combo,
-        [EnumMember] Tools,
-        [EnumMember] Strings,
-        [EnumMember] Patch
-    }
-
-    [DataContract]
-    public enum JsonVariableType
-    {
-        [EnumMember] Unknown,
-        [EnumMember] Object,
-        [EnumMember] Array,
-        [EnumMember] String,
-        [EnumMember] Number,
-        [EnumMember] Boolean,
-        [EnumMember] Null,
-        [EnumMember] Comment,
-    }
-
-    [DataContract]
     public class JsonProperty
     {
         [DataMember] public char PathDelimiter = '.';
         [DataMember] public string FullFileName; // original path + file name
         [DataMember] public string Name; // property name
         [DataMember] public string Value; // property value
-        [DataMember] public JsonValueType VariableType; // type of the variable (array, object, property, ...)
-        [DataMember] public JsoncContentType ContentType; // file type (event, string, rules, ...)
+        [DataMember] public JsonValueTypes VariableType; // type of the variable (array, object, property, ...)
+        [DataMember] public JsonPropertyTypes ObjectType; // if variable is a property/array/object
+        [DataMember] public string ContentType; // file type (event, string, rules, ...)
         [DataMember] public string Version; // schema version declared in the beginning of the file
 
         [DataMember] private string _jsonPath;
@@ -149,8 +122,9 @@ namespace JsonDictionaryCore
             JsonPath = "";
             Name = "";
             Value = "";
-            VariableType = JsonValueType.Unknown;
-            ContentType = JsoncContentType.Unknown;
+            VariableType = JsonValueTypes.Unknown;
+            ObjectType = JsonPropertyTypes.Unknown;
+            ContentType = "";
             Version = "";
         }
 
@@ -172,7 +146,7 @@ namespace JsonDictionaryCore
                     unifiedPath.Append(token + delimiter);
                 }
             }
-            return unifiedPath.ToString().TrimEnd(delimiter);
+            return unifiedPath.ToString().TrimStart(delimiter).TrimEnd(delimiter);
         }
 
         public static int GetPathDepth(string path, char delimiter)

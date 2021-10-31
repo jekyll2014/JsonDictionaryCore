@@ -1,0 +1,66 @@
+{
+  "FileTypes": [
+    {
+      "FileTypeMask": "gas-works",
+      "PropertyTypeName": "gas-works",
+      "FileType": "*-works"
+    },
+    {
+      "FileTypeMask": "ground-works",
+      "PropertyTypeName": "ground-works",
+      "FileType": "*-works"
+    },
+    {
+      "FileTypeMask": "height-works",
+      "PropertyTypeName": "height-works",
+      "FileType": "*-works"
+    },
+    {
+      "FileTypeMask": "hot-works",
+      "PropertyTypeName": "hot-works",
+      "FileType": "*-works"
+    },
+    {
+      "FileTypeMask": "Notifications",
+      "PropertyTypeName": "Notifications",
+      "FileType": "Notifications"
+    }
+  ],
+  "FlattenParameters": [],
+  "LastRootFolder": "C:\\_test",
+  "ReformatJson": false,
+  "LastDbName": "D:\\6\\KineticDictionary_03.08.2021_ApInvoice.tree",
+  "ShowPreview": true,
+  "AlwaysOnTop": false,
+  "LoadDbOnStart": false,
+  "UseVsCode": false,
+  "EditorPosition": {
+    "WinX": 0,
+    "WinY": 0,
+    "WinW": 0,
+    "WinH": 0,
+    "Initialized": false
+  },
+  "MainWindowPosition": {
+    "WinX": 55,
+    "WinY": 0,
+    "WinW": 943,
+    "WinH": 1087,
+    "Initialized": true
+  },
+  "DefaultDescriptionFileName": "descriptions.json",
+  "FileMask": "*.json",
+  "TreeSplitterDistance": 285,
+  "DescriptionSplitterDistance": 945,
+  "FileListSplitterDistance": 527,
+  "DefaultVersionCaption": "Any",
+  "VersionTagName": ".contentVersion",
+  "TableListDelimiter": ";",
+  "JsonPathDiv": ".",
+  "RootNodeName": "MEGION",
+  "CellSizeAdjust": 0.7,
+  "PreViewCaption": "[Preview] ",
+  "DefaultEditorFormCaption": "JsonDictionary [MEGION]",
+  "DefaultTreeFileExtension": "tree",
+  "DefaultExamplesFileExtension": "examples"
+}

@@ -1,7 +1,7 @@
 ﻿// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
-using JsonDictionary.Properties;
+//#define EPICOR
 
 using JsonEditorForm;
 
@@ -16,6 +16,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,166 +28,33 @@ namespace JsonDictionaryCore
 {
     public partial class Form1 : Form
     {
-        private readonly List<Form1.ContentTypeItem> _fileTypes = new List<Form1.ContentTypeItem>
-        {
-            new Form1.ContentTypeItem
-            {
-                FileTypeMask = "dataviews.jsonc",
-                PropertyTypeName = "dataviews",
-                FileType = JsoncContentType.DataViews
-            },
-            new Form1.ContentTypeItem
-            {
-                FileTypeMask = "events.jsonc",
-                PropertyTypeName = "events",
-                FileType = JsoncContentType.Events
-            },
-            new Form1.ContentTypeItem
-            {
-                FileTypeMask = "layout.jsonc",
-                PropertyTypeName = "layout",
-                FileType = JsoncContentType.Layout
-            },
-            new Form1.ContentTypeItem
-            {
-                FileTypeMask = "rules.jsonc",
-                PropertyTypeName = "rules",
-                FileType = JsoncContentType.Rules
-            },
-            new Form1.ContentTypeItem
-            {
-                FileTypeMask = "tools.jsonc",
-                PropertyTypeName = "tools",
-                FileType = JsoncContentType.Tools
-            },
-            new Form1.ContentTypeItem
-            {
-                FileTypeMask = "strings.jsonc",
-                PropertyTypeName = "strings",
-                FileType = JsoncContentType.Strings
-            },
-            new Form1.ContentTypeItem
-            {
-                FileTypeMask = "patch.jsonc",
-                PropertyTypeName = "patch",
-                FileType = JsoncContentType.Patch
-            },
-            new Form1.ContentTypeItem
-            {
-                FileTypeMask = "search.jsonc",
-                PropertyTypeName = "search",
-                FileType = JsoncContentType.Search
-            },
-            new Form1.ContentTypeItem
-            {
-                FileTypeMask = "combo.jsonc",
-                PropertyTypeName = "combo",
-                FileType = JsoncContentType.Combo
-            },
-        };
-
         // pre-defined constants
-
-        private const string DefaultVersionCaption = "Any";
-        private const string VersionTagName = ".contentVersion";
-        private const char TableListDelimiter = ';';
-        private const char JsonPathDiv = '.';
-        private const string RootNodeName = "Kinetic";
-        private const float CellSizeAdjust = 0.7f;
-        private const string PreViewCaption = "[Preview] ";
-        private const string DefaultEditorFormCaption = "JsonDictionary";
-        private const string DefaultTreeFileExtension = "tree";
-        private const string DefaultExamplesFileExtension = "examples";
-        private readonly string[] _exampleGridColumnsNames = { "Version", "Example", "File Name", "Json Path" };
-        private string DefaultDescriptionFileName = "descriptions.json";
-        private string _fileMask = "*.jsonc";
-
-        // behavior options
-        private static bool _reformatJson;
-        private bool _showPreview;
-        private bool _alwaysOnTop;
-        private bool _loadDbOnStart;
-        private bool _useVsCode;
+        private readonly string[] _exampleGridColumnNames = { "Version", "Example", "File Name", "Json Path" };
 
         // global variables
+        Config appConfig = new Config("appsettings.json");
         private readonly StringBuilder _textLog = new StringBuilder();
         private readonly DataTable _examplesTable;
         private TreeNode _rootNodeExamples = new TreeNode();
-        private Dictionary<string, List<JsonProperty>> _exampleLinkCollection = new Dictionary<string, List<JsonProperty>>();
+
+        private Dictionary<string, List<JsonProperty>> _exampleLinkCollection =
+            new Dictionary<string, List<JsonProperty>>(); // tree path, list of examples
+
         private volatile bool _isDoubleClick;
+        private JsonViewer _sideViewer;
+        private WinPosition _editorPosition;
+        private Dictionary<string, string> _nodeDescription;
+        private ISchemaTreeBase _rightSchema;
+        private ISchemaTreeBase _leftSchema;
+        private UserControl _rightDataPanel;
+        private UserControl _leftDataPanel;
 
         // last used values for UI processing optimization
-        private TreeNode _lastExSelectedNode;
-        private List<SearchItem> _lastExSearchList = new List<SearchItem>();
+        private TreeNode _lastSelectedNode;
+        private TreeNode _lastSelectedLeftSchemaNode;
+        private TreeNode _lastSelectedRightSchemaNode;
 
-        private JsonViewer _sideViewer;
-
-        private struct WinPosition
-        {
-            public int WinX;
-            public int WinY;
-            public int WinW;
-            public int WinH;
-
-            public bool Initialized
-            {
-                get => !(WinX == 0 && WinY == 0 && WinW == 0 && WinH == 0);
-            }
-        }
-
-        private WinPosition _editorPosition;
-
-        private Dictionary<string, string> _nodeDescription = new Dictionary<string, string>();
-
-        private struct ProcessingOptions
-        {
-            public JsoncContentType ContentType;
-            public string ItemName;
-            public string[] ParentNames;
-        }
-
-        private readonly ProcessingOptions[] _flattenParameters = new ProcessingOptions[]
-        {
-            new ProcessingOptions
-            {
-                ContentType = JsoncContentType.Events,
-                ItemName = "type",
-                ParentNames = new[]
-                {
-                    "actions",
-                    "onsuccess",
-                    "onfailure",
-                    "onerror",
-                    "onsinglematch",
-                    "onmultiplematch",
-                    "onnomatch",
-                    "onyes",
-                    "onno",
-                    "onok",
-                    "oncancel",
-                    "onabort",
-                    "onempty"
-                }
-            },
-            new ProcessingOptions
-            {
-                ContentType = JsoncContentType.Layout,
-                ItemName = "sourcetypeid",
-                ParentNames = new[] { "components" }
-            },
-            new ProcessingOptions
-            {
-                ContentType = JsoncContentType.Rules,
-                ItemName = "action",
-                ParentNames = new[] { "actions" }
-            },
-            new ProcessingOptions
-            {
-                ContentType = JsoncContentType.Search,
-                ItemName = "sourcetypeid",
-                ParentNames = new[] { "component" }
-            }
-        };
+        private List<SearchItem> _lastSearchList = new List<SearchItem>();
 
         private string FormCaption
         {
@@ -201,107 +69,90 @@ namespace JsonDictionaryCore
         public Form1()
         {
             InitializeComponent();
+            FormCaption = appConfig.ConfigStorage.DefaultEditorFormCaption;
+            checkBox_beautifyJson.Checked = appConfig.ConfigStorage.BeautifyJson;
+            checkBox_reformatJsonBrackets.Checked = appConfig.ConfigStorage.ReformatJson;
+            checkBox_showPreview.Checked = appConfig.ConfigStorage.ShowPreview;
+            checkBox_alwaysOnTop.Checked = appConfig.ConfigStorage.AlwaysOnTop;
+            checkBox_loadDbOnStart.Checked = appConfig.ConfigStorage.LoadDbOnStart;
+            checkBox_vsCode.Checked = appConfig.ConfigStorage.UseVsCode;
+            folderBrowserDialog1.SelectedPath = appConfig.ConfigStorage.LastRootFolder;
 
-            FormCaption = DefaultEditorFormCaption;
-
-            checkBox_reformatJson.Checked = _reformatJson = Settings.Default.ReformatJson;
-            checkBox_showPreview.Checked = _showPreview = Settings.Default.ShowPreview;
-            checkBox_alwaysOnTop.Checked = _alwaysOnTop = Settings.Default.AlwaysOnTop;
-            checkBox_loadDbOnStart.Checked = _loadDbOnStart = Settings.Default.LoadDbOnStartUp;
-            checkBox_vsCode.Checked = _useVsCode = Settings.Default.UseVsCode;
-            folderBrowserDialog1.SelectedPath = Settings.Default.LastRootFolder;
-            _fileMask = Settings.Default.FileMask;
-            DefaultDescriptionFileName = Settings.Default.DefaultDescriptionFileName;
-            _nodeDescription = LoadJson<Dictionary<string, string>>(DefaultDescriptionFileName);
+            _nodeDescription = LoadJson<Dictionary<string, string>>(appConfig.ConfigStorage.DefaultDescriptionFileName);
             if (_nodeDescription == null)
                 _nodeDescription = new Dictionary<string, string>();
 
-            _editorPosition = new WinPosition()
-            {
-                WinX = Settings.Default.EditorPositionX,
-                WinY = Settings.Default.EditorPositionY,
-                WinW = Settings.Default.EditorWidth,
-                WinH = Settings.Default.EditorHeight,
-            };
-
-            var mainFormPosition = new WinPosition()
-            {
-                WinX = Settings.Default.MainWindowPositionX,
-                WinY = Settings.Default.MainWindowPositionY,
-                WinW = Settings.Default.MainWindowWidth,
-                WinH = Settings.Default.MainWindowHeight,
-            };
-
-            if (mainFormPosition.Initialized)
+            if (appConfig.ConfigStorage.MainWindowPosition.Initialized)
             {
                 this.Location = new Point
-                { X = mainFormPosition.WinX, Y = mainFormPosition.WinY };
-                this.Width = mainFormPosition.WinW;
-                this.Height = mainFormPosition.WinH;
+                {
+                    X = appConfig.ConfigStorage.MainWindowPosition.WinX,
+                    Y = appConfig.ConfigStorage.MainWindowPosition.WinY
+                };
+                this.Width = appConfig.ConfigStorage.MainWindowPosition.WinW;
+                this.Height = appConfig.ConfigStorage.MainWindowPosition.WinH;
             }
 
-            splitContainer_tree.SplitterDistance = Settings.Default.TreeSplitterDistance;
-            splitContainer_description.SplitterDistance = Settings.Default.DescriptionSplitterDistance;
-            splitContainer_fileList.SplitterDistance = Settings.Default.FileListSplitterDistance;
+            if (appConfig.ConfigStorage.EditorPosition.Initialized)
+                _editorPosition = appConfig.ConfigStorage.EditorPosition;
 
-            TopMost = _alwaysOnTop;
+            TopMost = appConfig.ConfigStorage.AlwaysOnTop;
 
             comboBox_ExCondition.Items.AddRange(typeof(SearchItem.SearchCondition).GetEnumNames());
             comboBox_ExCondition.SelectedIndex = 0;
 
             _examplesTable = new DataTable("Examples");
-            for (var i = 0; i < _exampleGridColumnsNames.Length; i++)
+            for (var i = 0; i < _exampleGridColumnNames.Length; i++)
             {
-                _examplesTable.Columns.Add(_exampleGridColumnsNames[i]);
+                _examplesTable.Columns.Add(_exampleGridColumnNames[i]);
             }
 
-            dataGridView_examples.DataError += delegate
-            { };
+            dataGridView_examples.DataError += delegate { };
             dataGridView_examples.DataSource = _examplesTable;
 
             comboBox_ExVersions.SelectedIndexChanged -= ComboBox_ExVersions_SelectedIndexChanged;
             comboBox_ExVersions.Items.Clear();
-            comboBox_ExVersions.Items.Add(DefaultVersionCaption);
+            comboBox_ExVersions.Items.Add(appConfig.ConfigStorage.DefaultVersionCaption);
             comboBox_ExVersions.SelectedIndex = 0;
             comboBox_ExVersions.SelectedIndexChanged += ComboBox_ExVersions_SelectedIndexChanged;
 
-            if (_loadDbOnStart)
-                LoadDb(Settings.Default.LastDbName).ConfigureAwait(true);
+            foreach (var item in appConfig.ConfigStorage.FileTypes)
+            {
+                comboBox_fileType.Items.Add(item.FileType);
+            }
+
+            if (appConfig.ConfigStorage.LoadDbOnStart)
+            {
+                LoadDb(appConfig.ConfigStorage.LastDbName).ConfigureAwait(true);
+                GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
+            }
+        }
+
+        private void Form1_Shown(object sender, EventArgs e)
+        {
+            splitContainer_tree.SplitterDistance = appConfig.ConfigStorage.TreeSplitterDistance;
+            splitContainer_description.SplitterDistance = appConfig.ConfigStorage.DescriptionSplitterDistance;
+            splitContainer_fileList.SplitterDistance = appConfig.ConfigStorage.FileListSplitterDistance;
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            SaveJson(_nodeDescription, DefaultDescriptionFileName, true);
+            SaveJson(_nodeDescription, appConfig.ConfigStorage.DefaultDescriptionFileName, true);
 
-            Settings.Default.LastRootFolder = folderBrowserDialog1.SelectedPath;
-            Settings.Default.ReformatJson = _reformatJson;
-            Settings.Default.ShowPreview = _showPreview;
-            Settings.Default.AlwaysOnTop = _alwaysOnTop;
-            Settings.Default.LoadDbOnStartUp = _loadDbOnStart;
-
-            Settings.Default.MainWindowPositionX = Location.X;
-            Settings.Default.MainWindowPositionY = Location.Y;
-            Settings.Default.MainWindowWidth = Width;
-            Settings.Default.MainWindowHeight = Height;
-
-            if (_sideViewer != null && !_sideViewer.IsDisposed)
+            appConfig.ConfigStorage.MainWindowPosition = new WinPosition()
             {
-                _editorPosition.WinX = _sideViewer.Location.X;
-                _editorPosition.WinY = _sideViewer.Location.Y;
-                _editorPosition.WinW = _sideViewer.Width;
-                _editorPosition.WinH = _sideViewer.Height;
-            }
+                WinX = Location.X,
+                WinY = Location.Y,
+                WinW = Width,
+                WinH = Height,
+            };
 
-            Settings.Default.EditorPositionX = _editorPosition.WinX;
-            Settings.Default.EditorPositionY = _editorPosition.WinY;
-            Settings.Default.EditorWidth = _editorPosition.WinW;
-            Settings.Default.EditorHeight = _editorPosition.WinH;
-
-            Settings.Default.TreeSplitterDistance = splitContainer_tree.SplitterDistance;
-            Settings.Default.DescriptionSplitterDistance = splitContainer_description.SplitterDistance;
-            Settings.Default.FileListSplitterDistance = splitContainer_fileList.SplitterDistance;
-
-            Settings.Default.Save();
+            appConfig.ConfigStorage.EditorPosition = _editorPosition;
+            appConfig.ConfigStorage.LastRootFolder = folderBrowserDialog1.SelectedPath;
+            appConfig.ConfigStorage.TreeSplitterDistance = splitContainer_tree.SplitterDistance;
+            appConfig.ConfigStorage.DescriptionSplitterDistance = splitContainer_description.SplitterDistance;
+            appConfig.ConfigStorage.FileListSplitterDistance = splitContainer_fileList.SplitterDistance;
+            appConfig.SaveConfig();
         }
 
         #endregion
@@ -310,10 +161,15 @@ namespace JsonDictionaryCore
 
         private void Button_loadDb_Click(object sender, EventArgs e)
         {
+            this.openFileDialog1.FileOk -= this.OpenFileDialog1_FileOk;
+            this.openFileDialog1.FileOk -= this.OpenFileDialog1_FileOk_Schema;
+            this.openFileDialog1.FileOk += new CancelEventHandler(this.OpenFileDialog1_FileOk);
+
             openFileDialog1.FileName = "";
-            openFileDialog1.Title = "Open KineticScheme data";
-            openFileDialog1.DefaultExt = DefaultTreeFileExtension;
-            openFileDialog1.Filter = "Binary files|*." + DefaultTreeFileExtension + "|All files|*.*";
+            openFileDialog1.Title = "Open " + appConfig.ConfigStorage.DefaultFiledialogFormCaption;
+            openFileDialog1.DefaultExt = appConfig.ConfigStorage.DefaultTreeFileExtension;
+            openFileDialog1.Filter =
+                "Binary files|*." + appConfig.ConfigStorage.DefaultTreeFileExtension + "|All files|*.*";
             openFileDialog1.ShowDialog();
         }
 
@@ -322,10 +178,10 @@ namespace JsonDictionaryCore
             ActivateUiControls(false);
             if (await LoadDb(openFileDialog1.FileName).ConfigureAwait(true))
             {
-                FormCaption = DefaultEditorFormCaption + " " + ShortFileName(openFileDialog1.FileName);
+                FormCaption = appConfig.ConfigStorage.DefaultEditorFormCaption + " " +
+                              GetShortFileName(openFileDialog1.FileName);
                 tabControl1.SelectedTab = tabControl1.TabPages[1];
-                Settings.Default.LastDbName = openFileDialog1.FileName;
-                Settings.Default.Save();
+                appConfig.ConfigStorage.LastDbName = openFileDialog1.FileName;
             }
 
             ActivateUiControls(true);
@@ -348,7 +204,7 @@ namespace JsonDictionaryCore
 
             await Task.Run(() =>
             {
-                var jsonPropertiesCollection = RunFileCollection(startPath, _fileMask);
+                var jsonPropertiesCollection = RunFileCollection(startPath, appConfig.ConfigStorage.FileMask);
                 Invoke((MethodInvoker)delegate
                {
                    endTime = DateTime.Now;
@@ -358,30 +214,32 @@ namespace JsonDictionaryCore
                    toolStripStatusLabel1.Text = "Processing events collection";
                });
 
-                Parallel.ForEach(_flattenParameters, param =>
+                Parallel.ForEach(appConfig.ConfigStorage.FlattenParameters, param =>
+                //foreach (var param in appConfig.ConfigStorage.FlattenParameters)
                 {
                     Invoke((MethodInvoker)delegate
-                    {
-                        startOperationTime = DateTime.Now;
-                        FlushLog();
-                        toolStripStatusLabel1.Text = "Processing " + param.ContentType.ToString() + " collection";
-                    });
+                   {
+                       startOperationTime = DateTime.Now;
+                       FlushLog();
+                       toolStripStatusLabel1.Text = "Processing " + param.FileType + " collection";
+                   });
 
-                    FlattenCollection(jsonPropertiesCollection, param.ContentType, param.ItemName, param.ParentNames);
+                    FlattenCollection(jsonPropertiesCollection, param.FileType, param.ItemName, param.MoveToPath, param.ParentNames);
 
                     Invoke((MethodInvoker)delegate
-                    {
-                        endTime = DateTime.Now;
-                        _textLog.AppendLine(param.ContentType.ToString() + " processing time: " + endTime.Subtract(startOperationTime).TotalSeconds);
-                    });
+                   {
+                       endTime = DateTime.Now;
+                       _textLog.AppendLine(param.FileType + " processing time: " +
+                                           endTime.Subtract(startOperationTime).TotalSeconds);
+                   });
                 });
 
                 Invoke((MethodInvoker)delegate
-                {
-                    startOperationTime = DateTime.Now;
-                    FlushLog();
-                    toolStripStatusLabel1.Text = "Generating tree";
-                });
+               {
+                   startOperationTime = DateTime.Now;
+                   FlushLog();
+                   toolStripStatusLabel1.Text = "Generating tree";
+               });
 
                 _rootNodeExamples = GenerateTreeFromList(jsonPropertiesCollection);
             }).ConfigureAwait(true);
@@ -406,11 +264,19 @@ namespace JsonDictionaryCore
 
         private void Button_saveDb_Click(object sender, EventArgs e)
         {
-            saveFileDialog1.Title = "Save KineticScheme data";
-            saveFileDialog1.DefaultExt = DefaultTreeFileExtension;
-            saveFileDialog1.Filter = "Binary files|*." + DefaultTreeFileExtension + "|All files|*.*";
+            saveFileDialog1.Title = "Save " + appConfig.ConfigStorage.DefaultFiledialogFormCaption;
+            saveFileDialog1.DefaultExt = appConfig.ConfigStorage.DefaultTreeFileExtension;
+            saveFileDialog1.Filter =
+                "Binary files|*." + appConfig.ConfigStorage.DefaultTreeFileExtension + "|All files|*.*";
             saveFileDialog1.FileName =
-                "KineticDictionary_" + DateTime.Today.ToShortDateString().Replace("/", "_") + "." + DefaultTreeFileExtension;
+                appConfig.ConfigStorage.DefaultSaveFileName + DateTime.Today.ToShortDateString().Replace("/", "_") +
+                "." + appConfig.ConfigStorage.DefaultTreeFileExtension;
+
+            this.saveFileDialog1.FileOk -= new System.ComponentModel.CancelEventHandler(this.SaveFileDialog1_FileOk);
+            this.saveFileDialog1.FileOk -= new System.ComponentModel.CancelEventHandler(this.SaveFileDialog1_FileOk_LeftSchema);
+            this.saveFileDialog1.FileOk -= new System.ComponentModel.CancelEventHandler(this.SaveFileDialog1_FileOk_RightSchema);
+            this.saveFileDialog1.FileOk += new System.ComponentModel.CancelEventHandler(this.SaveFileDialog1_FileOk);
+
             saveFileDialog1.ShowDialog();
         }
 
@@ -421,58 +287,71 @@ namespace JsonDictionaryCore
 
             toolStripStatusLabel1.Text = "Saving database...";
             await Task.Run(() =>
-             {
-                 try
-                 {
-                     var treeFile = Path.ChangeExtension(saveFileDialog1.FileName, DefaultTreeFileExtension);
-                     var examplesFile = Path.ChangeExtension(saveFileDialog1.FileName, DefaultExamplesFileExtension);
-                     SaveBinaryTree(_rootNodeExamples, treeFile);
-                     SaveBinary(_exampleLinkCollection, examplesFile);
-                     Settings.Default.LastDbName = saveFileDialog1.FileName;
-                     Settings.Default.Save();
+            {
+                try
+                {
+                    var treeFile = Path.ChangeExtension(saveFileDialog1.FileName,
+                        appConfig.ConfigStorage.DefaultTreeFileExtension);
+                    var examplesFile = Path.ChangeExtension(saveFileDialog1.FileName,
+                        appConfig.ConfigStorage.DefaultExamplesFileExtension);
+                    var m = new CustomTreeNode(_rootNodeExamples);
+                    File.WriteAllBytes(treeFile, m.MessagePack);
+                    SaveBinary(_exampleLinkCollection, examplesFile);
+                    appConfig.ConfigStorage.LastDbName = saveFileDialog1.FileName;
 
-                     // test Tree->JSON
-                     File.WriteAllText(treeFile + ".json", CustomNode.GetJsonTree(_rootNodeExamples));
-                     // end test
-                 }
-                 catch (Exception ex)
-                 {
-                     MessageBox.Show("File write exception [" + saveFileDialog1.FileName + "]: " + ex.Message);
-                 }
-             }).ContinueWith((t) =>
-             {
-                 toolStripStatusLabel1.Text = "";
-             }).ConfigureAwait(false);
+                    if (appConfig.ConfigStorage.SaveJsonTree)
+                    {
+                        File.WriteAllText(treeFile + ".json", m.GetJsonTree(_rootNodeExamples));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("File write exception [" + saveFileDialog1.FileName + "]: " + ex.Message);
+                }
+            }).ContinueWith((t) => { toolStripStatusLabel1.Text = ""; }).ConfigureAwait(false);
             GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
         }
 
-        private void CheckBox_reformatJson_CheckedChanged(object sender, EventArgs e)
+        private void CheckBox_beautifyJson_CheckedChanged(object sender, EventArgs e)
         {
-            _reformatJson = checkBox_reformatJson.Checked;
+            checkBox_reformatJsonBrackets.Enabled = appConfig.ConfigStorage.BeautifyJson = checkBox_beautifyJson.Checked;
+        }
+
+        private void CheckBox_reformatJsonBrackets_CheckedChanged(object sender, EventArgs e)
+        {
+            appConfig.ConfigStorage.ReformatJson = checkBox_reformatJsonBrackets.Checked;
+        }
+
+        private void CheckBox_reformatJsonBrackets_EnabledChanged(object sender, EventArgs e)
+        {
+            if (!checkBox_reformatJsonBrackets.Enabled) checkBox_reformatJsonBrackets.Checked = false;
         }
 
         private void CheckBox_showPreview_CheckedChanged(object sender, EventArgs e)
         {
-            _showPreview = checkBox_showPreview.Checked;
+            appConfig.ConfigStorage.ShowPreview = checkBox_showPreview.Checked;
         }
 
         private void CheckBox_alwaysOnTop_CheckedChanged(object sender, EventArgs e)
         {
-            _alwaysOnTop = checkBox_alwaysOnTop.Checked;
-            TopMost = _alwaysOnTop;
+            appConfig.ConfigStorage.AlwaysOnTop = checkBox_alwaysOnTop.Checked;
+            TopMost = appConfig.ConfigStorage.AlwaysOnTop;
         }
 
         private void CheckBox_loadDbOnStart_CheckedChanged(object sender, EventArgs e)
         {
-            _loadDbOnStart = checkBox_loadDbOnStart.Checked;
+            appConfig.ConfigStorage.LoadDbOnStart = checkBox_loadDbOnStart.Checked;
         }
 
         private void CheckBox_vsCode_CheckedChanged(object sender, EventArgs e)
         {
-            _useVsCode = checkBox_vsCode.Checked;
+            appConfig.ConfigStorage.UseVsCode = checkBox_vsCode.Checked;
         }
 
-
+        private void CheckBox_schemaSelectionSync_CheckedChanged(object sender, EventArgs e)
+        {
+            appConfig.ConfigStorage.SchemaFollowSelection = checkBox_schemaSelectionSync.Checked;
+        }
         #endregion
 
         #region Tree
@@ -565,12 +444,13 @@ namespace JsonDictionaryCore
             ActivateUiControls(false);
             if (FillExamplesGrid(_exampleLinkCollection, treeView_examples.SelectedNode))
             {
-                _lastExSearchList.Clear();
+                _lastSearchList.Clear();
                 ActivateUiControls(true);
                 ActivateUiControls(false, false);
                 dataGridView_examples.Invalidate();
                 //await ReadjustRows(dataGridView_examples).ConfigureAwait(true);
             }
+
             ActivateUiControls(true, false);
         }
 
@@ -603,12 +483,14 @@ namespace JsonDictionaryCore
             if (treeView_examples.SelectedNode == null)
                 return;
 
-            if (MessageBox.Show("Are you sure to remove the selected node?", "Remove node", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            if (MessageBox.Show("Are you sure to remove the selected node?", "Remove node", MessageBoxButtons.YesNo) !=
+                DialogResult.Yes)
                 return;
 
             ActivateUiControls(false);
 
-            var records = _exampleLinkCollection.Where(n => n.Key.StartsWith(treeView_examples.SelectedNode.Name)).Select(n => n.Key).ToArray();
+            var records = _exampleLinkCollection.Where(n => n.Key.StartsWith(treeView_examples.SelectedNode.Name))
+                .Select(n => n.Key).ToArray();
             for (var i = 0; i < records.Length; i++)
             {
                 _exampleLinkCollection.Remove(records[i]);
@@ -616,7 +498,7 @@ namespace JsonDictionaryCore
 
             treeView_examples.Nodes.Remove(treeView_examples.SelectedNode);
             ActivateUiControls(true);
-            _lastExSearchList.Clear();
+            _lastSearchList.Clear();
         }
 
         #region Prevent_treenode_collapse
@@ -636,7 +518,6 @@ namespace JsonDictionaryCore
         }
 
         #endregion
-
 
         #endregion
 
@@ -672,7 +553,8 @@ namespace JsonDictionaryCore
                 if (dataGrid.Rows.Count <= 0 || e.RowIndex < 0)
                     return;
 
-                var fileNames = dataGrid.Rows[e.RowIndex].Cells[2]?.Value?.ToString().Split(new[] { TableListDelimiter }, StringSplitOptions.RemoveEmptyEntries);
+                var fileNames = dataGrid.Rows[e.RowIndex].Cells[2]?.Value?.ToString().Split(
+                    new[] { appConfig.ConfigStorage.TableListDelimiter }, StringSplitOptions.RemoveEmptyEntries);
 
                 this.listBox_fileList.SelectedValueChanged -= this.ListBox_fileList_SelectedValueChanged;
 
@@ -683,7 +565,7 @@ namespace JsonDictionaryCore
 
                 this.listBox_fileList.SelectedValueChanged += this.ListBox_fileList_SelectedValueChanged;
 
-                if (_showPreview)
+                if (appConfig.ConfigStorage.ShowPreview)
                 {
                     OpenFile();
                     dataGrid.Focus();
@@ -734,10 +616,11 @@ namespace JsonDictionaryCore
                 Clipboard.SetText(dataGridView_examples.SelectedCells.ToString());
         }
 
-        // don't work. need tree path to find all samples. Change ListToTree to add actual paths
+        // doesn't work. need tree path to find all samples. Change ListToTree to add actual paths
         private void DeleteSamples()
         {
-            if (MessageBox.Show("Do you want to delete all selected samples for all files?", "Delete samples", MessageBoxButtons.YesNo) == DialogResult.No)
+            if (MessageBox.Show("Do you want to delete all selected samples for all files?", "Delete samples",
+                MessageBoxButtons.YesNo) == DialogResult.No)
                 return;
 
             var cellRowList = new List<int>();
@@ -745,20 +628,21 @@ namespace JsonDictionaryCore
             {
                 cellRowList.Add(((DataGridViewCell)cell).RowIndex);
             }
+
             var rowList = cellRowList.Distinct().ToArray();
             foreach (var rowNumber in rowList)
             {
-                var jsonPaths = dataGridView_examples.Rows[rowNumber].Cells[3]?.Value?.ToString().Split(new[] { TableListDelimiter }, StringSplitOptions.RemoveEmptyEntries);
+                var jsonPaths = dataGridView_examples.Rows[rowNumber].Cells[3]?.Value?.ToString()
+                    .Split(new[] { appConfig.ConfigStorage.TableListDelimiter }, StringSplitOptions.RemoveEmptyEntries);
                 var jsonSample = dataGridView_examples.Rows[rowNumber].Cells[1]?.Value?.ToString();
 
                 if (jsonPaths?.Length > 0)
                 {
-                    var jsonPath = JsonPathDiv + jsonPaths[0];
+                    var jsonPath = appConfig.ConfigStorage.JsonPathDiv + jsonPaths?[0];
                     var samplesCollection = _exampleLinkCollection.Where(n => n.Key == jsonPath);
                     samplesCollection.FirstOrDefault().Value.RemoveAll(n => n.Value == CompactJson(jsonSample));
                 }
             }
-
         }
 
         #endregion
@@ -788,7 +672,7 @@ namespace JsonDictionaryCore
 
         private void ListBox_fileList_SelectedValueChanged(object sender, EventArgs e)
         {
-            if (!_showPreview)
+            if (!appConfig.ConfigStorage.ShowPreview)
             {
                 return;
             }
@@ -827,21 +711,25 @@ namespace JsonDictionaryCore
             Clipboard.SetText(listBox_fileList.SelectedItem.ToString());
         }
 
-        // don't work. need tree path to find all samples. Change ListToTree to add actual paths
+        // doesn't work. need tree path to find all samples. Change ListToTree to add actual paths
         private void DeleteSampleForFile()
         {
-            if (MessageBox.Show("Do you want to delete all selected samples for all files?", "Delete samples", MessageBoxButtons.YesNo) != DialogResult.Yes)
+            if (MessageBox.Show("Do you want to delete all selected samples for all files?", "Delete samples",
+                MessageBoxButtons.YesNo) != DialogResult.Yes)
                 return;
 
-            var jsonPaths = dataGridView_examples.Rows[dataGridView_examples.SelectedCells[0].RowIndex].Cells[3]?.Value?.ToString().Split(new[] { TableListDelimiter }, StringSplitOptions.RemoveEmptyEntries);
-            var jsonSample = dataGridView_examples.Rows[dataGridView_examples.SelectedCells[0].RowIndex].Cells[3]?.Value?.ToString();
+            var jsonPaths = dataGridView_examples.Rows[dataGridView_examples.SelectedCells[0].RowIndex].Cells[3]?.Value
+                ?.ToString().Split(new[] { appConfig.ConfigStorage.TableListDelimiter },
+                    StringSplitOptions.RemoveEmptyEntries);
+            var jsonSample = dataGridView_examples.Rows[dataGridView_examples.SelectedCells[0].RowIndex].Cells[3]?.Value
+                ?.ToString();
             var fileNumber = listBox_fileList.SelectedIndex;
             var fileName = listBox_fileList.Items[fileNumber].ToString();
             var jsonPath = "";
 
             if (jsonPaths?.Length >= fileNumber)
             {
-                jsonPath = jsonPaths[fileNumber];
+                jsonPath = jsonPaths?[fileNumber];
             }
 
             _exampleLinkCollection[jsonPath].RemoveAll(n => n.FullFileName == fileName);
@@ -849,6 +737,337 @@ namespace JsonDictionaryCore
         }
 
         #endregion
+
+        #region Schema
+
+        // Not used any more. Only for EPICOR
+        private void Button_regenerateSchema_Click(object sender, EventArgs e)
+        {
+            if (comboBox_fileType.SelectedIndex < 0) return;
+
+            var rootName = comboBox_fileType.SelectedItem.ToString();
+
+            if (comboBox_contentVersion.SelectedIndex < 0) return;
+
+            var version = comboBox_contentVersion.SelectedItem.ToString();
+
+            if (string.IsNullOrEmpty(textBox_schemaUrl.Text)) return;
+
+            var currentFileTypeName = textBox_schemaUrl.Text;
+            var schemaData = GetSchemaText(currentFileTypeName);
+            var parser = new JsonPathParser
+            {
+                TrimComplexValues = false,
+                SaveComplexValues = true,
+                RootName = rootName,
+                JsonPathDivider = appConfig.ConfigStorage.JsonPathDiv
+            };
+
+            var schemaProperties = parser.ParseJsonToPathList(schemaData, out var endPos, out var errorFound)
+                .Where(n =>
+                    n.JsonPropertyType == JsonPropertyTypes.Array
+                    || n.JsonPropertyType == JsonPropertyTypes.Object
+                    || n.JsonPropertyType == JsonPropertyTypes.Property
+                    || n.JsonPropertyType == JsonPropertyTypes.ArrayValue
+                    || n.JsonPropertyType == JsonPropertyTypes.KeywordOrNumberProperty
+                );
+
+            var treeSchemaProperties = parser.ConvertForTreeProcessing(schemaProperties);
+
+            _rightSchema = JsonPropertyListToSchemaObject(treeSchemaProperties, rootName, rootName);
+            var schemaTreeNode = ConvertSchemaNodesToTreeNode(_rightSchema);
+            treeView_rightSchema.Nodes.Clear();
+            treeView_rightSchema.Nodes.Add(schemaTreeNode);
+            if (_rightDataPanel != null) splitContainer_schemaRight.Panel2.Controls.Remove(_rightDataPanel);
+
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
+        }
+
+        // Not used any more. Only for EPICOR
+        private void ComboBox_fileType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            CollectSchemaVersions();
+        }
+
+        // Not used any more. Only for EPICOR
+        private void ComboBox_contentVersion_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (comboBox_contentVersion.SelectedIndex < 0) return;
+
+            textBox_schemaUrl.Text = (comboBox_contentVersion.SelectedItem as ValuePair)?.Url;
+        }
+
+        private void Button_loadSchema_Click(object sender, EventArgs e)
+        {
+            this.openFileDialog1.FileOk -= this.OpenFileDialog1_FileOk;
+            this.openFileDialog1.FileOk -= this.OpenFileDialog1_FileOk_Schema;
+            this.openFileDialog1.FileOk += new CancelEventHandler(this.OpenFileDialog1_FileOk_Schema);
+
+            openFileDialog1.FileName = "";
+            openFileDialog1.Title = "Open JSON schema";
+            openFileDialog1.DefaultExt = appConfig.ConfigStorage.DefaultTreeFileExtension;
+            openFileDialog1.Filter = "JSON files|*.json|All files|*.*";
+            openFileDialog1.ShowDialog();
+        }
+
+        private void OpenFileDialog1_FileOk_Schema(object sender, CancelEventArgs e)
+        {
+            var rootName = comboBox_fileType?.SelectedItem?.ToString() ?? "#";
+
+            var schemaData = File.ReadAllText(openFileDialog1.FileName);
+
+            var parser = new JsonPathParser
+            {
+                TrimComplexValues = false,
+                SaveComplexValues = true,
+                RootName = rootName,
+                JsonPathDivider = appConfig.ConfigStorage.JsonPathDiv
+            };
+
+            var schemaProperties = parser.ParseJsonToPathList(schemaData, out var endPos, out var errorFound)
+                .Where(n =>
+                    n.JsonPropertyType == JsonPropertyTypes.Array
+                    || n.JsonPropertyType == JsonPropertyTypes.Object
+                    || n.JsonPropertyType == JsonPropertyTypes.Property
+                    || n.JsonPropertyType == JsonPropertyTypes.ArrayValue
+                    || n.JsonPropertyType == JsonPropertyTypes.KeywordOrNumberProperty);
+
+            var treeSchemaProperties = parser.ConvertForTreeProcessing(schemaProperties);
+            _rightSchema = JsonPropertyListToSchemaObject(treeSchemaProperties, rootName, rootName);
+            var schemaTreeNode = ConvertSchemaNodesToTreeNode(_rightSchema);
+            treeView_rightSchema.Nodes.Clear();
+            treeView_rightSchema.Nodes.Add(schemaTreeNode);
+            treeView_rightSchema.Sort();
+            if (_rightDataPanel != null) splitContainer_schemaRight.Panel2.Controls.Remove(_rightDataPanel);
+
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
+        }
+
+        private void SplitContainer_schemaRight_SplitterMoved(object sender, SplitterEventArgs e)
+        {
+            splitContainer_schemaLeft.SplitterDistance = splitContainer_schemaRight.SplitterDistance;
+        }
+
+        private void SplitContainer_schemaLeft_SplitterMoved(object sender, SplitterEventArgs e)
+        {
+            splitContainer_schemaRight.SplitterDistance = splitContainer_schemaLeft.SplitterDistance;
+        }
+
+        private void TreeView_leftSchema_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            if (e == null || e.Node == null) return;
+
+            if (_leftDataPanel != null)
+            {
+                if (_rightDataPanel is PropertyDataPanel dp) dp.OnRefClick -= FollowTheRefLinkLeft;
+                else if (_rightDataPanel is ObjectDataPanel dp1) dp1.OnRefClick += FollowTheRefLinkLeft;
+                else if (_rightDataPanel is ArrayDataPanel dp2) dp2.OnRefClick += FollowTheRefLinkLeft;
+                splitContainer_schemaLeft.Panel2.Controls.Remove(_leftDataPanel);
+            }
+
+            var nodePath = e.Node.FullPath.Replace("{", "").Replace("}", "").Replace("[", "").Replace("]", "");
+            var node = FindDefinition(nodePath, _leftSchema);
+
+            if (node == null) return;
+
+            if (node is SchemaTreeProperty schemaProperty)
+            {
+                _leftDataPanel = new PropertyDataPanel(schemaProperty);
+            }
+            else if (node is SchemaTreeObject schemaObject)
+            {
+                _leftDataPanel = new ObjectDataPanel(schemaObject);
+            }
+            else if (node is SchemaTreeArray schemaArray)
+            {
+                _leftDataPanel = new ArrayDataPanel(schemaArray);
+            }
+
+            if (_leftDataPanel != null)
+            {
+                _leftDataPanel.Dock = DockStyle.Fill;
+                splitContainer_schemaLeft.Panel2.Controls.Add(_leftDataPanel);
+                if (_rightDataPanel is PropertyDataPanel dp) dp.OnRefClick += FollowTheRefLinkLeft;
+                else if (_rightDataPanel is ObjectDataPanel dp1) dp1.OnRefClick += FollowTheRefLinkLeft;
+                else if (_rightDataPanel is ArrayDataPanel dp2) dp2.OnRefClick += FollowTheRefLinkLeft;
+            }
+
+            SelectSchemaNode(e.Node.Name, true);
+
+            if (_lastSelectedLeftSchemaNode != null)
+            {
+                _lastSelectedLeftSchemaNode.BackColor = Color.White;
+            }
+
+            _lastSelectedLeftSchemaNode = e.Node;
+            e.Node.BackColor = Color.DodgerBlue;
+        }
+
+        private void FollowTheRefLinkLeft(object sender, RefLinkClickEventArgs e)
+        {
+            var treeNode = FindTreeNodeByPath(e.LinkText.Split('/').ToList(), treeView_rightSchema.TopNode);
+            treeView_leftSchema.SelectedNode = treeNode;
+            treeView_leftSchema.SelectedNode?.Expand();
+        }
+
+        private void TreeView_RightSchema_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            if (e == null || e.Node == null) return;
+
+            if (_rightDataPanel != null)
+            {
+                if (_rightDataPanel is PropertyDataPanel dp) dp.OnRefClick -= FollowTheRefLinkRight;
+                else if (_rightDataPanel is ObjectDataPanel dp1) dp1.OnRefClick += FollowTheRefLinkRight;
+                else if (_rightDataPanel is ArrayDataPanel dp2) dp2.OnRefClick += FollowTheRefLinkRight;
+                splitContainer_schemaRight.Panel2.Controls.Remove(_rightDataPanel);
+            }
+
+            var nodePath = e.Node.FullPath.Replace("{", "").Replace("}", "").Replace("[", "").Replace("]", "");
+            var node = FindDefinition(nodePath, _rightSchema);
+
+            if (node == null) return;
+
+            if (node is SchemaTreeProperty schemaProperty)
+            {
+                _rightDataPanel = new PropertyDataPanel(schemaProperty);
+            }
+            else if (node is SchemaTreeObject schemaObject)
+            {
+                _rightDataPanel = new ObjectDataPanel(schemaObject);
+            }
+            else if (node is SchemaTreeArray schemaArray)
+            {
+                _rightDataPanel = new ArrayDataPanel(schemaArray);
+            }
+
+            if (_rightDataPanel != null)
+            {
+                _rightDataPanel.Dock = DockStyle.Fill;
+                splitContainer_schemaRight.Panel2.Controls.Add(_rightDataPanel);
+                if (_rightDataPanel is PropertyDataPanel dp) dp.OnRefClick += FollowTheRefLinkRight;
+                else if (_rightDataPanel is ObjectDataPanel dp1) dp1.OnRefClick += FollowTheRefLinkRight;
+                else if (_rightDataPanel is ArrayDataPanel dp2) dp2.OnRefClick += FollowTheRefLinkRight;
+            }
+
+            SelectSchemaNode(e.Node.Name, false);
+
+            if (_lastSelectedRightSchemaNode != null)
+            {
+                _lastSelectedRightSchemaNode.BackColor = Color.White;
+            }
+
+            _lastSelectedRightSchemaNode = e.Node;
+            e.Node.BackColor = Color.DodgerBlue;
+        }
+
+        private void FollowTheRefLinkRight(object sender, RefLinkClickEventArgs e)
+        {
+            var treeNode = FindTreeNodeByPath(e.LinkText.Split('/').ToList(), treeView_rightSchema.TopNode);
+            treeView_rightSchema.SelectedNode = treeNode;
+            treeView_rightSchema.SelectedNode?.Expand();
+        }
+
+        private void Button_generateSchema_Click(object sender, EventArgs e)
+        {
+            if (treeView_examples.SelectedNode == null)
+                return;
+
+            var rootName = "#";
+            _leftSchema = GenerateSchemaFromTree(treeView_examples.SelectedNode, _exampleLinkCollection, rootName);
+            var jsonSchemaTreeNode = ConvertSchemaNodesToTreeNode(_leftSchema);
+
+            if (jsonSchemaTreeNode == null)
+                return;
+
+            treeView_leftSchema.Nodes.Clear();
+            treeView_leftSchema.Nodes.Add(jsonSchemaTreeNode);
+            treeView_leftSchema.Sort();
+
+            if (_leftDataPanel != null)
+                splitContainer_schemaRight.Panel2.Controls.Remove(_leftDataPanel);
+
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
+        }
+
+        private void SelectSchemaNode(string path, bool toRightPanel)
+        {
+            if (!appConfig.ConfigStorage.SchemaFollowSelection || string.IsNullOrEmpty(path)) return;
+
+            if (toRightPanel)
+            {
+                var nodes = treeView_rightSchema.Nodes.Find(path, true);
+                if (nodes.Any())
+                    treeView_rightSchema.SelectedNode = nodes.First();
+            }
+            else
+            {
+                var nodes = treeView_leftSchema.Nodes.Find(path, true);
+                if (nodes.Any())
+                    treeView_leftSchema.SelectedNode = nodes.First();
+            }
+        }
+
+        private void Button_saveLeftSchema_Click(object sender, EventArgs e)
+        {
+            this.saveFileDialog1.FileOk -= new System.ComponentModel.CancelEventHandler(this.SaveFileDialog1_FileOk);
+            this.saveFileDialog1.FileOk -= new System.ComponentModel.CancelEventHandler(this.SaveFileDialog1_FileOk_LeftSchema);
+            this.saveFileDialog1.FileOk -= new System.ComponentModel.CancelEventHandler(this.SaveFileDialog1_FileOk_RightSchema);
+            this.saveFileDialog1.FileOk += new System.ComponentModel.CancelEventHandler(this.SaveFileDialog1_FileOk_LeftSchema);
+
+            saveFileDialog1.Title = "Save schema";
+            saveFileDialog1.DefaultExt = "json";
+            saveFileDialog1.Filter =
+                "JSON files|*.json|All files|*.*";
+            saveFileDialog1.FileName = "Schema_"
+                + appConfig.ConfigStorage.DefaultSaveFileName
+                + DateTime.Today.ToShortDateString().Replace("/", "_")
+                + ".json";
+
+            saveFileDialog1.ShowDialog();
+        }
+
+        private void SaveFileDialog1_FileOk_LeftSchema(object sender, CancelEventArgs e)
+        {
+            if (_leftSchema == null || string.IsNullOrEmpty(_leftSchema.ToJson()))
+                return;
+
+            File.WriteAllText(saveFileDialog1.FileName, ReformatJson(_leftSchema.ToJson(), Newtonsoft.Json.Formatting.Indented));
+
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
+        }
+
+        private void Button_saveRightSchema_Click(object sender, EventArgs e)
+        {
+            this.saveFileDialog1.FileOk -= new System.ComponentModel.CancelEventHandler(this.SaveFileDialog1_FileOk);
+            this.saveFileDialog1.FileOk -= new System.ComponentModel.CancelEventHandler(this.SaveFileDialog1_FileOk_LeftSchema);
+            this.saveFileDialog1.FileOk -= new System.ComponentModel.CancelEventHandler(this.SaveFileDialog1_FileOk_RightSchema);
+            this.saveFileDialog1.FileOk += new System.ComponentModel.CancelEventHandler(this.SaveFileDialog1_FileOk_RightSchema);
+
+            saveFileDialog1.Title = "Save schema";
+            saveFileDialog1.DefaultExt = "json";
+            saveFileDialog1.Filter =
+                "JSON files|*.json|All files|*.*";
+            saveFileDialog1.FileName = "Schema_"
+                + appConfig.ConfigStorage.DefaultSaveFileName
+                + DateTime.Today.ToShortDateString().Replace("/", "_")
+                + ".json";
+
+            saveFileDialog1.ShowDialog();
+        }
+
+        private void SaveFileDialog1_FileOk_RightSchema(object sender, CancelEventArgs e)
+        {
+            if (_rightSchema == null || string.IsNullOrEmpty(_rightSchema.ToJson()))
+                return;
+
+            File.WriteAllText(saveFileDialog1.FileName, ReformatJson(_rightSchema.ToJson(), Newtonsoft.Json.Formatting.Indented));
+
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
+        }
+
+        #endregion
+
+        #region Others
 
         private void OnClosingEditor(object sender, CancelEventArgs e)
         {
@@ -860,6 +1079,17 @@ namespace JsonDictionaryCore
                 _editorPosition.WinH = s.Height;
             }
         }
+
+        /*private void OnResizeEditor(object sender, EventArgs e)
+        {
+            if (sender is Form s)
+            {
+                _editorPosition.WinX = s.Location.X;
+                _editorPosition.WinY = s.Location.Y;
+                _editorPosition.WinW = s.Width;
+                _editorPosition.WinH = s.Height;
+            }
+        }*/
 
         private async void Button_ExAdjustRows_Click(object sender, EventArgs e)
         {
@@ -881,7 +1111,7 @@ namespace JsonDictionaryCore
                 Value = textBox_ExSearchString.Text,
                 Condition = (SearchItem.SearchCondition)comboBox_ExCondition.SelectedIndex
             };
-            if (_lastExSearchList.Contains(searchParam))
+            if (_lastSearchList.Contains(searchParam))
                 return;
 
             ActivateUiControls(false);
@@ -892,7 +1122,7 @@ namespace JsonDictionaryCore
 
         private void Button_ExClearSearch_Click(object sender, EventArgs e)
         {
-            ExClearSearch();
+            ClearSearch();
             FillExamplesGrid(_exampleLinkCollection, treeView_examples.SelectedNode);
         }
 
@@ -915,6 +1145,7 @@ namespace JsonDictionaryCore
                 {
                     textBox_description.Text = "Description: \r\n*Note: ";
                 }
+
                 textBox_description.ReadOnly = false;
                 label_descSave.Visible = true;
                 label_edit.Visible = false;
@@ -923,7 +1154,7 @@ namespace JsonDictionaryCore
 
         private void TextBox_description_KeyDown(object sender, KeyEventArgs e)
         {
-            if (textBox_description.ReadOnly == false)
+            if (!textBox_description.ReadOnly)
             {
                 if (e.KeyCode == Keys.Escape)
                 {
@@ -953,6 +1184,8 @@ namespace JsonDictionaryCore
 
         #endregion
 
+        #endregion
+
         #region Helpers
 
         private BlockingCollection<JsonProperty> RunFileCollection(string collectionPath, string fileMask)
@@ -967,17 +1200,18 @@ namespace JsonDictionaryCore
             // parse all files            
             var fileNumber = 0;
             Parallel.ForEach(filesList, fileName =>
+            //foreach (var fileName in filesList)
             {
-                var fileType = GetFileTypeFromFileName(fileName, _fileTypes);
+                var fileType = GetFileTypeFromFileName(fileName, appConfig.ConfigStorage.FileTypes);
                 DeserializeFile(fileName, fileType, jsonPropertiesCollection);
 
                 if (fileNumber % 10 == 0)
                 {
                     Invoke((MethodInvoker)delegate
-                    {
-                        var fnum = fileNumber.ToString();
-                        toolStripStatusLabel1.Text = "Files parsed " + fnum + "/" + filesList.Length;
-                    });
+                   {
+                       var fnum = fileNumber.ToString();
+                       toolStripStatusLabel1.Text = "Files parsed " + fnum + "/" + filesList.Length;
+                   });
                 }
 
                 fileNumber++;
@@ -988,13 +1222,14 @@ namespace JsonDictionaryCore
 
         private void DeserializeFile(
             string fullFileName,
-            JsoncContentType fileType,
+            string fileType,
             BlockingCollection<JsonProperty> rootCollection)
         {
             string jsonStr;
             try
             {
-                jsonStr = CompactJson(File.ReadAllText(fullFileName));
+                //jsonStr = CompactJson(File.ReadAllText(fullFileName));
+                jsonStr = File.ReadAllText(fullFileName);
             }
             catch (Exception ex)
             {
@@ -1011,26 +1246,31 @@ namespace JsonDictionaryCore
                 TrimComplexValues = false,
                 SaveComplexValues = true,
                 RootName = "",
-                JsonPathDivider = JsonPathDiv
+                JsonPathDivider = appConfig.ConfigStorage.JsonPathDiv
             };
 
             var jsonProperties = parser.ParseJsonToPathList(jsonStr, out var endPos, out var errorFound)
-                .Where(item => item.PropertyType != PropertyType.Comment
-                    && item.PropertyType != PropertyType.EndOfArray
-                    && item.PropertyType != PropertyType.EndOfObject
-                    && item.PropertyType != PropertyType.Error
-                    && item.PropertyType != PropertyType.Unknown)
+                .Where(item => item.JsonPropertyType != JsonPropertyTypes.Comment
+                               && item.JsonPropertyType != JsonPropertyTypes.EndOfArray
+                               && item.JsonPropertyType != JsonPropertyTypes.EndOfObject
+                               && item.JsonPropertyType != JsonPropertyTypes.Error
+                               && item.JsonPropertyType != JsonPropertyTypes.Unknown)
                 .ToList();
-            var version = jsonProperties.Where(n => n.Path == VersionTagName).FirstOrDefault()?.Value ?? "";
+            var version = jsonProperties.FirstOrDefault(n => n.Path == appConfig.ConfigStorage.VersionTagName)
+                ?.Value ?? "";
 
-            var rootObject = jsonProperties.Where(n => n.PropertyType == PropertyType.Object && string.IsNullOrEmpty(n.Name) && string.IsNullOrEmpty(n.Path)).FirstOrDefault();
+            var rootObject = jsonProperties.FirstOrDefault(n =>
+                n.JsonPropertyType == JsonPropertyTypes.Object
+                && string.IsNullOrEmpty(n.Name)
+                && string.IsNullOrEmpty(n.Path));
             jsonProperties.Remove(rootObject);
 
             Parallel.ForEach(jsonProperties, item =>
+            //foreach (var item in jsonProperties)
             {
-                item.Path = item.Path.TrimStart(JsonPathDiv);
+                item.Path = item.Path.TrimStart(appConfig.ConfigStorage.JsonPathDiv);
 
-                foreach (var fType in _fileTypes)
+                foreach (var fType in appConfig.ConfigStorage.FileTypes)
                 {
                     if (item.Path.StartsWith(fType.PropertyTypeName))
                     {
@@ -1041,7 +1281,7 @@ namespace JsonDictionaryCore
 
                 var newItem = new JsonProperty
                 {
-                    PathDelimiter = JsonPathDiv,
+                    PathDelimiter = appConfig.ConfigStorage.JsonPathDiv,
                     Name = item.Name,
                     Value = item.Value,
                     ContentType = fileType,
@@ -1049,23 +1289,25 @@ namespace JsonDictionaryCore
                     Version = version,
                     JsonPath = item.Path,
                     VariableType = item.ValueType,
+                    ObjectType = item.JsonPropertyType,
                 };
                 rootCollection.Add(newItem);
             });
         }
 
-        private bool FlattenCollection(IEnumerable<JsonProperty> propertiesCollection,
-            JsoncContentType contentType,
+        private void FlattenCollection(IEnumerable<JsonProperty> propertiesCollection,
+            string contentType,
             string elementName,
+            string moveToPath,
             string[] parentName)
         {
             if (propertiesCollection == null
-                || propertiesCollection.Count() <= 0
+                || !propertiesCollection.Any()
                 || string.IsNullOrEmpty(elementName)
                 || parentName == null
                 || parentName.Length <= 0
                 || string.IsNullOrEmpty(parentName[0]))
-                return false;
+                return;
 
             var typedCollection = propertiesCollection
                 .Where(n => n.ContentType == contentType)
@@ -1083,34 +1325,42 @@ namespace JsonDictionaryCore
                     .Where(n =>
                         n.Name.Equals(elementName, StringComparison.OrdinalIgnoreCase)
                         && parentName.Contains(n.UnifiedParent.ToLower()))
-                    .ToArray()
-                    .GroupBy(n => n.FullFileName);
+                    .GroupBy(n => n.FullFileName)
+                    .ToArray();
             }
             else
             {
                 fileGroupedCollection = typedCollection
-                   .Where(n =>
+                    .Where(n =>
                         n.Name.Equals(elementName, StringComparison.OrdinalIgnoreCase)
                         && parentName[0].Equals(n.UnifiedParent, StringComparison.OrdinalIgnoreCase))
-                   .ToArray()
-                   .GroupBy(n => n.FullFileName);
+                    .GroupBy(n => n.FullFileName)
+                    .ToArray();
             }
 
             var processedFilesNumber = 0;
             var totalFilesNumber = fileGroupedCollection.Count();
 
             //get every file name
-            //Parallel.ForEach(FileGroupedCollection, actionCollection =>
             foreach (var actionCollection in fileGroupedCollection)
             {
                 var fileActionCollection = typedCollection
                     .Where(n =>
-                            n.FullFileName == actionCollection.Key)
+                        n.FullFileName == actionCollection.Key)
                     .ToArray();
 
                 // iterate through single file one by one
                 foreach (var actionProperty in actionCollection)
                 {
+                    var moveToPathTmp = new StringBuilder();
+
+                    if (string.IsNullOrEmpty(moveToPath))
+                        moveToPathTmp.Append(actionProperty.ParentPath);
+                    else
+                        moveToPathTmp.Append(moveToPath);
+
+                    moveToPathTmp.Append(".<" + actionProperty.Value.Replace(appConfig.ConfigStorage.JsonPathDiv, '_') + ">");
+
                     //get a collection of events in the file
                     var actionMembers = fileActionCollection
                         .Where(n =>
@@ -1120,70 +1370,99 @@ namespace JsonDictionaryCore
 
                     foreach (var actionMember in actionMembers)
                     {
-                        /*var flattenedPath = actionMember.JsonPath.Replace(actionProperty.ParentPath,
-                            "events.actions.<" + actionProperty.Value.Replace(JsonPathDiv, '_') + ">");*/
-                        string flattenedPath;
-                        if (contentType == JsoncContentType.Events)
-                        {
-                            flattenedPath = actionMember.JsonPath.Replace(actionProperty.ParentPath,
-                            "events.actions.<" + actionProperty.Value.Replace('.', '_') + ">");
-                        }
-                        else
-                        {
-                            flattenedPath = actionMember.JsonPath.Replace(actionProperty.ParentPath,
-                                actionProperty.ParentPath + ".<" + actionProperty.Value.Replace('.', '_') + ">");
-                        }
+                        var flattenedPath = actionMember.JsonPath.Replace(actionProperty.ParentPath, moveToPathTmp.ToString());
                         actionMember.FlattenedJsonPath = flattenedPath;
                     }
                 }
 
-                if (processedFilesNumber % 20 == 0)
+                if (processedFilesNumber % 50 == 0)
                 {
                     Invoke((MethodInvoker)delegate
-                    {
-                        toolStripStatusLabel1.Text =
-                            contentType.ToString() + " converted " + processedFilesNumber + "/" + totalFilesNumber;
-                    });
+                   {
+                       toolStripStatusLabel1.Text =
+                           contentType.ToString() + " converted " + processedFilesNumber + "/" + totalFilesNumber;
+                   });
                 }
 
                 processedFilesNumber++;
             }
-            //);
-
-            return true;
         }
 
         private TreeNode GenerateTreeFromList(IEnumerable<JsonProperty> rootCollection)
         {
-            var node = new TreeNode(RootNodeName);
+            var node = new TreeNode(appConfig.ConfigStorage.RootNodeName);
             var itemNumber = 0;
             var totalItemNumber = rootCollection.Count();
 
             foreach (var propertyItem in rootCollection)
             {
-                var itemName = $"<{propertyItem.ContentType}>{JsonPathDiv}{propertyItem.UnifiedFlattenedJsonPath}".TrimEnd(JsonPathDiv);
-                if (!_exampleLinkCollection.ContainsKey(itemName))
+                var itemName =
+                    $"<{propertyItem.ContentType}>{appConfig.ConfigStorage.JsonPathDiv}{propertyItem.UnifiedFlattenedJsonPath}"
+                        .TrimEnd(appConfig.ConfigStorage.JsonPathDiv);
+
+                if (propertyItem.ObjectType != JsonPropertyTypes.Array)
                 {
-                    _exampleLinkCollection.Add(itemName, new List<JsonProperty>() { propertyItem });
-                }
-                else
-                {
-                    _exampleLinkCollection[itemName].Add(propertyItem);
+                    if (!_exampleLinkCollection.ContainsKey(itemName))
+                    {
+                        _exampleLinkCollection.Add(itemName, new List<JsonProperty>() { propertyItem });
+                    }
+                    else
+                    {
+                        _exampleLinkCollection[itemName].Add(propertyItem);
+                    }
                 }
 
                 var tmpNode = node;
                 var tmpPath = new StringBuilder();
 
-                foreach (var token in itemName.Split(new[] { JsonPathDiv }, StringSplitOptions.RemoveEmptyEntries))
+                foreach (var token in itemName.Split(new[] { appConfig.ConfigStorage.JsonPathDiv },
+                    StringSplitOptions.RemoveEmptyEntries))
                 {
                     if (tmpPath.Length > 0)
-                        tmpPath.Append(JsonPathDiv + token);
+                        tmpPath.Append(appConfig.ConfigStorage.JsonPathDiv + token);
                     else
                         tmpPath.Append(token);
 
                     if (!tmpNode.Nodes.ContainsKey(tmpPath.ToString()))
                     {
-                        tmpNode.Nodes.Add(tmpPath.ToString(), token);
+                        var nodeName = token;
+                        var tagItem = rootCollection
+                            .FirstOrDefault(n =>
+                                n.FullFileName == propertyItem.FullFileName
+                                && n.Name == nodeName
+                                && n.UnifiedPath == tmpPath
+                                    .ToString()
+                                    .Replace($"<{propertyItem.ContentType}>{appConfig.ConfigStorage.JsonPathDiv}", ""));
+
+                        if (tagItem == null)
+                        {
+                            tagItem = new JsonProperty()
+                            {
+                                VariableType = JsonValueTypes.Object,
+                                FullFileName = propertyItem.FullFileName,
+                                ObjectType = JsonPropertyTypes.Object,
+                                Name = $"<{propertyItem.ContentType}>{appConfig.ConfigStorage.JsonPathDiv}",
+                                JsonPath = "",
+                                Value = "",
+                                Version = propertyItem.Version,
+                                ContentType = propertyItem.ContentType,
+                                PathDelimiter = appConfig.ConfigStorage.JsonPathDiv
+                            };
+                        }
+
+                        if (tagItem.ObjectType == JsonPropertyTypes.Array)
+                            nodeName += "[]";
+                        else if (tagItem.ObjectType == JsonPropertyTypes.Object)
+                            nodeName += "{}";
+
+                        var newNode = new TreeNode(nodeName)
+                        {
+                            Name = tmpPath.ToString(),
+                            Text = nodeName,
+                            Tag = tagItem
+                        };
+
+                        tmpNode.Nodes.Add(newNode);
                     }
 
                     tmpNode = tmpNode.Nodes[tmpPath.ToString()];
@@ -1194,7 +1473,7 @@ namespace JsonDictionaryCore
                     Invoke((MethodInvoker)delegate
                    {
                        toolStripStatusLabel1.Text =
-                           "Properties processed  " + itemNumber + "/" + totalItemNumber;
+                           "Properties processed " + itemNumber + "/" + totalItemNumber;
                    });
                 }
 
@@ -1206,10 +1485,10 @@ namespace JsonDictionaryCore
 
         private async Task<bool> LoadDb(string fileName)
         {
-            var treeFile = Path.ChangeExtension(fileName, DefaultTreeFileExtension);
-            var examplesFile = Path.ChangeExtension(fileName, DefaultExamplesFileExtension);
+            var treeFile = Path.ChangeExtension(fileName, appConfig.ConfigStorage.DefaultTreeFileExtension);
+            var examplesFile = Path.ChangeExtension(fileName, appConfig.ConfigStorage.DefaultExamplesFileExtension);
 
-            FormCaption = DefaultEditorFormCaption;
+            FormCaption = appConfig.ConfigStorage.DefaultEditorFormCaption;
             if (string.IsNullOrEmpty(fileName))
                 return false;
 
@@ -1221,7 +1500,8 @@ namespace JsonDictionaryCore
             {
                 var t = Task.Run(() =>
                     {
-                        rootNodeExamples = LoadBinaryTree<TreeNode>(treeFile);
+                        var m = new CustomTreeNode();
+                        rootNodeExamples = m.GetTreeFromMsgPack(treeFile);
                     }
                 );
                 await Task.WhenAll(t).ConfigureAwait(true);
@@ -1237,10 +1517,8 @@ namespace JsonDictionaryCore
                 _rootNodeExamples = rootNodeExamples;
             }
 
-            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
-
             tabControl1.TabPages[1].Enabled = true;
-            FormCaption = DefaultEditorFormCaption + " " + ShortFileName(fileName);
+            FormCaption = appConfig.ConfigStorage.DefaultEditorFormCaption + " " + GetShortFileName(fileName);
             treeView_examples.Nodes.Clear();
             treeView_examples.Nodes.Add(_rootNodeExamples);
             treeView_examples.Nodes[0].Expand();
@@ -1250,9 +1528,9 @@ namespace JsonDictionaryCore
             try
             {
                 var t = Task.Run(() =>
-                {
-                    exampleLinkCollection = LoadBinary<Dictionary<string, List<JsonProperty>>>(examplesFile);
-                }
+                    {
+                        exampleLinkCollection = LoadBinary<Dictionary<string, List<JsonProperty>>>(examplesFile);
+                    }
                 );
                 await Task.WhenAll(t).ConfigureAwait(true);
             }
@@ -1267,14 +1545,13 @@ namespace JsonDictionaryCore
                 _exampleLinkCollection = exampleLinkCollection;
             }
 
-            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
-
             toolStripStatusLabel1.Text = "";
 
             return true;
         }
 
-        private bool FillExamplesGrid(Dictionary<string, List<JsonProperty>> exampleLinkCollection, TreeNode currentNode,
+        private bool FillExamplesGrid(Dictionary<string, List<JsonProperty>> exampleLinkCollection,
+            TreeNode currentNode,
             SearchItem searchParam = null)
         {
             if (currentNode == null || exampleLinkCollection == null || exampleLinkCollection.Count <= 0)
@@ -1286,19 +1563,32 @@ namespace JsonDictionaryCore
             var records = exampleLinkCollection[currentNode.Name];
             toolStripStatusLabel1.Text = "Displaying " + records.Count + " records";
 
-            if (_lastExSelectedNode != null)
+            var parentNode = _lastSelectedNode?.Parent;
+            if (_lastSelectedNode != null)
             {
-                _lastExSelectedNode.BackColor = Color.White;
+                _lastSelectedNode.BackColor = Color.White;
+
+                while (parentNode != null)
+                {
+                    parentNode.BackColor = Color.White;
+                    parentNode = parentNode.Parent;
+                }
             }
 
-            _lastExSelectedNode = currentNode;
+            _lastSelectedNode = currentNode;
             currentNode.BackColor = Color.DodgerBlue;
+            parentNode = currentNode.Parent;
+            while (parentNode != null)
+            {
+                parentNode.BackColor = Color.DodgerBlue;
+                parentNode = parentNode.Parent;
+            }
 
-            ExClearSearch();
+            ClearSearch();
 
             _examplesTable.Rows.Clear();
             comboBox_ExVersions.Items.Clear();
-            comboBox_ExVersions.Items.Add(DefaultVersionCaption);
+            comboBox_ExVersions.Items.Add(appConfig.ConfigStorage.DefaultVersionCaption);
             comboBox_ExVersions.SelectedIndex = 0;
 
             var versionCollection = new List<string>();
@@ -1317,7 +1607,7 @@ namespace JsonDictionaryCore
 
                     try
                     {
-                        recordValue = BeautifyJson(valueGroup.Key, _reformatJson);
+                        recordValue = appConfig.ConfigStorage.BeautifyJson ? BeautifyJson(valueGroup.Key, appConfig.ConfigStorage.ReformatJson) : valueGroup.Key;
                     }
                     catch
                     {
@@ -1333,29 +1623,30 @@ namespace JsonDictionaryCore
                             && FilterCellOut(recordValue, searchParam))
                             continue;
 
-                        fileNameList.Append(record.FullFileName + TableListDelimiter.ToString());
-                        pathList.Append(record.JsonPath + TableListDelimiter.ToString());
+                        fileNameList.Append(record.FullFileName +
+                                            appConfig.ConfigStorage.TableListDelimiter.ToString());
+                        pathList.Append(record.JsonPath + appConfig.ConfigStorage.TableListDelimiter.ToString());
                         //newRow[4] = newRow[4]
                         //+ Delimiter.ToString()
                         //+ record.SourceLineNumber;
                     }
 
                     var newRow = _examplesTable.NewRow();
-                    newRow[_exampleGridColumnsNames[0]] = currentVersion;
-                    newRow[_exampleGridColumnsNames[1]] = recordValue;
-                    newRow[_exampleGridColumnsNames[2]] = fileNameList.ToString();
-                    newRow[_exampleGridColumnsNames[3]] = pathList.ToString();
+                    newRow[_exampleGridColumnNames[0]] = currentVersion;
+                    newRow[_exampleGridColumnNames[1]] = recordValue;
+                    newRow[_exampleGridColumnNames[2]] = fileNameList.ToString();
+                    newRow[_exampleGridColumnNames[3]] = pathList.ToString();
                     //newRow[_exampleGridColumnsNames[4]] = "";
                     _examplesTable.Rows.Add(newRow);
                 }
             }
 
             if (searchParam == null)
-                searchParam = new SearchItem(DefaultVersionCaption);
-            if (!_lastExSearchList.Contains(searchParam))
-                _lastExSearchList.Add(searchParam);
+                searchParam = new SearchItem(appConfig.ConfigStorage.DefaultVersionCaption);
+            if (!_lastSearchList.Contains(searchParam))
+                _lastSearchList.Add(searchParam);
 
-            SetSearchText(textBox_ExSearchHistory, _lastExSearchList);
+            SetSearchText(textBox_ExSearchHistory, _lastSearchList);
             comboBox_ExVersions.Items.AddRange(versionCollection.ToArray());
             toolStripStatusLabel1.Text = "";
 
@@ -1365,14 +1656,14 @@ namespace JsonDictionaryCore
         private async Task FilterExamples(Dictionary<string, List<JsonProperty>> exampleLinkCollection,
             SearchItem searchParam)
         {
-            if (_lastExSearchList.Contains(searchParam))
+            if (_lastSearchList.Contains(searchParam))
                 return;
 
-            _lastExSearchList.Add(searchParam);
+            _lastSearchList.Add(searchParam);
 
             if (searchParam == null || string.IsNullOrEmpty(searchParam.Value))
             {
-                FillExamplesGrid(exampleLinkCollection, _lastExSelectedNode, searchParam);
+                FillExamplesGrid(exampleLinkCollection, _lastSelectedNode, searchParam);
                 return;
             }
 
@@ -1393,29 +1684,29 @@ namespace JsonDictionaryCore
                 }
             }).ConfigureAwait(true);
 
-            SetSearchText(textBox_ExSearchHistory, _lastExSearchList);
+            SetSearchText(textBox_ExSearchHistory, _lastSearchList);
             toolStripStatusLabel1.Text = "";
         }
 
-        private async Task FilterExamplesVersion(Dictionary<string, List<JsonProperty>> exampleLinkCollection, SearchItem searchParam)
+        private async Task FilterExamplesVersion(Dictionary<string, List<JsonProperty>> exampleLinkCollection,
+            SearchItem searchParam)
         {
-            if (_lastExSearchList == null)
-                _lastExSearchList = new List<SearchItem>();
+            if (_lastSearchList == null)
+                _lastSearchList = new List<SearchItem>();
 
-            if (!_lastExSearchList.Any())
-                _lastExSearchList.Add(new SearchItem(DefaultVersionCaption));
-            var lastSearch = _lastExSearchList.Last();
-            if (lastSearch.Version != DefaultVersionCaption)
-                FillExamplesGrid(exampleLinkCollection, _lastExSelectedNode, searchParam);
+            if (!_lastSearchList.Any())
+                _lastSearchList.Add(new SearchItem(appConfig.ConfigStorage.DefaultVersionCaption));
+            var lastSearch = _lastSearchList.Last();
+            if (lastSearch.Version != appConfig.ConfigStorage.DefaultVersionCaption)
+                FillExamplesGrid(exampleLinkCollection, _lastSelectedNode, searchParam);
 
             if (comboBox_ExVersions.Items.Contains(searchParam.Version))
             {
                 comboBox_ExVersions.SelectedItem = searchParam.Version;
-                lastSearch.Version = searchParam.Version;
             }
             else
             {
-                comboBox_ExVersions.SelectedItem = DefaultVersionCaption;
+                comboBox_ExVersions.SelectedItem = appConfig.ConfigStorage.DefaultVersionCaption;
                 return;
             }
 
@@ -1438,7 +1729,7 @@ namespace JsonDictionaryCore
                 }
             }).ConfigureAwait(true);
 
-            SetSearchText(textBox_ExSearchHistory, _lastExSearchList);
+            SetSearchText(textBox_ExSearchHistory, _lastSearchList);
             toolStripStatusLabel1.Text = "";
         }
 
@@ -1456,15 +1747,13 @@ namespace JsonDictionaryCore
                 searchString.Append(lastSearch.Condition + cs + ":\"" + lastSearch.Value + "\"]");
             }
 
-            Invoke((MethodInvoker)delegate
-            { textBox.Text = searchString.ToString(); });
+            Invoke((MethodInvoker)delegate { textBox.Text = searchString.ToString(); });
         }
 
-        private void ExClearSearch()
+        private void ClearSearch()
         {
-            _lastExSearchList.Clear();
-            Invoke((MethodInvoker)delegate
-            { textBox_ExSearchHistory.Clear(); });
+            _lastSearchList.Clear();
+            Invoke((MethodInvoker)delegate { textBox_ExSearchHistory.Clear(); });
         }
 
         private async Task ReadjustRows(DataGridView dgView)
@@ -1491,11 +1780,12 @@ namespace JsonDictionaryCore
                        var newHeight = row.GetPreferredHeight(rowNumber,
                            DataGridViewAutoSizeRowMode.AllCellsExceptHeader, true);
                        var currentHeight = dgView.Height;
-                       if (newHeight == row.Height && newHeight <= currentHeight * CellSizeAdjust)
+                       if (newHeight == row.Height &&
+                           newHeight <= currentHeight * appConfig.ConfigStorage.CellSizeAdjust)
                            return;
 
-                       if (newHeight > currentHeight * CellSizeAdjust)
-                           newHeight = (ushort)(currentHeight * CellSizeAdjust);
+                       if (newHeight > currentHeight * appConfig.ConfigStorage.CellSizeAdjust)
+                           newHeight = (ushort)(currentHeight * appConfig.ConfigStorage.CellSizeAdjust);
                        row.Height = newHeight;
                    }
 
@@ -1504,18 +1794,19 @@ namespace JsonDictionaryCore
                        var column = dgView.Columns[columnNumber];
                        var newWidth = column.GetPreferredWidth(DataGridViewAutoSizeColumnMode.AllCells, true);
                        var currentWidth = dgView.Width;
-                       if (newWidth == column.Width && newWidth <= currentWidth * CellSizeAdjust)
+                       if (newWidth == column.Width &&
+                           newWidth <= currentWidth * appConfig.ConfigStorage.CellSizeAdjust)
                            return;
 
-                       if (newWidth > currentWidth * CellSizeAdjust)
-                           newWidth = (ushort)(currentWidth * CellSizeAdjust);
+                       if (newWidth > currentWidth * appConfig.ConfigStorage.CellSizeAdjust)
+                           newWidth = (ushort)(currentWidth * appConfig.ConfigStorage.CellSizeAdjust);
                        column.Width = newWidth;
                    }
                });
             }).ContinueWith((t) => { toolStripStatusLabel1.Text = ""; });
         }
 
-        private static void ReadjustRow(DataGridView dgView, int rowNumber)
+        private void ReadjustRow(DataGridView dgView, int rowNumber)
         {
             if (dgView.AutoSizeRowsMode != DataGridViewAutoSizeRowsMode.None)
             {
@@ -1527,11 +1818,11 @@ namespace JsonDictionaryCore
             row.HeaderCell.Value = (rowNumber + 1).ToString();
             var newHeight = row.GetPreferredHeight(rowNumber, DataGridViewAutoSizeRowMode.AllCellsExceptHeader, true);
             var currentHeight = dgView.Height;
-            if (newHeight == row.Height && newHeight <= currentHeight * CellSizeAdjust)
+            if (newHeight == row.Height && newHeight <= currentHeight * appConfig.ConfigStorage.CellSizeAdjust)
                 return;
 
-            if (newHeight > currentHeight * CellSizeAdjust)
-                newHeight = (ushort)(currentHeight * CellSizeAdjust);
+            if (newHeight > currentHeight * appConfig.ConfigStorage.CellSizeAdjust)
+                newHeight = (ushort)(currentHeight * appConfig.ConfigStorage.CellSizeAdjust);
             row.Height = newHeight;
         }
 
@@ -1585,46 +1876,51 @@ namespace JsonDictionaryCore
             Refresh();
         }
 
-        private void OpenFile(bool newEditor = false)
+        private void OpenFile(bool standAloneEditor = false)
         {
             if (dataGridView_examples.SelectedCells.Count <= 0 || listBox_fileList.SelectedItems.Count <= 0)
                 return;
 
-            var jsonPaths = dataGridView_examples.Rows[dataGridView_examples.SelectedCells[0].RowIndex].Cells[3]?.Value?.ToString().Split(new[] { TableListDelimiter }, StringSplitOptions.RemoveEmptyEntries);
-            var jsonSample = dataGridView_examples.Rows[dataGridView_examples.SelectedCells[0].RowIndex].Cells[3]?.Value?.ToString();
+            var jsonPaths = dataGridView_examples.Rows[dataGridView_examples.SelectedCells[0].RowIndex].Cells[3]?.Value
+                ?.ToString().Split(new[] { appConfig.ConfigStorage.TableListDelimiter },
+                    StringSplitOptions.RemoveEmptyEntries);
+            var jsonSample = dataGridView_examples.Rows[dataGridView_examples.SelectedCells[0].RowIndex].Cells[3]?.Value
+                ?.ToString();
             var fileNumber = listBox_fileList.SelectedIndex;
             var fileName = listBox_fileList.Items[fileNumber].ToString();
 
             if (jsonPaths?.Length >= fileNumber)
             {
-                var jsonPath = jsonPaths[fileNumber];
-                ShowPreviewEditor(fileName, jsonPath, jsonSample, newEditor);
+                var jsonPath = jsonPaths?[fileNumber];
+                ShowPreviewEditor(fileName, jsonPath, jsonSample, standAloneEditor);
             }
         }
 
-        private void ShowPreviewEditor(string fileName, string jsonPath, string sampleText, bool newWindow = false)
+        private void ShowPreviewEditor(string fileName, string jsonPath, string sampleText,
+            bool standAloneEditor = false)
         {
-            if (_useVsCode)
+            if (appConfig.ConfigStorage.UseVsCode)
             {
                 var lineNumber = GetLineNumberForPath(fileName, jsonPath) + 1;
                 var execParams = "-r -g " + fileName + ":" + lineNumber;
                 VsCodeOpenFile(execParams);
-
                 return;
             }
 
             var textEditor = _sideViewer;
-            if (newWindow)
+            if (standAloneEditor)
             {
                 textEditor = null;
             }
 
-            bool fileLoaded;
+            var fileLoaded = false;
+            var newWindow = false;
             if (textEditor != null && !textEditor.IsDisposed)
             {
-                if (textEditor.SingleLineBrackets != _reformatJson || textEditor.Text != PreViewCaption + fileName)
+                if (textEditor.SingleLineBrackets != appConfig.ConfigStorage.ReformatJson ||
+                    textEditor.Text != appConfig.ConfigStorage.PreViewCaption + fileName)
                 {
-                    textEditor.SingleLineBrackets = _reformatJson;
+                    textEditor.SingleLineBrackets = appConfig.ConfigStorage.ReformatJson;
                     fileLoaded = textEditor.LoadJsonFromFile(fileName);
                 }
                 else
@@ -1640,29 +1936,23 @@ namespace JsonDictionaryCore
                     textEditor.Dispose();
                 }
 
-                textEditor = new JsonViewer("", "", newWindow)
+                textEditor = new JsonViewer("", "", standAloneEditor)
                 {
-                    SingleLineBrackets = _reformatJson
+                    SingleLineBrackets = appConfig.ConfigStorage.ReformatJson
                 };
 
-                if (!newWindow)
-                    textEditor.Closing += OnClosingEditor;
-
+                newWindow = true;
                 fileLoaded = textEditor.LoadJsonFromFile(fileName);
             }
 
-            _sideViewer = textEditor;
+            if (!standAloneEditor) _sideViewer = textEditor;
 
-            textEditor.AlwaysOnTop = _alwaysOnTop;
+            textEditor.AlwaysOnTop = appConfig.ConfigStorage.AlwaysOnTop;
             textEditor.Show();
 
-            if (!fileLoaded)
-                return;
 
-            if (!newWindow)
+            if (!standAloneEditor && newWindow)
             {
-                textEditor.Text = PreViewCaption + fileName;
-
                 if (!(_editorPosition.WinX == 0
                       && _editorPosition.WinY == 0
                       && _editorPosition.WinW == 0
@@ -1672,6 +1962,20 @@ namespace JsonDictionaryCore
                     textEditor.Width = _editorPosition.WinW;
                     textEditor.Height = _editorPosition.WinH;
                 }
+
+                textEditor.Closing += OnClosingEditor;
+                //textEditor.ResizeEnd += OnResizeEditor;
+            }
+
+            if (!fileLoaded)
+            {
+                textEditor.Text = "Failed to load " + fileName;
+                return;
+            }
+
+            if (!standAloneEditor)
+            {
+                textEditor.Text = appConfig.ConfigStorage.PreViewCaption + fileName;
             }
             else
             {
@@ -1688,12 +1992,19 @@ namespace JsonDictionaryCore
 
         #region Utilities
 
-        private static JsoncContentType GetFileTypeFromFileName(string fullFileName,
-    IEnumerable<Form1.ContentTypeItem> fileTypes)
+        private static string GetFileTypeFromFileName(string fullFileName, IEnumerable<Form1.ContentTypeItem> fileTypes)
         {
+#if EPICOR
             var shortFileName = GetShortFileName(fullFileName);
 
             return (from item in fileTypes where shortFileName.EndsWith(item.FileTypeMask) select item.FileType).FirstOrDefault();
+#else
+            var dirName = GetDirectoryName(fullFileName);
+            var result =
+                fileTypes.Where(n => dirName.EndsWith(n.FileTypeMask)).Select(n => n.FileType).FirstOrDefault() ?? "?";
+
+            return result;
+#endif
         }
 
         private static string GetShortFileName(string longFileName)
@@ -1711,6 +2022,12 @@ namespace JsonDictionaryCore
             }
 
             return longFileName;
+        }
+
+        private static string GetDirectoryName(string longFileName)
+        {
+            var file = new FileInfo(longFileName);
+            return file.Directory.Name;
         }
 
         // this is to get rid of exception on "dataGridView_examples.AutoSizeRowsMode" change
@@ -1752,23 +2069,17 @@ namespace JsonDictionaryCore
             return false;
         }
 
-        private static string ShortFileName(string longFileName)
-        {
-            var i = longFileName.LastIndexOf('\\');
-            return i < 0 ? longFileName : longFileName.Substring(i + 1);
-        }
-
         private void FlushLog()
         {
             if (_textLog.Length > 0)
             {
                 Invoke((MethodInvoker)delegate
-                {
-                    textBox_logText.Text += _textLog.ToString();
-                    _textLog.Clear();
-                    textBox_logText.SelectionStart = textBox_logText.Text.Length;
-                    textBox_logText.ScrollToCaret();
-                });
+               {
+                   textBox_logText.Text += _textLog.ToString();
+                   _textLog.Clear();
+                   textBox_logText.SelectionStart = textBox_logText.Text.Length;
+                   textBox_logText.ScrollToCaret();
+               });
             }
         }
 
@@ -1798,7 +2109,7 @@ namespace JsonDictionaryCore
             {
                 jsonStr = File.ReadAllText(fullFileName);
             }
-            catch (Exception ex)
+            catch
             {
                 return 0;
             }
@@ -1813,16 +2124,518 @@ namespace JsonDictionaryCore
                 TrimComplexValues = false,
                 SaveComplexValues = false,
                 RootName = "",
-                JsonPathDivider = JsonPathDiv,
+                JsonPathDivider = appConfig.ConfigStorage.JsonPathDiv,
                 SearchStartOnly = true
             };
 
             var startLine = 0;
-            var property = parser.SearchJsonPath(jsonStr, JsonPathDiv + jsonPath);
+            var property = parser.SearchJsonPath(jsonStr, appConfig.ConfigStorage.JsonPathDiv + jsonPath);
             if (property != null)
-                parser.GetLinesNumber(jsonStr, property.StartPosition, property.EndPosition, out startLine, out var _);
+                JsonPathParser.GetLinesNumber(jsonStr, property.StartPosition, property.EndPosition, out startLine,
+                    out var _);
 
             return startLine;
+        }
+
+        private TreeNode FindTreeNodeByPath(List<string> pathItems, TreeNode rootNode)
+        {
+            if (pathItems == null || pathItems.Count <= 0) return null;
+
+            TreeNode result = null;
+
+            if (rootNode.Text.TrimEnd(new[] { ']', '}' }).TrimEnd(new[] { '[', '{' }) == pathItems.First())
+            {
+                if (pathItems.Count() == 1)
+                {
+                    return rootNode;
+                }
+                else
+                {
+                    pathItems.RemoveAt(0);
+                    foreach (TreeNode node in rootNode.Nodes)
+                    {
+                        result = FindTreeNodeByPath(pathItems, node);
+                        if (result != null) return result;
+                    }
+                }
+            }
+            return result;
+        }
+
+        #endregion
+
+        #region Schema generation
+
+        private class ValuePair
+        {
+            public string Version = "";
+            public string Url = "";
+
+            public override string ToString()
+            {
+                return Version;
+            }
+        }
+
+        private void CollectSchemaVersions()
+        {
+            if (comboBox_fileType.SelectedIndex < 0) return;
+
+            var fileType =
+                appConfig.ConfigStorage.FileTypes.FirstOrDefault(n =>
+                    n.FileType.ToString() == comboBox_fileType.SelectedItem.ToString());
+
+            if (fileType == null) return;
+
+            comboBox_contentVersion.Items.Clear();
+            comboBox_contentVersion.DisplayMember = "Version";
+            comboBox_contentVersion.ValueMember = "Url";
+
+            textBox_schemaUrl.Text = string.Empty;
+
+            _exampleLinkCollection.TryGetValue(
+                $"<{fileType.FileType}>{appConfig.ConfigStorage.JsonPathDiv}contentVersion",
+                out var versionsCollection);
+
+            if (versionsCollection == null) return;
+
+            var versions = versionsCollection
+                .Select(n => n.Value)
+                .Distinct()
+                .ToArray();
+
+            if (!versions.Any()) return;
+
+            var schemaVersionUrls = new List<ValuePair>();
+            foreach (var version in versions)
+            {
+                var fileName = versionsCollection.FirstOrDefault(n => n.Value == version)?.FullFileName;
+                _exampleLinkCollection.TryGetValue($"<{fileType.FileType}>{appConfig.ConfigStorage.JsonPathDiv}$schema",
+                    out var urlCollection);
+                var url = urlCollection?.FirstOrDefault(n =>
+                        n.FullFileName == fileName)?
+                    .Value;
+                schemaVersionUrls.Add(new ValuePair { Version = version, Url = url });
+            }
+
+            comboBox_contentVersion.Items.AddRange(schemaVersionUrls.ToArray());
+
+            if (comboBox_contentVersion.Items.Count > 0) comboBox_contentVersion.SelectedIndex = 0;
+        }
+
+        private static string GetSchemaText(string schemaUrl, bool ignoreHttpsError = false)
+        {
+            var schemaData = "";
+            if (string.IsNullOrEmpty(schemaUrl))
+                return schemaData;
+
+            if (ignoreHttpsError)
+                ServicePointManager.ServerCertificateValidationCallback = (a, b, c, d) => true;
+
+            using (var webClient = new WebClient())
+            {
+                schemaData = webClient.DownloadString(schemaUrl);
+            }
+
+            return schemaData;
+        }
+
+        private ISchemaTreeBase JsonPropertyListToSchemaObject(
+            IEnumerable<ParsedProperty> rootCollection,
+            string startPath,
+            string propertyName)
+        {
+            if (rootCollection == null) return null;
+
+            var properties = rootCollection.Where(n => n.ParentPath == startPath);
+
+            if (!properties.Any()) return null;
+
+            var nodeTypes = new List<string>();
+            var typePropertyPathSample = startPath + appConfig.ConfigStorage.JsonPathDiv + "type";
+            var currnetNodeType = properties.FirstOrDefault(n => n.Path == typePropertyPathSample) ?? new ParsedProperty();
+
+            if (currnetNodeType.JsonPropertyType == JsonPropertyTypes.Array)
+            {
+                var childNodesTypes = rootCollection
+                    .Where(n => n.ParentPath == typePropertyPathSample)?
+                    .Select(n => n.Value);
+                nodeTypes.AddRange(childNodesTypes);
+            }
+            else
+            {
+                nodeTypes.Add(currnetNodeType.Value);
+            }
+            nodeTypes.Sort();
+
+            var nodePath = properties.FirstOrDefault(n => n.Name == "$id")?.Value;
+            var nodeDescription = properties.FirstOrDefault(n => n.Name == "title")?.Value;
+            var reference = properties.FirstOrDefault(n => n.Name == "$ref")?.Value;
+            var nodeExamples = rootCollection
+                .Where(n => n.ParentPath == startPath + appConfig.ConfigStorage.JsonPathDiv + "examples")?
+                .Select(n => n.Value)?
+                .OrderBy(n => n)
+                .ToList();
+
+            // to do - get all available properties even if there is a mix of object/array/property
+            if (nodeTypes.Any(n => n == "array"))
+            {
+                var arrayNode = new SchemaTreeArray(propertyName)
+                {
+                    Type = nodeTypes,
+                    Path = nodePath,
+                    Description = nodeDescription,
+                    Reference = reference,
+                    Examples = nodeExamples,
+                };
+
+                if (bool.TryParse(properties.FirstOrDefault(n => n.Name == "uniqueItems")?.Value, out var ap))
+                    arrayNode.UniqueItemsOnly = ap;
+                else
+                    arrayNode.UniqueItemsOnly = null;
+
+                var newItem = JsonPropertyListToSchemaObject(rootCollection,
+                    startPath + appConfig.ConfigStorage.JsonPathDiv + "items",
+                    "items");
+                arrayNode.Items = newItem;
+
+                return arrayNode;
+            }
+
+            if (nodeTypes.Any(n => n == "object"))
+            {
+                var objectNode = new SchemaTreeObject(propertyName)
+                {
+                    Name = propertyName,
+                    Type = nodeTypes,
+                    Path = nodePath,
+                    Description = nodeDescription,
+                    Reference = reference,
+                    Examples = nodeExamples,
+                    Required = rootCollection
+                    .Where(n => n.ParentPath == startPath + appConfig.ConfigStorage.JsonPathDiv + "required")?
+                    .Select(n => n.Value)?
+                    .OrderBy(n => n)
+                    .ToList()
+                };
+
+                if (bool.TryParse(properties.FirstOrDefault(n => n.Name == "additionalProperties")?.Value, out var ap))
+                    objectNode.AdditionalProperties = ap;
+                else
+                    objectNode.AdditionalProperties = null;
+
+                foreach (var item in rootCollection
+                    .Where(n => n.ParentPath == startPath + appConfig.ConfigStorage.JsonPathDiv + "properties")
+                    .OrderBy(n => n.Name))
+                {
+                    var newProperty = JsonPropertyListToSchemaObject(rootCollection, item.Path, item.Name);
+                    objectNode.Properties.Add(newProperty);
+                }
+
+                if (startPath == "#")
+                {
+                    objectNode.SchemaName = properties.FirstOrDefault(n => n.Name == "$schema")?.Value;
+
+                    foreach (var item in rootCollection
+                        .Where(n => n.ParentPath == startPath + appConfig.ConfigStorage.JsonPathDiv + "definitions")
+                        .OrderBy(n => n.Name))
+                    {
+                        var newProperty = JsonPropertyListToSchemaObject(rootCollection, item.Path, item.Name);
+                        objectNode.Definitions.Add(newProperty);
+                    }
+                }
+
+                return objectNode;
+            }
+
+            var propertyNode = new SchemaTreeProperty(propertyName)
+            {
+                Type = nodeTypes,
+                Path = nodePath,
+                Description = nodeDescription,
+                Reference = reference,
+                Examples = nodeExamples,
+                Default = properties.FirstOrDefault(n => n.Name == "default")?.Value,
+                Pattern = properties.FirstOrDefault(n => n.Name == "pattern")?.Value,
+                Enum = rootCollection
+                    .Where(n => n.ParentPath == startPath + appConfig.ConfigStorage.JsonPathDiv + "enum")?
+                    .Select(n => n.Value)?
+                    .OrderBy(n => n)
+                    .ToList(),
+            };
+
+            return propertyNode;
+        }
+
+        private ISchemaTreeBase GenerateSchemaFromTree(TreeNode treeRoot,
+            Dictionary<string, List<JsonProperty>> examples, string nodeName)
+        {
+            if (treeRoot == null) return null;
+
+            var descText = "";
+            _nodeDescription?.TryGetValue(treeRoot.Name, out descText);
+
+            var newSchemaRoot = new SchemaTreeObject(nodeName)
+            {
+                Description = descText,
+                Path = nodeName,
+                Type = new List<string> { "object" },
+                Name = nodeName,
+                SchemaName = "http://json-schema.org/draft-04/schema#"
+            };
+
+            foreach (TreeNode node in treeRoot.Nodes)
+            {
+                var result = TreeNodeToSchemaObject(node, nodeName + "/properties", examples);
+                if (result != null) newSchemaRoot.Properties.Add(result);
+            }
+
+            return newSchemaRoot;
+        }
+
+        private ISchemaTreeBase TreeNodeToSchemaObject(TreeNode node, string parentPath, Dictionary<string, List<JsonProperty>> examples)
+        {
+            if (node == null) return null;
+
+            var propertyName = node.Text.TrimEnd(new[] { ']', '}' }).TrimEnd(new[] { '[', '{' });
+            var nodePath = parentPath + "/" + propertyName;
+
+            var nodeDescription = "";
+
+            var nodeType = JsonPropertyTypes.Unknown;
+            if (node.Tag is JsonProperty p)
+            {
+                nodeType = p.ObjectType;
+                _nodeDescription?.TryGetValue(node.Name, out nodeDescription);
+            }
+
+            examples.TryGetValue(node.Name, out var nodeExamples);
+
+            if (nodeType == JsonPropertyTypes.Array)
+            {
+                var arrayNode = new SchemaTreeArray(propertyName)
+                {
+                    Type = new List<string> { nodeType.ToString().ToLower() },
+                    Path = nodePath,
+                    Description = nodeDescription,
+                    Examples = nodeExamples?
+                    .Where(n => n.ObjectType == JsonPropertyTypes.Property)
+                    .Select(n => n.Value)
+                    .OrderBy(n => n)
+                    .ToList(),
+                    UniqueItemsOnly = true
+                };
+
+                // check all items in array and create some average object
+                var objList = new List<ISchemaTreeBase>();
+                foreach (TreeNode item in node.Nodes)
+                {
+                    var newItemsNode = TreeNodeToSchemaObject(item, nodePath + "/items/properties", examples);
+                    objList.Add(newItemsNode);
+                }
+
+                if (!objList.Any())
+                {
+                    var arrayExamples = examples.Where(n => n.Key.StartsWith(node.Name)).ToArray();
+
+                    var enumList = arrayExamples.FirstOrDefault().Value.Select(n => n.Value).Distinct().OrderBy(n => n).ToList();
+
+                    var enumListTypes = arrayExamples.FirstOrDefault().Value.Select(n => n.VariableType).Distinct();
+                    var typesList = enumListTypes.Select(n => n.ToString().ToLower()).OrderBy(n => n).ToList();
+
+                    arrayNode.Items = new SchemaTreeProperty("items")
+                    {
+                        Path = nodePath + "/items",
+                        Type = typesList,
+                        Enum = enumList,
+                        Description = nodeDescription,
+                        Examples = nodeExamples?.Select(n => n.Value).Distinct().OrderBy(n => n).ToList()
+                    };
+
+                    return arrayNode;
+                }
+                arrayNode.Items = new SchemaTreeObject()
+                {
+                    Path = nodePath + "/items",
+                    Name = "items",
+                    Type = new List<string> { "object" },
+                    Properties = objList
+                };
+
+                return arrayNode;
+            }
+
+            var nodeVariableTypes = nodeExamples?
+                .Select(n => n.VariableType)
+                .Distinct()
+                .Where(n => n == JsonValueTypes.String
+                || n == JsonValueTypes.Integer
+                || n == JsonValueTypes.Number
+                || n == JsonValueTypes.Null
+                || n == JsonValueTypes.Boolean)
+                .Select(n => n.ToString().ToLower())
+                .ToList() ?? new List<string>();
+
+            var nodeObjectTypes = nodeExamples?
+                .Select(n => n.ObjectType)
+                .Distinct()
+                .Where(n => n == JsonPropertyTypes.Object
+                || n == JsonPropertyTypes.Array
+                || n == JsonPropertyTypes.ArrayValue)
+                .Select(n => n.ToString().ToLower().Replace("arrayvalue", "array")) ?? new List<string>();
+
+            nodeVariableTypes.AddRange(nodeObjectTypes);
+            nodeVariableTypes = nodeVariableTypes.Distinct().OrderBy(n => n).ToList();
+
+            if (nodeType == JsonPropertyTypes.Object)
+            {
+                var objectNode = new SchemaTreeObject
+                {
+                    Name = propertyName,
+                    Type = nodeVariableTypes,
+                    Path = nodePath,
+                    Description = nodeDescription,
+                    Examples = nodeExamples?
+                    .Where(n => n.ObjectType == JsonPropertyTypes.Property)
+                    .Select(n => n.Value)
+                    .Distinct()
+                    .OrderBy(n => n)
+                    .ToList(),
+                    AdditionalProperties = false
+                };
+
+                foreach (TreeNode item in node.Nodes)
+                {
+                    var newProperty = TreeNodeToSchemaObject(item, nodePath + "/properties", examples);
+                    objectNode.Properties.Add(newProperty);
+                }
+
+                return objectNode;
+            }
+
+            var propertyNode = new SchemaTreeProperty(propertyName)
+            {
+                Type = nodeVariableTypes,
+                Path = nodePath,
+                Description = nodeDescription,
+                Examples = nodeExamples?.Select(n => n.Value).Distinct().OrderBy(n => n).ToList()
+            };
+
+            // if all property types are "string" create Enum
+            if (!nodeVariableTypes.Any(n => n != "string"))
+            {
+                propertyNode.Enum = nodeExamples?.Select(n => n.Value).Distinct().OrderBy(n => n).ToList();
+            }
+
+            return propertyNode;
+        }
+
+        private TreeNode ConvertSchemaNodesToTreeNode(ISchemaTreeBase schemaTree)
+        {
+            if (schemaTree == null) return null;
+
+            var node = new TreeNode(schemaTree.Name)
+            {
+                Text = schemaTree.Name,
+                Name = schemaTree.Path
+            };
+
+            if (schemaTree is SchemaTreeObject schemaObject)
+            {
+                node.Text += "{}";
+
+                if (schemaObject.Properties != null && schemaObject.Properties.Count > 0)
+                {
+                    var newNode = new TreeNode("properties{}")
+                    {
+                        Text = "properties{}",
+                        Name = schemaTree.Path + "/properties"
+                    };
+
+                    foreach (var property in schemaObject.Properties)
+                    {
+                        var newNodes = ConvertSchemaNodesToTreeNode(property);
+                        if (newNodes != null) newNode.Nodes.Add(newNodes);
+                    }
+
+                    node.Nodes.Add(newNode);
+                }
+
+                if (schemaObject.Definitions != null && schemaObject.Definitions.Count > 0)
+                {
+                    var newNode = new TreeNode("definitions{}")
+                    {
+                        Text = "definitions{}",
+                        Name = schemaTree.Path + "/definitions"
+                    };
+
+                    foreach (var definition in schemaObject.Definitions)
+                    {
+                        var newNodes = ConvertSchemaNodesToTreeNode(definition);
+                        if (newNodes != null) newNode.Nodes.Add(newNodes);
+                    }
+
+                    node.Nodes.Add(newNode);
+                }
+
+            }
+            else if (schemaTree is SchemaTreeArray schemaArray)
+            {
+                node.Text += "[]";
+                var newNodes = ConvertSchemaNodesToTreeNode(schemaArray.Items);
+                if (newNodes != null) node.Nodes.Add(newNodes);
+            }
+
+            return node;
+        }
+
+        private ISchemaTreeBase FindDefinition(string path, ISchemaTreeBase rootSchemaNode)
+        {
+            if (string.IsNullOrEmpty(path) || rootSchemaNode == null) return null;
+
+            ISchemaTreeBase result = null;
+            var definitionsFlag = false;
+            foreach (var token in path.Split('\\'))
+            {
+                if (token == "#")
+                {
+                    result = rootSchemaNode;
+                }
+                else
+                {
+                    if (result is SchemaTreeObject currentObject)
+                    {
+                        if (token == "properties") continue;
+                        if (token == "definitions")
+                        {
+                            definitionsFlag = true;
+                            continue;
+                        }
+
+                        if (definitionsFlag)
+                        {
+                            result = currentObject.Definitions.FirstOrDefault(n => n.Name == token);
+                            definitionsFlag = false;
+                        }
+                        else
+                        {
+                            result = currentObject.Properties.FirstOrDefault(n => n.Name == token);
+                        }
+                    }
+                    else if (result is SchemaTreeArray currentArray)
+                    {
+                        if (token == "items") result = currentArray.Items;
+                    }
+                    else if (result is SchemaTreeProperty currentProperty)
+                    {
+                        if (currentProperty.Name == token) result = currentProperty;
+                    }
+                }
+
+                if (result == null) return null;
+            }
+
+            return result;
         }
 
         #endregion
