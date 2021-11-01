@@ -1,7 +1,7 @@
 ﻿// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
-//#define EPICOR
+#define EPICOR
 
 using JsonEditorForm;
 
@@ -16,7 +16,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -36,6 +35,8 @@ namespace JsonDictionaryCore
         private readonly StringBuilder _textLog = new StringBuilder();
         private readonly DataTable _examplesTable;
         private TreeNode _rootNodeExamples = new TreeNode();
+        private TreeNode _rootNodeLeftSchema = new TreeNode();
+        private TreeNode _rootNodeRightSchema = new TreeNode();
 
         private Dictionary<string, List<JsonProperty>> _exampleLinkCollection =
             new Dictionary<string, List<JsonProperty>>(); // tree path, list of examples
@@ -50,9 +51,17 @@ namespace JsonDictionaryCore
         private UserControl _leftDataPanel;
 
         // last used values for UI processing optimization
-        private TreeNode _lastSelectedNode;
+        private TreeNode _lastSelectedExamplesNode;
         private TreeNode _lastSelectedLeftSchemaNode;
         private TreeNode _lastSelectedRightSchemaNode;
+        private Color _lastSelectedLeftSchemaNodeColor;
+        private Color _lastSelectedRightSchemaNodeColor;
+        private TreeView _lastTreeViewSelected;
+        private string _lastSearchString = "";
+        private int _searchListPositionLeft = -1;
+        private List<string> _lastSearchListLeft;
+        private int _searchListPositionRight = -1;
+        private List<string> _lastSearchListRight;
 
         private List<SearchItem> _lastSearchList = new List<SearchItem>();
 
@@ -76,6 +85,7 @@ namespace JsonDictionaryCore
             checkBox_alwaysOnTop.Checked = appConfig.ConfigStorage.AlwaysOnTop;
             checkBox_loadDbOnStart.Checked = appConfig.ConfigStorage.LoadDbOnStart;
             checkBox_vsCode.Checked = appConfig.ConfigStorage.UseVsCode;
+            checkBox_schemaSelectionSync.Checked = appConfig.ConfigStorage.SchemaFollowSelection;
             folderBrowserDialog1.SelectedPath = appConfig.ConfigStorage.LastRootFolder;
 
             _nodeDescription = LoadJson<Dictionary<string, string>>(appConfig.ConfigStorage.DefaultDescriptionFileName);
@@ -115,11 +125,6 @@ namespace JsonDictionaryCore
             comboBox_ExVersions.Items.Add(appConfig.ConfigStorage.DefaultVersionCaption);
             comboBox_ExVersions.SelectedIndex = 0;
             comboBox_ExVersions.SelectedIndexChanged += ComboBox_ExVersions_SelectedIndexChanged;
-
-            foreach (var item in appConfig.ConfigStorage.FileTypes)
-            {
-                comboBox_fileType.Items.Add(item.FileType);
-            }
 
             if (appConfig.ConfigStorage.LoadDbOnStart)
             {
@@ -350,7 +355,8 @@ namespace JsonDictionaryCore
 
         private void CheckBox_schemaSelectionSync_CheckedChanged(object sender, EventArgs e)
         {
-            appConfig.ConfigStorage.SchemaFollowSelection = checkBox_schemaSelectionSync.Checked;
+            if (sender is CheckBox cb)
+                appConfig.ConfigStorage.SchemaFollowSelection = cb.Checked;
         }
         #endregion
 
@@ -740,63 +746,6 @@ namespace JsonDictionaryCore
 
         #region Schema
 
-        // Not used any more. Only for EPICOR
-        private void Button_regenerateSchema_Click(object sender, EventArgs e)
-        {
-            if (comboBox_fileType.SelectedIndex < 0) return;
-
-            var rootName = comboBox_fileType.SelectedItem.ToString();
-
-            if (comboBox_contentVersion.SelectedIndex < 0) return;
-
-            var version = comboBox_contentVersion.SelectedItem.ToString();
-
-            if (string.IsNullOrEmpty(textBox_schemaUrl.Text)) return;
-
-            var currentFileTypeName = textBox_schemaUrl.Text;
-            var schemaData = GetSchemaText(currentFileTypeName);
-            var parser = new JsonPathParser
-            {
-                TrimComplexValues = false,
-                SaveComplexValues = true,
-                RootName = rootName,
-                JsonPathDivider = appConfig.ConfigStorage.JsonPathDiv
-            };
-
-            var schemaProperties = parser.ParseJsonToPathList(schemaData, out var endPos, out var errorFound)
-                .Where(n =>
-                    n.JsonPropertyType == JsonPropertyTypes.Array
-                    || n.JsonPropertyType == JsonPropertyTypes.Object
-                    || n.JsonPropertyType == JsonPropertyTypes.Property
-                    || n.JsonPropertyType == JsonPropertyTypes.ArrayValue
-                    || n.JsonPropertyType == JsonPropertyTypes.KeywordOrNumberProperty
-                );
-
-            var treeSchemaProperties = parser.ConvertForTreeProcessing(schemaProperties);
-
-            _rightSchema = JsonPropertyListToSchemaObject(treeSchemaProperties, rootName, rootName);
-            var schemaTreeNode = ConvertSchemaNodesToTreeNode(_rightSchema);
-            treeView_rightSchema.Nodes.Clear();
-            treeView_rightSchema.Nodes.Add(schemaTreeNode);
-            if (_rightDataPanel != null) splitContainer_schemaRight.Panel2.Controls.Remove(_rightDataPanel);
-
-            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
-        }
-
-        // Not used any more. Only for EPICOR
-        private void ComboBox_fileType_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            CollectSchemaVersions();
-        }
-
-        // Not used any more. Only for EPICOR
-        private void ComboBox_contentVersion_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (comboBox_contentVersion.SelectedIndex < 0) return;
-
-            textBox_schemaUrl.Text = (comboBox_contentVersion.SelectedItem as ValuePair)?.Url;
-        }
-
         private void Button_loadSchema_Click(object sender, EventArgs e)
         {
             this.openFileDialog1.FileOk -= this.OpenFileDialog1_FileOk;
@@ -812,7 +761,7 @@ namespace JsonDictionaryCore
 
         private void OpenFileDialog1_FileOk_Schema(object sender, CancelEventArgs e)
         {
-            var rootName = comboBox_fileType?.SelectedItem?.ToString() ?? "#";
+            var rootName = "#";
 
             var schemaData = File.ReadAllText(openFileDialog1.FileName);
 
@@ -834,9 +783,9 @@ namespace JsonDictionaryCore
 
             var treeSchemaProperties = parser.ConvertForTreeProcessing(schemaProperties);
             _rightSchema = JsonPropertyListToSchemaObject(treeSchemaProperties, rootName, rootName);
-            var schemaTreeNode = ConvertSchemaNodesToTreeNode(_rightSchema);
+            _rootNodeRightSchema = ConvertSchemaNodesToTreeNode(_rightSchema);
             treeView_rightSchema.Nodes.Clear();
-            treeView_rightSchema.Nodes.Add(schemaTreeNode);
+            treeView_rightSchema.Nodes.Add(_rootNodeRightSchema);
             treeView_rightSchema.Sort();
             if (_rightDataPanel != null) splitContainer_schemaRight.Panel2.Controls.Remove(_rightDataPanel);
 
@@ -896,21 +845,22 @@ namespace JsonDictionaryCore
 
             if (_lastSelectedLeftSchemaNode != null)
             {
-                _lastSelectedLeftSchemaNode.BackColor = Color.White;
+                _lastSelectedLeftSchemaNode.BackColor = _lastSelectedLeftSchemaNodeColor;
             }
 
             _lastSelectedLeftSchemaNode = e.Node;
+            _lastSelectedLeftSchemaNodeColor = e.Node.BackColor;
             e.Node.BackColor = Color.DodgerBlue;
         }
 
         private void FollowTheRefLinkLeft(object sender, RefLinkClickEventArgs e)
         {
-            var treeNode = FindTreeNodeByPath(e.LinkText.Split('/').ToList(), treeView_rightSchema.TopNode);
+            var treeNode = FindTreeNodeByPath(e.LinkText.Split('/').ToList(), _rootNodeLeftSchema);
             treeView_leftSchema.SelectedNode = treeNode;
             treeView_leftSchema.SelectedNode?.Expand();
         }
 
-        private void TreeView_RightSchema_AfterSelect(object sender, TreeViewEventArgs e)
+        private void TreeView_rightSchema_AfterSelect(object sender, TreeViewEventArgs e)
         {
             if (e == null || e.Node == null) return;
 
@@ -953,16 +903,17 @@ namespace JsonDictionaryCore
 
             if (_lastSelectedRightSchemaNode != null)
             {
-                _lastSelectedRightSchemaNode.BackColor = Color.White;
+                _lastSelectedRightSchemaNode.BackColor = _lastSelectedRightSchemaNodeColor;
             }
 
             _lastSelectedRightSchemaNode = e.Node;
+            _lastSelectedRightSchemaNodeColor = e.Node.BackColor;
             e.Node.BackColor = Color.DodgerBlue;
         }
 
         private void FollowTheRefLinkRight(object sender, RefLinkClickEventArgs e)
         {
-            var treeNode = FindTreeNodeByPath(e.LinkText.Split('/').ToList(), treeView_rightSchema.TopNode);
+            var treeNode = FindTreeNodeByPath(e.LinkText.Split('/').ToList(), _rootNodeRightSchema);
             treeView_rightSchema.SelectedNode = treeNode;
             treeView_rightSchema.SelectedNode?.Expand();
         }
@@ -974,13 +925,13 @@ namespace JsonDictionaryCore
 
             var rootName = "#";
             _leftSchema = GenerateSchemaFromTree(treeView_examples.SelectedNode, _exampleLinkCollection, rootName);
-            var jsonSchemaTreeNode = ConvertSchemaNodesToTreeNode(_leftSchema);
+            _rootNodeLeftSchema = ConvertSchemaNodesToTreeNode(_leftSchema);
 
-            if (jsonSchemaTreeNode == null)
+            if (_rootNodeLeftSchema == null)
                 return;
 
             treeView_leftSchema.Nodes.Clear();
-            treeView_leftSchema.Nodes.Add(jsonSchemaTreeNode);
+            treeView_leftSchema.Nodes.Add(_rootNodeLeftSchema);
             treeView_leftSchema.Sort();
 
             if (_leftDataPanel != null)
@@ -997,13 +948,18 @@ namespace JsonDictionaryCore
             {
                 var nodes = treeView_rightSchema.Nodes.Find(path, true);
                 if (nodes.Any())
+                {
                     treeView_rightSchema.SelectedNode = nodes.First();
+                    ComparePanels();
+                }
             }
             else
             {
                 var nodes = treeView_leftSchema.Nodes.Find(path, true);
                 if (nodes.Any())
+                {
                     treeView_leftSchema.SelectedNode = nodes.First();
+                }
             }
         }
 
@@ -1063,6 +1019,366 @@ namespace JsonDictionaryCore
             File.WriteAllText(saveFileDialog1.FileName, ReformatJson(_rightSchema.ToJson(), Newtonsoft.Json.Formatting.Indented));
 
             GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
+        }
+
+        private void Button_compare_Click(object sender, EventArgs e)
+        {
+            if (_rootNodeLeftSchema == null || _rootNodeRightSchema == null) return;
+
+            var deep = checkBox_deepCompare.Checked;
+            var result = CompareNode(_rootNodeLeftSchema, _rootNodeRightSchema, deep);
+
+            // find missing nodes in left tree
+            treeView_leftSchema.AfterSelect -= new TreeViewEventHandler(this.TreeView_leftSchema_AfterSelect);
+            foreach (var nodePath in result)
+            {
+                var missingNode = _rootNodeLeftSchema.Nodes.Find(nodePath, true).FirstOrDefault();
+                missingNode.BackColor = Color.Red;
+                treeView_leftSchema.SelectedNode = missingNode;
+            }
+            treeView_leftSchema.AfterSelect += new TreeViewEventHandler(this.TreeView_leftSchema_AfterSelect);
+
+            // find missing nodes in right tree
+            result = CompareNode(_rootNodeRightSchema, _rootNodeLeftSchema, deep);
+            treeView_rightSchema.AfterSelect -= new TreeViewEventHandler(this.TreeView_rightSchema_AfterSelect);
+            foreach (var nodePath in result)
+            {
+                var missingNode = _rootNodeRightSchema.Nodes.Find(nodePath, true).FirstOrDefault();
+                missingNode.BackColor = Color.Red;
+                treeView_rightSchema.SelectedNode = missingNode;
+            }
+            treeView_rightSchema.AfterSelect += new TreeViewEventHandler(this.TreeView_rightSchema_AfterSelect);
+        }
+
+        private List<string> CompareNode(TreeNode leftNode, TreeNode rightNode, bool deepCompare = false)
+        {
+            var result = new List<string>();
+
+            if (leftNode == null || rightNode == null) return result;
+
+            foreach (TreeNode node in leftNode.Nodes)
+            {
+                var notSame = false;
+                if (!rightNode.Nodes.ContainsKey(node.Name)) notSame = true;
+                else if (deepCompare)
+                {
+                    var nodePath = node.FullPath.Replace("{", "").Replace("}", "").Replace("[", "").Replace("]", "");
+                    var leftSchemaNode = FindDefinition(nodePath, _leftSchema);
+
+                    nodePath = rightNode.Nodes[node.Name].FullPath.Replace("{", "").Replace("}", "").Replace("[", "").Replace("]", "");
+                    var rightSchemaNode = FindDefinition(nodePath, _rightSchema);
+
+                    if (!(leftSchemaNode == null && rightSchemaNode == null))
+                    {
+                        if (leftSchemaNode == null || rightSchemaNode == null) notSame = true;
+                        else if (leftSchemaNode.Name != rightSchemaNode.Name) notSame = true;
+                        else if (leftSchemaNode.Path != rightSchemaNode.Path) notSame = true;
+                        else if (leftSchemaNode.Description != rightSchemaNode.Description) notSame = true;
+                        else if (leftSchemaNode.Reference != rightSchemaNode.Reference) notSame = true;
+                        else
+                        {
+                            if (leftSchemaNode.Type.Count == rightSchemaNode.Type.Count)
+                            {
+                                foreach (var t1 in leftSchemaNode.Type)
+                                {
+                                    if (!rightSchemaNode.Type.Contains(t1))
+                                    {
+                                        notSame = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            else notSame = true;
+
+                            /*if (!notSame && leftSchemaNode.Examples.Count == rightSchemaNode.Examples.Count)
+                            {
+                                foreach (var t1 in leftSchemaNode.Examples)
+                                {
+                                    if (!rightSchemaNode.Examples.Contains(t1))
+                                    {
+                                        notSame = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            else notSame = true;*/
+                        }
+
+                        // check specific properties
+                        if (!notSame && leftSchemaNode is SchemaTreeProperty lSchemaProperty && rightSchemaNode is SchemaTreeProperty rSchemaProperty)
+                        {
+                            if (lSchemaProperty.Default != rSchemaProperty.Default) notSame = true;
+                            else if (lSchemaProperty.Pattern != rSchemaProperty.Pattern) notSame = true;
+                            else if (lSchemaProperty.Enum.Count == rSchemaProperty.Enum.Count)
+                            {
+                                foreach (var t1 in lSchemaProperty.Enum)
+                                {
+                                    if (!rSchemaProperty.Enum.Contains(t1))
+                                    {
+                                        notSame = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            else notSame = true;
+                        }
+                        else if (!notSame && leftSchemaNode is SchemaTreeObject lSchemaObject && rightSchemaNode is SchemaTreeObject rSchemaObject)
+                        {
+                            if (lSchemaObject.AdditionalProperties != rSchemaObject.AdditionalProperties) notSame = true;
+                            else
+                            {
+                                if (lSchemaObject.Required.Count == rSchemaObject.Required.Count)
+                                {
+                                    foreach (var t1 in lSchemaObject.Required)
+                                    {
+                                        if (!rSchemaObject.Required.Contains(t1))
+                                        {
+                                            notSame = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                                else notSame = true;
+
+                                if (lSchemaObject.Properties.Count != rSchemaObject.Properties.Count) notSame = true;
+                            }
+                        }
+                        else if (!notSame && leftSchemaNode is SchemaTreeArray lSchemaArray && rightSchemaNode is SchemaTreeArray rSchemaArray)
+                        {
+                            if (lSchemaArray.UniqueItemsOnly != rSchemaArray.UniqueItemsOnly) notSame = true;
+                            else if (lSchemaArray.Items == null && rSchemaArray.Items != null
+                                || lSchemaArray.Items != null && rSchemaArray.Items == null) notSame = true;
+                        }
+                    }
+                }
+
+                if (notSame)
+                    result.Add(node.Name);
+
+                var res = CompareNode(node, rightNode.Nodes[node.Name], deepCompare);
+                result.AddRange(res);
+            }
+
+            return result;
+        }
+
+        private void TextBox_find_Leave(object sender, EventArgs e)
+        {
+            if (textBox_find.Text != _lastSearchString)
+            {
+                _lastSearchString = textBox_find.Text;
+                _searchListPositionLeft = -1;
+                _lastSearchListLeft = new List<string>();
+                _searchListPositionRight = -1;
+                _lastSearchListRight = new List<string>();
+            }
+        }
+
+        private void Button_findNext_Click(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(_lastSearchString)
+                && (_lastSearchListLeft == null || _lastSearchListLeft.Count <= 0
+                || _lastSearchListRight == null || _lastSearchListRight.Count <= 0))
+                SearchInTrees(_lastSearchString);
+
+            if (_lastTreeViewSelected != null)
+            {
+                if (_lastTreeViewSelected.Name.Contains("left", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    if (_lastSearchListLeft == null || _lastSearchListLeft.Count <= 0) return;
+
+                    _searchListPositionLeft++;
+                    if (_searchListPositionLeft >= _lastSearchListLeft.Count)
+                        _searchListPositionLeft = 0;
+
+                    var nodeToSelect = _lastTreeViewSelected.Nodes.Find(_lastSearchListLeft[_searchListPositionLeft], true)?.FirstOrDefault();
+                    if (nodeToSelect != null)
+                    {
+                        _lastTreeViewSelected.SelectedNode = nodeToSelect;
+                    }
+                }
+                else
+                {
+                    if (_lastSearchListRight == null || _lastSearchListRight.Count <= 0) return;
+
+                    _searchListPositionRight++;
+                    if (_searchListPositionRight >= _lastSearchListRight.Count)
+                        _searchListPositionRight = 0;
+
+                    var nodeToSelect = _lastTreeViewSelected.Nodes.Find(_lastSearchListRight[_searchListPositionRight], true)?.FirstOrDefault();
+                    if (nodeToSelect != null)
+                    {
+                        _lastTreeViewSelected.SelectedNode = nodeToSelect;
+                    }
+                }
+            }
+        }
+
+        private void Button_findPrev_Click(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(_lastSearchString)
+                && (_lastSearchListLeft == null || _lastSearchListLeft.Count <= 0
+                || _lastSearchListRight == null || _lastSearchListRight.Count <= 0))
+                SearchInTrees(_lastSearchString);
+
+            if (_lastTreeViewSelected != null)
+            {
+                if (_lastTreeViewSelected.Name.Contains("left", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    if (_lastSearchListLeft == null || _lastSearchListLeft.Count <= 0) return;
+
+                    _searchListPositionLeft--;
+                    if (_searchListPositionLeft < 0)
+                        _searchListPositionLeft = _lastSearchListLeft.Count - 1;
+
+                    var nodeToSelect = _lastTreeViewSelected.Nodes.Find(_lastSearchListLeft[_searchListPositionLeft], true)?.FirstOrDefault();
+                    if (nodeToSelect != null)
+                    {
+                        _lastTreeViewSelected.SelectedNode = nodeToSelect;
+                    }
+                }
+                else
+                {
+                    if (_lastSearchListRight == null || _lastSearchListRight.Count <= 0) return;
+
+                    _searchListPositionRight--;
+                    if (_searchListPositionRight < 0)
+                        _searchListPositionRight = _lastSearchListRight.Count - 1;
+
+                    var nodeToSelect = _lastTreeViewSelected.Nodes.Find(_lastSearchListRight[_searchListPositionRight], true)?.FirstOrDefault();
+                    if (nodeToSelect != null)
+                    {
+                        _lastTreeViewSelected.SelectedNode = nodeToSelect;
+                    }
+                }
+            }
+        }
+
+        private void SearchInTrees(string token)
+        {
+            if (_rootNodeLeftSchema != null && _rootNodeRightSchema != null)
+            {
+                _lastSearchListLeft = FindNode(_rootNodeLeftSchema, token);
+                _lastSearchListRight = FindNode(_rootNodeRightSchema, token);
+            }
+        }
+
+        private List<string> FindNode(TreeNode rootNode, string token)
+        {
+            var result = new List<string>();
+            if (rootNode.Text.Contains(token))
+                result.Add(rootNode.Name);
+
+            foreach (TreeNode node in rootNode.Nodes)
+                result.AddRange(FindNode(node, token));
+
+            return result;
+        }
+
+        private void Button_clearCompare_Click(object sender, EventArgs e)
+        {
+            ClearBackground(_rootNodeLeftSchema);
+            ClearBackground(_rootNodeRightSchema);
+        }
+
+        private void ClearBackground(TreeNode rootNode)
+        {
+            rootNode.BackColor = Color.Empty;
+
+            foreach (TreeNode node in rootNode.Nodes)
+                ClearBackground(node);
+        }
+
+        private void TreeView_rightSchema_Enter(object sender, EventArgs e)
+        {
+            _lastTreeViewSelected = treeView_rightSchema;
+        }
+
+        private void TreeView_leftSchema_Enter(object sender, EventArgs e)
+        {
+            _lastTreeViewSelected = treeView_leftSchema;
+        }
+
+        private void ComparePanels()
+        {
+            if (_leftDataPanel is PropertyDataPanel dpl && _rightDataPanel is PropertyDataPanel dpr)
+            {
+                if (dpl.ObjectPathText != dpr.ObjectPathText)
+                {
+                    dpl.ObjectPathBackColor = dpr.ObjectPathBackColor = Color.LightPink;
+                }
+                if (dpl.ObjectTypeText != dpr.ObjectTypeText)
+                {
+                    dpl.ObjectTypeBackColor = dpr.ObjectTypeBackColor = Color.LightPink;
+                }
+                if (dpl.ObjectDescText != dpr.ObjectDescText)
+                {
+                    dpl.ObjectDescBackColor = dpr.ObjectDescBackColor = Color.LightPink;
+                }
+                if (dpl.ObjectRefText != dpr.ObjectRefText)
+                {
+                    dpl.ObjectRefBackColor = dpr.ObjectRefBackColor = Color.LightPink;
+                }
+                if (dpl.ObjectDefaultText != dpr.ObjectDefaultText)
+                {
+                    dpl.ObjectDefaultBackColor = dpr.ObjectDefaultBackColor = Color.LightPink;
+                }
+                if (dpl.ObjectEnumText != dpr.ObjectEnumText)
+                {
+                    dpl.ObjectEnumBackColor = dpr.ObjectEnumBackColor = Color.LightPink;
+                }
+            }
+            else if (_leftDataPanel is ObjectDataPanel dpl1 && _rightDataPanel is ObjectDataPanel dpr1)
+            {
+                if (dpl1.ObjectPathText != dpr1.ObjectPathText)
+                {
+                    dpl1.ObjectPathBackColor = dpr1.ObjectPathBackColor = Color.LightPink;
+                }
+                if (dpl1.ObjectTypeText != dpr1.ObjectTypeText)
+                {
+                    dpl1.ObjectTypeBackColor = dpr1.ObjectTypeBackColor = Color.LightPink;
+                }
+                if (dpl1.ObjectDescText != dpr1.ObjectDescText)
+                {
+                    dpl1.ObjectDescBackColor = dpr1.ObjectDescBackColor = Color.LightPink;
+                }
+                if (dpl1.ObjectRefText != dpr1.ObjectRefText)
+                {
+                    dpl1.ObjectRefBackColor = dpr1.ObjectRefBackColor = Color.LightPink;
+                }
+                if (dpl1.ObjectAdditionalText != dpr1.ObjectAdditionalText)
+                {
+                    dpl1.ObjectAdditionalBackColor = dpr1.ObjectAdditionalBackColor = Color.LightPink;
+                }
+                if (dpl1.ObjectRequiredText != dpr1.ObjectRequiredText)
+                {
+                    dpl1.ObjectRequiredBackColor = dpr1.ObjectRequiredBackColor = Color.LightPink;
+                }
+            }
+            else if (_leftDataPanel is ArrayDataPanel dpl2 && _rightDataPanel is ArrayDataPanel dpr2)
+            {
+                if (dpl2.ObjectPathText != dpr2.ObjectPathText)
+                {
+                    dpl2.ObjectPathBackColor = dpr2.ObjectPathBackColor = Color.LightPink;
+                }
+                if (dpl2.ObjectTypeText != dpr2.ObjectTypeText)
+                {
+                    dpl2.ObjectTypeBackColor = dpr2.ObjectTypeBackColor = Color.LightPink;
+                }
+                if (dpl2.ObjectDescText != dpr2.ObjectDescText)
+                {
+                    dpl2.ObjectDescBackColor = dpr2.ObjectDescBackColor = Color.LightPink;
+                }
+                if (dpl2.ObjectRefText != dpr2.ObjectRefText)
+                {
+                    dpl2.ObjectRefBackColor = dpr2.ObjectRefBackColor = Color.LightPink;
+                }
+                if (dpl2.ObjectUniqueText != dpr2.ObjectUniqueText)
+                {
+                    dpl2.ObjectUniqueBackColor = dpr2.ObjectUniqueBackColor = Color.LightPink;
+                }
+
+            }
         }
 
         #endregion
@@ -1563,10 +1879,10 @@ namespace JsonDictionaryCore
             var records = exampleLinkCollection[currentNode.Name];
             toolStripStatusLabel1.Text = "Displaying " + records.Count + " records";
 
-            var parentNode = _lastSelectedNode?.Parent;
-            if (_lastSelectedNode != null)
+            var parentNode = _lastSelectedExamplesNode?.Parent;
+            if (_lastSelectedExamplesNode != null)
             {
-                _lastSelectedNode.BackColor = Color.White;
+                _lastSelectedExamplesNode.BackColor = Color.White;
 
                 while (parentNode != null)
                 {
@@ -1575,7 +1891,7 @@ namespace JsonDictionaryCore
                 }
             }
 
-            _lastSelectedNode = currentNode;
+            _lastSelectedExamplesNode = currentNode;
             currentNode.BackColor = Color.DodgerBlue;
             parentNode = currentNode.Parent;
             while (parentNode != null)
@@ -1663,7 +1979,7 @@ namespace JsonDictionaryCore
 
             if (searchParam == null || string.IsNullOrEmpty(searchParam.Value))
             {
-                FillExamplesGrid(exampleLinkCollection, _lastSelectedNode, searchParam);
+                FillExamplesGrid(exampleLinkCollection, _lastSelectedExamplesNode, searchParam);
                 return;
             }
 
@@ -1698,7 +2014,7 @@ namespace JsonDictionaryCore
                 _lastSearchList.Add(new SearchItem(appConfig.ConfigStorage.DefaultVersionCaption));
             var lastSearch = _lastSearchList.Last();
             if (lastSearch.Version != appConfig.ConfigStorage.DefaultVersionCaption)
-                FillExamplesGrid(exampleLinkCollection, _lastSelectedNode, searchParam);
+                FillExamplesGrid(exampleLinkCollection, _lastSelectedExamplesNode, searchParam);
 
             if (comboBox_ExVersions.Items.Contains(searchParam.Version))
             {
@@ -2166,80 +2482,6 @@ namespace JsonDictionaryCore
 
         #region Schema generation
 
-        private class ValuePair
-        {
-            public string Version = "";
-            public string Url = "";
-
-            public override string ToString()
-            {
-                return Version;
-            }
-        }
-
-        private void CollectSchemaVersions()
-        {
-            if (comboBox_fileType.SelectedIndex < 0) return;
-
-            var fileType =
-                appConfig.ConfigStorage.FileTypes.FirstOrDefault(n =>
-                    n.FileType.ToString() == comboBox_fileType.SelectedItem.ToString());
-
-            if (fileType == null) return;
-
-            comboBox_contentVersion.Items.Clear();
-            comboBox_contentVersion.DisplayMember = "Version";
-            comboBox_contentVersion.ValueMember = "Url";
-
-            textBox_schemaUrl.Text = string.Empty;
-
-            _exampleLinkCollection.TryGetValue(
-                $"<{fileType.FileType}>{appConfig.ConfigStorage.JsonPathDiv}contentVersion",
-                out var versionsCollection);
-
-            if (versionsCollection == null) return;
-
-            var versions = versionsCollection
-                .Select(n => n.Value)
-                .Distinct()
-                .ToArray();
-
-            if (!versions.Any()) return;
-
-            var schemaVersionUrls = new List<ValuePair>();
-            foreach (var version in versions)
-            {
-                var fileName = versionsCollection.FirstOrDefault(n => n.Value == version)?.FullFileName;
-                _exampleLinkCollection.TryGetValue($"<{fileType.FileType}>{appConfig.ConfigStorage.JsonPathDiv}$schema",
-                    out var urlCollection);
-                var url = urlCollection?.FirstOrDefault(n =>
-                        n.FullFileName == fileName)?
-                    .Value;
-                schemaVersionUrls.Add(new ValuePair { Version = version, Url = url });
-            }
-
-            comboBox_contentVersion.Items.AddRange(schemaVersionUrls.ToArray());
-
-            if (comboBox_contentVersion.Items.Count > 0) comboBox_contentVersion.SelectedIndex = 0;
-        }
-
-        private static string GetSchemaText(string schemaUrl, bool ignoreHttpsError = false)
-        {
-            var schemaData = "";
-            if (string.IsNullOrEmpty(schemaUrl))
-                return schemaData;
-
-            if (ignoreHttpsError)
-                ServicePointManager.ServerCertificateValidationCallback = (a, b, c, d) => true;
-
-            using (var webClient = new WebClient())
-            {
-                schemaData = webClient.DownloadString(schemaUrl);
-            }
-
-            return schemaData;
-        }
-
         private ISchemaTreeBase JsonPropertyListToSchemaObject(
             IEnumerable<ParsedProperty> rootCollection,
             string startPath,
@@ -2409,6 +2651,8 @@ namespace JsonDictionaryCore
                 _nodeDescription?.TryGetValue(node.Name, out nodeDescription);
             }
 
+            nodeDescription = nodeDescription?.Replace("\r", "\\r").Replace("\n", "\\n").Replace("\"", "\\\"");
+
             examples.TryGetValue(node.Name, out var nodeExamples);
 
             if (nodeType == JsonPropertyTypes.Array)
@@ -2534,7 +2778,7 @@ namespace JsonDictionaryCore
             };
 
             // if all property types are "string" create Enum
-            if (nodeVariableTypes.Any(n => n != "object"))
+            if (nodeVariableTypes.Any(n => n == "string"))
             {
                 propertyNode.Enum = nodeExamples?
                     .Where(n => n.VariableType == JsonValueTypes.String)?
@@ -2542,6 +2786,17 @@ namespace JsonDictionaryCore
                     .Distinct()?
                     .OrderBy(n => n)?
                     .ToList();
+
+                if (propertyNode.Type.Contains("boolean"))
+                {
+                    propertyNode.Enum?.Add("true");
+                    propertyNode.Enum?.Add("false");
+                }
+
+                if (propertyNode.Type.Contains("null"))
+                {
+                    propertyNode.Enum?.Add("null");
+                }
             }
 
             return propertyNode;
@@ -2656,5 +2911,6 @@ namespace JsonDictionaryCore
         }
 
         #endregion
+
     }
 }

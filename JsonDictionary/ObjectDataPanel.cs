@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
@@ -8,6 +9,68 @@ namespace JsonDictionaryCore
     public partial class ObjectDataPanel : UserControl
     {
         private readonly SchemaTreeObject SourceSchemaObject;
+
+        public string ObjectPathText
+        {
+            get { return textBox_path.Text; }
+        }
+
+        public Color ObjectPathBackColor
+        {
+            get { return textBox_path.BackColor; }
+            set { textBox_path.BackColor = value; }
+        }
+
+        public string ObjectTypeText
+        {
+            get { return textBox_type.Text; }
+        }
+
+        public Color ObjectTypeBackColor
+        {
+            get { return textBox_type.BackColor; }
+            set { textBox_type.BackColor = value; }
+        }
+        public string ObjectDescText
+        {
+            get { return textBox_description.Text; }
+        }
+
+        public Color ObjectDescBackColor
+        {
+            get { return textBox_description.BackColor; }
+            set { textBox_description.BackColor = value; }
+        }
+        public string ObjectRefText
+        {
+            get { return textBox_reference.Text; }
+        }
+
+        public Color ObjectRefBackColor
+        {
+            get { return textBox_reference.BackColor; }
+            set { textBox_reference.BackColor = value; }
+        }
+        public string ObjectAdditionalText
+        {
+            get { return textBox_additional.Text; }
+        }
+
+        public Color ObjectAdditionalBackColor
+        {
+            get { return textBox_additional.BackColor; }
+            set { textBox_additional.BackColor = value; }
+        }
+        public string ObjectRequiredText
+        {
+            get { return textBox_required.Text; }
+        }
+
+        public Color ObjectRequiredBackColor
+        {
+            get { return textBox_required.BackColor; }
+            set { textBox_required.BackColor = value; }
+        }
 
         public ObjectDataPanel()
         {
@@ -94,17 +157,17 @@ namespace JsonDictionaryCore
         {
             var allowedTypes = new List<string>
             {
-                "String",
-                "Number",
-                "Integer",
-                "Boolean",
-                "Null",
-                "Array",
-                "Object"
+                "string",
+                "number",
+                "integer",
+                "boolean",
+                "null",
+                "array",
+                "object"
             };
 
             var valueList = new List<string>();
-            valueList.AddRange(textBox_type.Text.Split(';'));
+            valueList.AddRange(textBox_type.Text.ToLower().Split(';'));
             for (var i = 0; i < valueList.Count; i++)
             {
                 if (!allowedTypes.Contains(valueList[i]))
