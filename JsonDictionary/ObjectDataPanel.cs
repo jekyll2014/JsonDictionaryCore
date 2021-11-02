@@ -77,7 +77,7 @@ namespace JsonDictionaryCore
             InitializeComponent();
         }
 
-        public ObjectDataPanel(SchemaTreeObject dataObject)
+        public ObjectDataPanel(SchemaTreeObject dataObject, string treePath)
         {
             SourceSchemaObject = dataObject;
 
@@ -85,6 +85,21 @@ namespace JsonDictionaryCore
 
             InitializeComponent();
             textBox_path.Text = SourceSchemaObject.Path;
+
+            if (!string.IsNullOrEmpty(treePath))
+            {
+                treePath = treePath.Replace('\\', '/');
+                if (treePath.EndsWith("/properties"))
+                {
+                    var pos = treePath.LastIndexOf("/properties");
+                    treePath = treePath.Substring(0, pos);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(treePath) && SourceSchemaObject.Path != treePath)
+            {
+                textBox_path.BackColor = Color.Red;
+            }
 
             var t = new StringBuilder();
             if (SourceSchemaObject.Type != null && SourceSchemaObject.Type.Count > 0)

@@ -1,13 +1,15 @@
-﻿using static JsonDictionaryCore.Form1;
+﻿using Newtonsoft.Json;
+
+using static JsonDictionaryCore.Form1;
 
 namespace JsonDictionaryCore
 {
     public struct ProcessingOptions
     {
-        public string FileType;
-        public string ItemName;
-        public string MoveToPath;
-        public string[] ParentNames;
+        public string ContentType; // file type name
+        public string[] ParentNames; // parent node name
+        public string ItemName; // property name to search
+        public string MoveToPath; // make this a parent path
     }
 
     public struct WinPosition
@@ -17,6 +19,7 @@ namespace JsonDictionaryCore
         public int WinW;
         public int WinH;
 
+        [JsonIgnore]
         public bool Initialized
         {
             get => !(WinX <= 0 && WinY <= 0 && WinW <= 0 && WinH <= 0);
@@ -28,7 +31,7 @@ namespace JsonDictionaryCore
         //[JsonProperty(Required = Required.Always)]
         public string LastRootFolder { get; set; } = "";
         public bool ReformatJson { get; set; } = false;
-		public bool BeautifyJson { get; set; } = false;
+        public bool BeautifyJson { get; set; } = false;
         public string LastDbName { get; set; } = "";
         public bool ShowPreview { get; set; } = true;
         public bool AlwaysOnTop { get; set; } = false;
@@ -51,7 +54,7 @@ namespace JsonDictionaryCore
         public string DefaultEditorFormCaption { get; set; } = "JsonDictionary [Kinetic]";
         public string DefaultTreeFileExtension { get; set; } = "tree";
         public string DefaultExamplesFileExtension { get; set; } = "examples";
-        public string DefaultFiledialogFormCaption { get; set; } = "KineticScheme data";
+        public string DefaultFiledialogFormCaption { get; set; } = "Kinetic data";
         public string DefaultSaveFileName { get; set; } = "KineticDictionary_";
 
         public WinPosition EditorPosition { get; set; } = new WinPosition
@@ -73,64 +76,64 @@ namespace JsonDictionaryCore
         public ContentTypeItem[] FileTypes = {
             new ContentTypeItem
             {
-                FileTypeMask = "dataviews.jsonc",
+                FileTypeSign = "dataviews.jsonc",
                 PropertyTypeName = "dataviews",
-                FileType = "DataViews"
+                ContentType = "DataViews"
             },
             new ContentTypeItem
             {
-                FileTypeMask = "events.jsonc",
+                FileTypeSign = "events.jsonc",
                 PropertyTypeName = "events",
-                FileType = "Events"
+                ContentType = "Events"
             },
             new ContentTypeItem
             {
-                FileTypeMask = "layout.jsonc",
+                FileTypeSign = "layout.jsonc",
                 PropertyTypeName = "layout",
-                FileType = "Layout"
+                ContentType = "Layout"
             },
             new ContentTypeItem
             {
-                FileTypeMask = "rules.jsonc",
+                FileTypeSign = "rules.jsonc",
                 PropertyTypeName = "rules",
-                FileType = "Rules"
+                ContentType = "Rules"
             },
             new ContentTypeItem
             {
-                FileTypeMask = "tools.jsonc",
+                FileTypeSign = "tools.jsonc",
                 PropertyTypeName = "tools",
-                FileType = "Tools"
+                ContentType = "Tools"
             },
             new ContentTypeItem
             {
-                FileTypeMask = "strings.jsonc",
+                FileTypeSign = "strings.jsonc",
                 PropertyTypeName = "strings",
-                FileType = "Strings"
+                ContentType = "Strings"
             },
             new ContentTypeItem
             {
-                FileTypeMask = "patch.jsonc",
+                FileTypeSign = "patch.jsonc",
                 PropertyTypeName = "patch",
-                FileType = "Patch"
+                ContentType = "Patch"
             },
             new ContentTypeItem
             {
-                FileTypeMask = "search.jsonc",
+                FileTypeSign = "search.jsonc",
                 PropertyTypeName = "search",
-                FileType = "Search"
+                ContentType = "Search"
             },
             new ContentTypeItem
             {
-                FileTypeMask = "combo.jsonc",
+                FileTypeSign = "combo.jsonc",
                 PropertyTypeName = "combo",
-                FileType = "Combo"
+                ContentType = "Combo"
             },
         };
 
         public ProcessingOptions[] FlattenParameters = {
             new ProcessingOptions
             {
-                FileType = "Events",
+                ContentType = "Events",
                 ItemName = "type",
                 MoveToPath = "Events.actions",
                 ParentNames = new[]
@@ -152,21 +155,21 @@ namespace JsonDictionaryCore
             },
             new ProcessingOptions
             {
-                FileType = "Layout",
+                ContentType = "Layout",
                 ItemName = "sourcetypeid",
                 MoveToPath = "",
                 ParentNames = new[] { "components" }
             },
             new ProcessingOptions
             {
-                FileType = "Rules",
+                ContentType = "Rules",
                 ItemName = "action",
                 MoveToPath = "",
                 ParentNames = new[] { "actions" }
             },
             new ProcessingOptions
             {
-                FileType = "Search",
+                ContentType = "Search",
                 ItemName = "sourcetypeid",
                 MoveToPath = "",
                 ParentNames = new[] { "component" }

@@ -1,8 +1,6 @@
 ﻿// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
-#define EPICOR
-
 using JsonEditorForm;
 
 using JsonPathParserLib;
@@ -226,15 +224,15 @@ namespace JsonDictionaryCore
                    {
                        startOperationTime = DateTime.Now;
                        FlushLog();
-                       toolStripStatusLabel1.Text = "Processing " + param.FileType + " collection";
+                       toolStripStatusLabel1.Text = "Processing " + param.ContentType + " collection";
                    });
 
-                    FlattenCollection(jsonPropertiesCollection, param.FileType, param.ItemName, param.MoveToPath, param.ParentNames);
+                    FlattenCollection(jsonPropertiesCollection, param.ContentType, param.ItemName, param.MoveToPath, param.ParentNames);
 
                     Invoke((MethodInvoker)delegate
                    {
                        endTime = DateTime.Now;
-                       _textLog.AppendLine(param.FileType + " processing time: " +
+                       _textLog.AppendLine(param.ContentType + " processing time: " +
                                            endTime.Subtract(startOperationTime).TotalSeconds);
                    });
                 });
@@ -821,15 +819,15 @@ namespace JsonDictionaryCore
 
             if (node is SchemaTreeProperty schemaProperty)
             {
-                _leftDataPanel = new PropertyDataPanel(schemaProperty);
+                _leftDataPanel = new PropertyDataPanel(schemaProperty, nodePath);
             }
             else if (node is SchemaTreeObject schemaObject)
             {
-                _leftDataPanel = new ObjectDataPanel(schemaObject);
+                _leftDataPanel = new ObjectDataPanel(schemaObject, nodePath);
             }
             else if (node is SchemaTreeArray schemaArray)
             {
-                _leftDataPanel = new ArrayDataPanel(schemaArray);
+                _leftDataPanel = new ArrayDataPanel(schemaArray, nodePath);
             }
 
             if (_leftDataPanel != null)
@@ -879,15 +877,15 @@ namespace JsonDictionaryCore
 
             if (node is SchemaTreeProperty schemaProperty)
             {
-                _rightDataPanel = new PropertyDataPanel(schemaProperty);
+                _rightDataPanel = new PropertyDataPanel(schemaProperty, nodePath);
             }
             else if (node is SchemaTreeObject schemaObject)
             {
-                _rightDataPanel = new ObjectDataPanel(schemaObject);
+                _rightDataPanel = new ObjectDataPanel(schemaObject, nodePath);
             }
             else if (node is SchemaTreeArray schemaArray)
             {
-                _rightDataPanel = new ArrayDataPanel(schemaArray);
+                _rightDataPanel = new ArrayDataPanel(schemaArray, nodePath);
             }
 
             if (_rightDataPanel != null)
@@ -1299,6 +1297,11 @@ namespace JsonDictionaryCore
             _lastTreeViewSelected = treeView_leftSchema;
         }
 
+        private void Button_compareNode_Click(object sender, EventArgs e)
+        {
+            ComparePanels();
+        }
+
         private void ComparePanels()
         {
             if (_leftDataPanel is PropertyDataPanel dpl && _rightDataPanel is PropertyDataPanel dpr)
@@ -1537,15 +1540,14 @@ namespace JsonDictionaryCore
         }
 
         private void DeserializeFile(
-            string fullFileName,
+            string longFileName,
             string fileType,
             BlockingCollection<JsonProperty> rootCollection)
         {
             string jsonStr;
             try
             {
-                //jsonStr = CompactJson(File.ReadAllText(fullFileName));
-                jsonStr = File.ReadAllText(fullFileName);
+                jsonStr = File.ReadAllText(longFileName);
             }
             catch (Exception ex)
             {
@@ -1590,7 +1592,7 @@ namespace JsonDictionaryCore
                 {
                     if (item.Path.StartsWith(fType.PropertyTypeName))
                     {
-                        fileType = fType.FileType;
+                        fileType = fType.ContentType;
                         break;
                     }
                 }
@@ -1601,7 +1603,7 @@ namespace JsonDictionaryCore
                     Name = item.Name,
                     Value = item.Value,
                     ContentType = fileType,
-                    FullFileName = fullFileName,
+                    FullFileName = longFileName,
                     Version = version,
                     JsonPath = item.Path,
                     VariableType = item.ValueType,
@@ -1613,19 +1615,20 @@ namespace JsonDictionaryCore
 
         private void FlattenCollection(IEnumerable<JsonProperty> propertiesCollection,
             string contentType,
-            string elementName,
+            string itemName,
             string moveToPath,
             string[] parentName)
         {
             if (propertiesCollection == null
                 || !propertiesCollection.Any()
-                || string.IsNullOrEmpty(elementName)
+                || string.IsNullOrEmpty(itemName)
                 || parentName == null
                 || parentName.Length <= 0
                 || string.IsNullOrEmpty(parentName[0]))
                 return;
 
-            var typedCollection = propertiesCollection
+            //group collection by ContentType
+            var contentTypeGroupedProperties = propertiesCollection
                 .Where(n => n.ContentType == contentType)
                 .ToArray();
 
@@ -1634,39 +1637,40 @@ namespace JsonDictionaryCore
                 parentName[i] = parentName[i].ToLower();
             }
 
-            IEnumerable<IGrouping<string, JsonProperty>> fileGroupedCollection;
+            // group collection of selected actions (parent + name) grouped by by filenames
+            IEnumerable<IGrouping<string, JsonProperty>> fileGroupedItems;
             if (parentName.Length > 1)
             {
-                fileGroupedCollection = typedCollection
-                    .Where(n =>
-                        n.Name.Equals(elementName, StringComparison.OrdinalIgnoreCase)
-                        && parentName.Contains(n.UnifiedParent.ToLower()))
+                fileGroupedItems = contentTypeGroupedProperties
+                    .Where(n => n.Name.Equals(itemName, StringComparison.OrdinalIgnoreCase)
+                                && parentName.Contains(n.UnifiedParent.ToLower()))
                     .GroupBy(n => n.FullFileName)
                     .ToArray();
             }
             else
             {
-                fileGroupedCollection = typedCollection
+                fileGroupedItems = contentTypeGroupedProperties
                     .Where(n =>
-                        n.Name.Equals(elementName, StringComparison.OrdinalIgnoreCase)
+                        n.Name.Equals(itemName, StringComparison.OrdinalIgnoreCase)
                         && parentName[0].Equals(n.UnifiedParent, StringComparison.OrdinalIgnoreCase))
                     .GroupBy(n => n.FullFileName)
                     .ToArray();
             }
 
-            var processedFilesNumber = 0;
-            var totalFilesNumber = fileGroupedCollection.Count();
+            var processedItemsNumber = 0;
+            var totalItemsNumber = fileGroupedItems.Count();
 
-            //get every file name
-            foreach (var actionCollection in fileGroupedCollection)
+            // process items in every single file
+            foreach (var actionItem in fileGroupedItems)
             {
-                var fileActionCollection = typedCollection
+                // get properties for single file
+                var fileProperties = contentTypeGroupedProperties
                     .Where(n =>
-                        n.FullFileName == actionCollection.Key)
+                        n.FullFileName == actionItem.Key)
                     .ToArray();
 
-                // iterate through single file one by one
-                foreach (var actionProperty in actionCollection)
+                // iterate through single file item after item
+                foreach (var actionProperty in actionItem)
                 {
                     var moveToPathTmp = new StringBuilder();
 
@@ -1675,13 +1679,11 @@ namespace JsonDictionaryCore
                     else
                         moveToPathTmp.Append(moveToPath);
 
-                    moveToPathTmp.Append(".<" + actionProperty.Value.Replace(appConfig.ConfigStorage.JsonPathDiv, '_') + ">");
+                    moveToPathTmp.Append($".<{actionProperty.Value.Replace(appConfig.ConfigStorage.JsonPathDiv, '_')}>");
 
-                    //get a collection of events in the file
-                    var actionMembers = fileActionCollection
-                        .Where(n =>
-                            n.FullFileName == actionProperty.FullFileName &&
-                            n.JsonPath.Contains(actionProperty.ParentPath))
+                    //get clildren in the file for single item
+                    var actionMembers = fileProperties
+                        .Where(n => n.JsonPath.Contains(actionProperty.ParentPath))
                         .ToArray();
 
                     foreach (var actionMember in actionMembers)
@@ -1691,16 +1693,16 @@ namespace JsonDictionaryCore
                     }
                 }
 
-                if (processedFilesNumber % 50 == 0)
+                if (processedItemsNumber % 50 == 0)
                 {
                     Invoke((MethodInvoker)delegate
                    {
                        toolStripStatusLabel1.Text =
-                           contentType.ToString() + " converted " + processedFilesNumber + "/" + totalFilesNumber;
+                           contentType.ToString() + " converted " + processedItemsNumber + "/" + totalItemsNumber;
                    });
                 }
 
-                processedFilesNumber++;
+                processedItemsNumber++;
             }
         }
 
@@ -1799,13 +1801,13 @@ namespace JsonDictionaryCore
             return node;
         }
 
-        private async Task<bool> LoadDb(string fileName)
+        private async Task<bool> LoadDb(string longFileName)
         {
-            var treeFile = Path.ChangeExtension(fileName, appConfig.ConfigStorage.DefaultTreeFileExtension);
-            var examplesFile = Path.ChangeExtension(fileName, appConfig.ConfigStorage.DefaultExamplesFileExtension);
+            var treeFile = Path.ChangeExtension(longFileName, appConfig.ConfigStorage.DefaultTreeFileExtension);
+            var examplesFile = Path.ChangeExtension(longFileName, appConfig.ConfigStorage.DefaultExamplesFileExtension);
 
             FormCaption = appConfig.ConfigStorage.DefaultEditorFormCaption;
-            if (string.IsNullOrEmpty(fileName))
+            if (string.IsNullOrEmpty(longFileName))
                 return false;
 
             ActivateUiControls(false, false);
@@ -1824,7 +1826,7 @@ namespace JsonDictionaryCore
             }
             catch (Exception ex)
             {
-                MessageBox.Show("File read exception [" + fileName + "]: " + ex.Message);
+                MessageBox.Show("File read exception [" + longFileName + "]: " + ex.Message);
                 toolStripStatusLabel1.Text = "Failed to load database";
             }
 
@@ -1834,7 +1836,7 @@ namespace JsonDictionaryCore
             }
 
             tabControl1.TabPages[1].Enabled = true;
-            FormCaption = appConfig.ConfigStorage.DefaultEditorFormCaption + " " + GetShortFileName(fileName);
+            FormCaption = appConfig.ConfigStorage.DefaultEditorFormCaption + " " + GetShortFileName(longFileName);
             treeView_examples.Nodes.Clear();
             treeView_examples.Nodes.Add(_rootNodeExamples);
             treeView_examples.Nodes[0].Expand();
@@ -1852,7 +1854,7 @@ namespace JsonDictionaryCore
             }
             catch (Exception ex)
             {
-                MessageBox.Show("File read exception [" + fileName + "]: " + ex.Message);
+                MessageBox.Show("File read exception [" + longFileName + "]: " + ex.Message);
                 toolStripStatusLabel1.Text = "Failed to load database";
             }
 
@@ -2212,13 +2214,13 @@ namespace JsonDictionaryCore
             }
         }
 
-        private void ShowPreviewEditor(string fileName, string jsonPath, string sampleText,
+        private void ShowPreviewEditor(string longFileName, string jsonPath, string sampleText,
             bool standAloneEditor = false)
         {
             if (appConfig.ConfigStorage.UseVsCode)
             {
-                var lineNumber = GetLineNumberForPath(fileName, jsonPath) + 1;
-                var execParams = "-r -g " + fileName + ":" + lineNumber;
+                var lineNumber = GetLineNumberForPath(longFileName, jsonPath) + 1;
+                var execParams = "-r -g " + longFileName + ":" + lineNumber;
                 VsCodeOpenFile(execParams);
                 return;
             }
@@ -2234,10 +2236,10 @@ namespace JsonDictionaryCore
             if (textEditor != null && !textEditor.IsDisposed)
             {
                 if (textEditor.SingleLineBrackets != appConfig.ConfigStorage.ReformatJson ||
-                    textEditor.Text != appConfig.ConfigStorage.PreViewCaption + fileName)
+                    textEditor.Text != appConfig.ConfigStorage.PreViewCaption + longFileName)
                 {
                     textEditor.SingleLineBrackets = appConfig.ConfigStorage.ReformatJson;
-                    fileLoaded = textEditor.LoadJsonFromFile(fileName);
+                    fileLoaded = textEditor.LoadJsonFromFile(longFileName);
                 }
                 else
                 {
@@ -2258,7 +2260,7 @@ namespace JsonDictionaryCore
                 };
 
                 newWindow = true;
-                fileLoaded = textEditor.LoadJsonFromFile(fileName);
+                fileLoaded = textEditor.LoadJsonFromFile(longFileName);
             }
 
             if (!standAloneEditor) _sideViewer = textEditor;
@@ -2285,17 +2287,17 @@ namespace JsonDictionaryCore
 
             if (!fileLoaded)
             {
-                textEditor.Text = "Failed to load " + fileName;
+                textEditor.Text = "Failed to load " + longFileName;
                 return;
             }
 
             if (!standAloneEditor)
             {
-                textEditor.Text = appConfig.ConfigStorage.PreViewCaption + fileName;
+                textEditor.Text = appConfig.ConfigStorage.PreViewCaption + longFileName;
             }
             else
             {
-                textEditor.Text = fileName;
+                textEditor.Text = longFileName;
             }
 
             if (!textEditor.HighlightPathJson(jsonPath))
@@ -2308,19 +2310,22 @@ namespace JsonDictionaryCore
 
         #region Utilities
 
-        private static string GetFileTypeFromFileName(string fullFileName, IEnumerable<Form1.ContentTypeItem> fileTypes)
+        private static string GetFileTypeFromFileName(string longFileName, IEnumerable<Form1.ContentTypeItem> fileTypes)
         {
-#if EPICOR
-            var shortFileName = GetShortFileName(fullFileName);
+            if (string.IsNullOrEmpty(longFileName))
+                return "?";
 
-            return (from item in fileTypes where shortFileName.EndsWith(item.FileTypeMask) select item.FileType).FirstOrDefault();
-#else
-            var dirName = GetDirectoryName(fullFileName);
-            var result =
-                fileTypes.Where(n => dirName.EndsWith(n.FileTypeMask)).Select(n => n.FileType).FirstOrDefault() ?? "?";
-
-            return result;
-#endif
+            if (fileTypes.Any(n => n.FileTypeSign.EndsWith('\\') || n.FileTypeSign.EndsWith('/')))
+            {
+                var dirName = GetDirectoryName(longFileName);
+                return
+                    fileTypes.Where(n => dirName.EndsWith(n.FileTypeSign.TrimEnd(new char[] { '\\', '/' }))).Select(n => n.ContentType).FirstOrDefault() ?? "?";
+            }
+            else
+            {
+                var shortFileName = GetShortFileName(longFileName);
+                return fileTypes.Where(n => shortFileName.EndsWith(n.FileTypeSign)).Select(n => n.ContentType).FirstOrDefault() ?? "?";
+            }
         }
 
         private static string GetShortFileName(string longFileName)
@@ -2328,20 +2333,15 @@ namespace JsonDictionaryCore
             if (string.IsNullOrEmpty(longFileName))
                 return longFileName;
 
-            var i = longFileName.LastIndexOf('\\');
-            if (i < 0)
-                return longFileName;
-
-            if (i + 1 >= 0 && longFileName.Length > i + 1)
-            {
-                return longFileName.Substring(i + 1);
-            }
-
-            return longFileName;
+            var file = new FileInfo(longFileName);
+            return file.Name;
         }
 
         private static string GetDirectoryName(string longFileName)
         {
+            if (string.IsNullOrEmpty(longFileName))
+                return longFileName;
+
             var file = new FileInfo(longFileName);
             return file.Directory.Name;
         }
@@ -2418,12 +2418,12 @@ namespace JsonDictionaryCore
             }
         }
 
-        private int GetLineNumberForPath(string fullFileName, string jsonPath)
+        private int GetLineNumberForPath(string longFileName, string jsonPath)
         {
             string jsonStr;
             try
             {
-                jsonStr = File.ReadAllText(fullFileName);
+                jsonStr = File.ReadAllText(longFileName);
             }
             catch
             {

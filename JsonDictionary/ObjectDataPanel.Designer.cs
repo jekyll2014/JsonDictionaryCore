@@ -30,7 +30,6 @@ namespace JsonDictionaryCore
         private void InitializeComponent()
         {
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.textBox_path = new System.Windows.Forms.TextBox();
             this.textBox_description = new System.Windows.Forms.TextBox();
             this.label9 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
@@ -44,6 +43,7 @@ namespace JsonDictionaryCore
             this.textBox_additional = new System.Windows.Forms.TextBox();
             this.textBox_examples = new System.Windows.Forms.TextBox();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
+            this.textBox_path = new System.Windows.Forms.TextBox();
             this.button_save = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.tableLayoutPanel1.SuspendLayout();
@@ -58,7 +58,6 @@ namespace JsonDictionaryCore
             this.tableLayoutPanel1.ColumnCount = 2;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanel1.Controls.Add(this.textBox_path, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.textBox_description, 1, 2);
             this.tableLayoutPanel1.Controls.Add(this.label9, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.label4, 0, 2);
@@ -71,7 +70,8 @@ namespace JsonDictionaryCore
             this.tableLayoutPanel1.Controls.Add(this.label5, 0, 5);
             this.tableLayoutPanel1.Controls.Add(this.textBox_additional, 1, 3);
             this.tableLayoutPanel1.Controls.Add(this.textBox_examples, 1, 5);
-            this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel2, 0, 0);
+            this.tableLayoutPanel1.Controls.Add(this.tableLayoutPanel2, 1, 0);
+            this.tableLayoutPanel1.Controls.Add(this.label2, 0, 0);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -83,27 +83,16 @@ namespace JsonDictionaryCore
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(194, 261);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(276, 263);
             this.tableLayoutPanel1.TabIndex = 4;
-            // 
-            // textBox_path
-            // 
-            this.textBox_path.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox_path.Location = new System.Drawing.Point(141, 3);
-            this.textBox_path.Name = "textBox_path";
-            this.textBox_path.ReadOnly = true;
-            this.textBox_path.Size = new System.Drawing.Size(50, 23);
-            this.textBox_path.TabIndex = 0;
             // 
             // textBox_description
             // 
             this.textBox_description.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox_description.Location = new System.Drawing.Point(141, 67);
+            this.textBox_description.Location = new System.Drawing.Point(141, 69);
             this.textBox_description.Name = "textBox_description";
-            this.textBox_description.Size = new System.Drawing.Size(50, 23);
+            this.textBox_description.Size = new System.Drawing.Size(132, 23);
             this.textBox_description.TabIndex = 0;
             // 
             // label9
@@ -111,7 +100,7 @@ namespace JsonDictionaryCore
             this.label9.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(3, 35);
+            this.label9.Location = new System.Drawing.Point(3, 37);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(31, 29);
             this.label9.TabIndex = 1;
@@ -123,7 +112,7 @@ namespace JsonDictionaryCore
             this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(3, 64);
+            this.label4.Location = new System.Drawing.Point(3, 66);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(67, 29);
             this.label4.TabIndex = 1;
@@ -135,7 +124,7 @@ namespace JsonDictionaryCore
             this.label10.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(3, 122);
+            this.label10.Location = new System.Drawing.Point(3, 124);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(81, 29);
             this.label10.TabIndex = 1;
@@ -148,9 +137,9 @@ namespace JsonDictionaryCore
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textBox_reference.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point);
             this.textBox_reference.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.textBox_reference.Location = new System.Drawing.Point(141, 125);
+            this.textBox_reference.Location = new System.Drawing.Point(141, 127);
             this.textBox_reference.Name = "textBox_reference";
-            this.textBox_reference.Size = new System.Drawing.Size(50, 23);
+            this.textBox_reference.Size = new System.Drawing.Size(132, 23);
             this.textBox_reference.TabIndex = 0;
             this.textBox_reference.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.TextBox_reference_MouseDoubleClick);
             // 
@@ -158,9 +147,9 @@ namespace JsonDictionaryCore
             // 
             this.textBox_type.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox_type.Location = new System.Drawing.Point(141, 38);
+            this.textBox_type.Location = new System.Drawing.Point(141, 40);
             this.textBox_type.Name = "textBox_type";
-            this.textBox_type.Size = new System.Drawing.Size(50, 23);
+            this.textBox_type.Size = new System.Drawing.Size(132, 23);
             this.textBox_type.TabIndex = 0;
             this.textBox_type.Leave += new System.EventHandler(this.TextBox_type_Leave);
             // 
@@ -169,7 +158,7 @@ namespace JsonDictionaryCore
             this.label6.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(3, 203);
+            this.label6.Location = new System.Drawing.Point(3, 205);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(85, 58);
             this.label6.TabIndex = 1;
@@ -179,11 +168,11 @@ namespace JsonDictionaryCore
             // textBox_required
             // 
             this.textBox_required.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.textBox_required.Location = new System.Drawing.Point(141, 206);
+            this.textBox_required.Location = new System.Drawing.Point(141, 208);
             this.textBox_required.Multiline = true;
             this.textBox_required.Name = "textBox_required";
             this.textBox_required.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.textBox_required.Size = new System.Drawing.Size(50, 52);
+            this.textBox_required.Size = new System.Drawing.Size(132, 52);
             this.textBox_required.TabIndex = 0;
             // 
             // label1
@@ -191,7 +180,7 @@ namespace JsonDictionaryCore
             this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(3, 93);
+            this.label1.Location = new System.Drawing.Point(3, 95);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(132, 29);
             this.label1.TabIndex = 1;
@@ -203,7 +192,7 @@ namespace JsonDictionaryCore
             this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(3, 151);
+            this.label5.Location = new System.Drawing.Point(3, 153);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(57, 52);
             this.label5.TabIndex = 1;
@@ -214,35 +203,48 @@ namespace JsonDictionaryCore
             // 
             this.textBox_additional.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox_additional.Location = new System.Drawing.Point(141, 96);
+            this.textBox_additional.Location = new System.Drawing.Point(141, 98);
             this.textBox_additional.Name = "textBox_additional";
-            this.textBox_additional.Size = new System.Drawing.Size(50, 23);
+            this.textBox_additional.Size = new System.Drawing.Size(132, 23);
             this.textBox_additional.TabIndex = 0;
             this.textBox_additional.Leave += new System.EventHandler(this.TextBox_additional_Leave);
             // 
             // textBox_examples
             // 
             this.textBox_examples.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.textBox_examples.Location = new System.Drawing.Point(141, 154);
+            this.textBox_examples.Location = new System.Drawing.Point(141, 156);
             this.textBox_examples.Multiline = true;
             this.textBox_examples.Name = "textBox_examples";
             this.textBox_examples.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.textBox_examples.Size = new System.Drawing.Size(50, 46);
+            this.textBox_examples.Size = new System.Drawing.Size(132, 46);
             this.textBox_examples.TabIndex = 0;
             // 
             // tableLayoutPanel2
             // 
+            this.tableLayoutPanel2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanel2.ColumnCount = 2;
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel2.Controls.Add(this.textBox_path, 0, 0);
             this.tableLayoutPanel2.Controls.Add(this.button_save, 1, 0);
-            this.tableLayoutPanel2.Controls.Add(this.label2, 0, 0);
-            this.tableLayoutPanel2.Location = new System.Drawing.Point(3, 3);
+            this.tableLayoutPanel2.Location = new System.Drawing.Point(141, 3);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             this.tableLayoutPanel2.RowCount = 1;
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(132, 29);
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel2.Size = new System.Drawing.Size(132, 31);
             this.tableLayoutPanel2.TabIndex = 2;
+            // 
+            // textBox_path
+            // 
+            this.textBox_path.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBox_path.Location = new System.Drawing.Point(3, 3);
+            this.textBox_path.Name = "textBox_path";
+            this.textBox_path.ReadOnly = true;
+            this.textBox_path.Size = new System.Drawing.Size(79, 23);
+            this.textBox_path.TabIndex = 0;
             // 
             // button_save
             // 
@@ -251,7 +253,7 @@ namespace JsonDictionaryCore
             this.button_save.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.button_save.Location = new System.Drawing.Point(88, 3);
             this.button_save.Name = "button_save";
-            this.button_save.Size = new System.Drawing.Size(41, 23);
+            this.button_save.Size = new System.Drawing.Size(41, 25);
             this.button_save.TabIndex = 0;
             this.button_save.Text = "Save";
             this.button_save.UseVisualStyleBackColor = true;
@@ -259,12 +261,14 @@ namespace JsonDictionaryCore
             // 
             // label2
             // 
+            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(3, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(31, 15);
+            this.label2.Size = new System.Drawing.Size(23, 37);
             this.label2.TabIndex = 1;
-            this.label2.Text = "Path";
+            this.label2.Text = "$id";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // ObjectDataPanel
@@ -278,7 +282,7 @@ namespace JsonDictionaryCore
             this.Controls.Add(this.tableLayoutPanel1);
             this.DoubleBuffered = true;
             this.Name = "ObjectDataPanel";
-            this.Size = new System.Drawing.Size(194, 261);
+            this.Size = new System.Drawing.Size(276, 263);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             this.tableLayoutPanel2.ResumeLayout(false);

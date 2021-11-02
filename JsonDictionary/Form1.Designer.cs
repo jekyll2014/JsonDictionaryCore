@@ -29,8 +29,8 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage_DataCollection = new System.Windows.Forms.TabPage();
@@ -78,6 +78,7 @@
             this.label_descSave = new System.Windows.Forms.Label();
             this.textBox_description = new System.Windows.Forms.TextBox();
             this.tabPage_Schema = new System.Windows.Forms.TabPage();
+            this.button_compareNode = new System.Windows.Forms.Button();
             this.button_clearCompare = new System.Windows.Forms.Button();
             this.checkBox_deepCompare = new System.Windows.Forms.CheckBox();
             this.button_compare = new System.Windows.Forms.Button();
@@ -477,23 +478,23 @@
             this.dataGridView_examples.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.DisplayedCells;
             this.dataGridView_examples.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridView_examples.ContextMenuStrip = this.contextMenuStrip_samples;
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridView_examples.DefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridView_examples.DefaultCellStyle = dataGridViewCellStyle1;
             this.dataGridView_examples.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridView_examples.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
             this.dataGridView_examples.Location = new System.Drawing.Point(0, 0);
             this.dataGridView_examples.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.dataGridView_examples.Name = "dataGridView_examples";
             this.dataGridView_examples.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToDisplayedHeaders;
-            dataGridViewCellStyle4.NullValue = "Adjust";
-            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridView_examples.RowsDefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle2.NullValue = "Adjust";
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridView_examples.RowsDefaultCellStyle = dataGridViewCellStyle2;
             this.dataGridView_examples.RowTemplate.DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopLeft;
             this.dataGridView_examples.RowTemplate.DefaultCellStyle.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.dataGridView_examples.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.True;
@@ -608,7 +609,7 @@
             this.textBox_ExSearchHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.textBox_ExSearchHistory.Name = "textBox_ExSearchHistory";
             this.textBox_ExSearchHistory.ReadOnly = true;
-            this.textBox_ExSearchHistory.Size = new System.Drawing.Size(573, 23);
+            this.textBox_ExSearchHistory.Size = new System.Drawing.Size(616, 23);
             this.textBox_ExSearchHistory.TabIndex = 6;
             // 
             // comboBox_ExVersions
@@ -627,10 +628,12 @@
             // button_ExAdjustRows
             // 
             this.button_ExAdjustRows.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_ExAdjustRows.Location = new System.Drawing.Point(584, 3);
+            this.button_ExAdjustRows.AutoSize = true;
+            this.button_ExAdjustRows.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.button_ExAdjustRows.Location = new System.Drawing.Point(593, 3);
             this.button_ExAdjustRows.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.button_ExAdjustRows.Name = "button_ExAdjustRows";
-            this.button_ExAdjustRows.Size = new System.Drawing.Size(88, 27);
+            this.button_ExAdjustRows.Size = new System.Drawing.Size(79, 25);
             this.button_ExAdjustRows.TabIndex = 4;
             this.button_ExAdjustRows.Text = "Adjust rows";
             this.button_ExAdjustRows.UseVisualStyleBackColor = true;
@@ -661,7 +664,7 @@
             // 
             this.checkBox_ExCaseSensitive.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.checkBox_ExCaseSensitive.AutoSize = true;
-            this.checkBox_ExCaseSensitive.Location = new System.Drawing.Point(478, 8);
+            this.checkBox_ExCaseSensitive.Location = new System.Drawing.Point(486, 8);
             this.checkBox_ExCaseSensitive.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.checkBox_ExCaseSensitive.Name = "checkBox_ExCaseSensitive";
             this.checkBox_ExCaseSensitive.Size = new System.Drawing.Size(99, 19);
@@ -672,10 +675,12 @@
             // button_ExClearSearch
             // 
             this.button_ExClearSearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_ExClearSearch.Location = new System.Drawing.Point(584, 468);
+            this.button_ExClearSearch.AutoSize = true;
+            this.button_ExClearSearch.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.button_ExClearSearch.Location = new System.Drawing.Point(628, 470);
             this.button_ExClearSearch.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.button_ExClearSearch.Name = "button_ExClearSearch";
-            this.button_ExClearSearch.Size = new System.Drawing.Size(88, 27);
+            this.button_ExClearSearch.Size = new System.Drawing.Size(44, 25);
             this.button_ExClearSearch.TabIndex = 7;
             this.button_ExClearSearch.Text = "Clear";
             this.button_ExClearSearch.UseVisualStyleBackColor = true;
@@ -685,7 +690,7 @@
             // 
             this.label_edit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.label_edit.AutoSize = true;
-            this.label_edit.Location = new System.Drawing.Point(542, 58);
+            this.label_edit.Location = new System.Drawing.Point(542, 56);
             this.label_edit.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label_edit.Name = "label_edit";
             this.label_edit.Size = new System.Drawing.Size(111, 15);
@@ -696,7 +701,7 @@
             // 
             this.label_descSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.label_descSave.AutoSize = true;
-            this.label_descSave.Location = new System.Drawing.Point(478, 58);
+            this.label_descSave.Location = new System.Drawing.Point(478, 56);
             this.label_descSave.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label_descSave.Name = "label_descSave";
             this.label_descSave.Size = new System.Drawing.Size(175, 15);
@@ -720,6 +725,7 @@
             // tabPage_Schema
             // 
             this.tabPage_Schema.AutoScroll = true;
+            this.tabPage_Schema.Controls.Add(this.button_compareNode);
             this.tabPage_Schema.Controls.Add(this.button_clearCompare);
             this.tabPage_Schema.Controls.Add(this.checkBox_deepCompare);
             this.tabPage_Schema.Controls.Add(this.button_compare);
@@ -735,11 +741,25 @@
             this.tabPage_Schema.Text = "Schema";
             this.tabPage_Schema.UseVisualStyleBackColor = true;
             // 
+            // button_compareNode
+            // 
+            this.button_compareNode.AutoSize = true;
+            this.button_compareNode.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.button_compareNode.Location = new System.Drawing.Point(299, 4);
+            this.button_compareNode.Name = "button_compareNode";
+            this.button_compareNode.Size = new System.Drawing.Size(96, 25);
+            this.button_compareNode.TabIndex = 17;
+            this.button_compareNode.Text = "Node compare";
+            this.button_compareNode.UseVisualStyleBackColor = true;
+            this.button_compareNode.Click += new System.EventHandler(this.Button_compareNode_Click);
+            // 
             // button_clearCompare
             // 
-            this.button_clearCompare.Location = new System.Drawing.Point(192, 4);
+            this.button_clearCompare.AutoSize = true;
+            this.button_clearCompare.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.button_clearCompare.Location = new System.Drawing.Point(183, 4);
             this.button_clearCompare.Name = "button_clearCompare";
-            this.button_clearCompare.Size = new System.Drawing.Size(111, 23);
+            this.button_clearCompare.Size = new System.Drawing.Size(110, 25);
             this.button_clearCompare.TabIndex = 16;
             this.button_clearCompare.Text = "Clear comparison";
             this.button_clearCompare.UseVisualStyleBackColor = true;
@@ -748,7 +768,7 @@
             // checkBox_deepCompare
             // 
             this.checkBox_deepCompare.AutoSize = true;
-            this.checkBox_deepCompare.Location = new System.Drawing.Point(84, 7);
+            this.checkBox_deepCompare.Location = new System.Drawing.Point(75, 7);
             this.checkBox_deepCompare.Name = "checkBox_deepCompare";
             this.checkBox_deepCompare.Size = new System.Drawing.Size(102, 19);
             this.checkBox_deepCompare.TabIndex = 15;
@@ -757,9 +777,11 @@
             // 
             // button_compare
             // 
-            this.button_compare.Location = new System.Drawing.Point(3, 4);
+            this.button_compare.AutoSize = true;
+            this.button_compare.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.button_compare.Location = new System.Drawing.Point(3, 3);
             this.button_compare.Name = "button_compare";
-            this.button_compare.Size = new System.Drawing.Size(75, 23);
+            this.button_compare.Size = new System.Drawing.Size(66, 25);
             this.button_compare.TabIndex = 14;
             this.button_compare.Text = "Compare";
             this.button_compare.UseVisualStyleBackColor = true;
@@ -767,10 +789,11 @@
             // 
             // textBox_find
             // 
-            this.textBox_find.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox_find.Location = new System.Drawing.Point(453, 5);
+            this.textBox_find.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBox_find.Location = new System.Drawing.Point(401, 5);
             this.textBox_find.Name = "textBox_find";
-            this.textBox_find.Size = new System.Drawing.Size(241, 23);
+            this.textBox_find.Size = new System.Drawing.Size(293, 23);
             this.textBox_find.TabIndex = 13;
             this.textBox_find.Leave += new System.EventHandler(this.TextBox_find_Leave);
             // 
@@ -841,9 +864,6 @@
             this.splitContainer_schemaLeft.Panel1.Controls.Add(this.button_saveLeftSchema);
             this.splitContainer_schemaLeft.Panel1.Controls.Add(this.button_generateSchema);
             this.splitContainer_schemaLeft.Panel1.Controls.Add(this.treeView_leftSchema);
-            // 
-            // splitContainer_schemaLeft.Panel2
-            // 
             this.splitContainer_schemaLeft.Size = new System.Drawing.Size(449, 561);
             this.splitContainer_schemaLeft.SplitterDistance = 219;
             this.splitContainer_schemaLeft.TabIndex = 0;
@@ -852,9 +872,11 @@
             // button_saveLeftSchema
             // 
             this.button_saveLeftSchema.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_saveLeftSchema.Location = new System.Drawing.Point(318, 32);
+            this.button_saveLeftSchema.AutoSize = true;
+            this.button_saveLeftSchema.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.button_saveLeftSchema.Location = new System.Drawing.Point(341, 32);
             this.button_saveLeftSchema.Name = "button_saveLeftSchema";
-            this.button_saveLeftSchema.Size = new System.Drawing.Size(108, 23);
+            this.button_saveLeftSchema.Size = new System.Drawing.Size(85, 25);
             this.button_saveLeftSchema.TabIndex = 1;
             this.button_saveLeftSchema.Text = "Save schema";
             this.button_saveLeftSchema.UseVisualStyleBackColor = true;
@@ -863,9 +885,11 @@
             // button_generateSchema
             // 
             this.button_generateSchema.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button_generateSchema.AutoSize = true;
+            this.button_generateSchema.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.button_generateSchema.Location = new System.Drawing.Point(318, 3);
             this.button_generateSchema.Name = "button_generateSchema";
-            this.button_generateSchema.Size = new System.Drawing.Size(108, 23);
+            this.button_generateSchema.Size = new System.Drawing.Size(108, 25);
             this.button_generateSchema.TabIndex = 1;
             this.button_generateSchema.Text = "Generate schema";
             this.button_generateSchema.UseVisualStyleBackColor = true;
@@ -917,9 +941,11 @@
             // button_loadSchema
             // 
             this.button_loadSchema.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_loadSchema.Location = new System.Drawing.Point(335, 3);
+            this.button_loadSchema.AutoSize = true;
+            this.button_loadSchema.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.button_loadSchema.Location = new System.Drawing.Point(344, 3);
             this.button_loadSchema.Name = "button_loadSchema";
-            this.button_loadSchema.Size = new System.Drawing.Size(96, 23);
+            this.button_loadSchema.Size = new System.Drawing.Size(87, 25);
             this.button_loadSchema.TabIndex = 7;
             this.button_loadSchema.Text = "Load schema";
             this.button_loadSchema.UseVisualStyleBackColor = true;
@@ -1015,9 +1041,11 @@
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer_schemaMain)).EndInit();
             this.splitContainer_schemaMain.ResumeLayout(false);
             this.splitContainer_schemaLeft.Panel1.ResumeLayout(false);
+            this.splitContainer_schemaLeft.Panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer_schemaLeft)).EndInit();
             this.splitContainer_schemaLeft.ResumeLayout(false);
             this.splitContainer_schemaRight.Panel1.ResumeLayout(false);
+            this.splitContainer_schemaRight.Panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer_schemaRight)).EndInit();
             this.splitContainer_schemaRight.ResumeLayout(false);
             this.statusStrip1.ResumeLayout(false);
@@ -1096,6 +1124,7 @@
         private System.Windows.Forms.CheckBox checkBox_schemaSelectionSync;
         private System.Windows.Forms.CheckBox checkBox_deepCompare;
         private System.Windows.Forms.Button button_clearCompare;
+        private System.Windows.Forms.Button button_compareNode;
     }
 }
 

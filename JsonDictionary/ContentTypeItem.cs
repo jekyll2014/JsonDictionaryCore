@@ -7,15 +7,15 @@ namespace JsonDictionaryCore
     {
         public class ContentTypeItem
         {
-            public string FileTypeMask; // file mask
+            public string FileTypeSign; // file ending or directory name. Rewrite to use wildcards
             public string PropertyTypeName; // name of the array contains a group of certain definitions
-            public string FileType; // file type enum
+            public string ContentType; // file type name to use everywhere
 
             public ContentTypeItem()
             {
-                FileTypeMask = "";
+                FileTypeSign = "";
                 PropertyTypeName = "";
-                FileType = "";
+                ContentType = "";
             }
         }
     }
