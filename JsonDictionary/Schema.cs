@@ -288,7 +288,7 @@ namespace JsonDictionaryCore
             }
 
             if (Description != null)
-                text.AppendLine($"\"title\": \"{Description.Replace("\r", "\\r").Replace("\n", "\\n").Replace("\"", "\\\"")}\",");
+                text.AppendLine($"\"title\": \"{Description}\",");
 
             if (Reference != null)
                 text.AppendLine($"\"$ref\": \"{Reference}\",");
@@ -302,9 +302,9 @@ namespace JsonDictionaryCore
                     if (!string.IsNullOrEmpty(item))
                     {
                         if (Type?.Contains("string") ?? false)
-                            t.AppendLine($"\"{item.Replace("\r", "\\r").Replace("\n", "\\n").Replace("\"", "\\\"")}\",");
+                            t.AppendLine($"\"{item}\",");
                         else
-                            t.AppendLine($"{item.Replace("\r", "\\r").Replace("\n", "\\n").Replace("\"", "\\\"")},");
+                            t.AppendLine($"{item},");
                     }
                 }
                 t.Append("]");
@@ -652,7 +652,7 @@ namespace JsonDictionaryCore
             }
 
             if (Description != null)
-                text.AppendLine($"\"title\": \"{Description.Replace("\r", "\\r").Replace("\n", "\\n").Replace("\"", "\\\"")}\",");
+                text.AppendLine($"\"title\": \"{Description}\",");
 
             if (Reference != null)
                 text.AppendLine($"\"$ref\": \"{Reference}\",");
@@ -666,9 +666,9 @@ namespace JsonDictionaryCore
                     if (!string.IsNullOrEmpty(item))
                     {
                         if (Type?.Contains("string") ?? false)
-                            t.AppendLine($"\"{item.Replace("\r", "\\r").Replace("\n", "\\n").Replace("\"", "\\\"")}\",");
+                            t.AppendLine($"\"{item}\",");
                         else
-                            t.AppendLine($"{item.Replace("\r", "\\r").Replace("\n", "\\n").Replace("\"", "\\\"")},");
+                            t.AppendLine($"{item},");
                     }
                 }
                 t.Append("]");
@@ -933,7 +933,7 @@ namespace JsonDictionaryCore
             }
 
             if (Description != null)
-                text.AppendLine($"\"title\": \"{Description.Replace("\r", "\\r").Replace("\n", "\\n").Replace("\"", "\\\"")}\",");
+                text.AppendLine($"\"title\": \"{Description}\",");
 
             if (Reference != null)
                 text.AppendLine($"\"$ref\": \"{Reference}\",");
@@ -947,9 +947,9 @@ namespace JsonDictionaryCore
                     if (!string.IsNullOrEmpty(item))
                     {
                         if (Type?.Contains("string") ?? false)
-                            t.AppendLine($"\"{item.Replace("\r", "\\r").Replace("\n", "\\n").Replace("\"", "\\\"")}\",");
+                            t.AppendLine($"\"{item}\",");
                         else
-                            t.AppendLine($"{item.Replace("\r", "\\r").Replace("\n", "\\n").Replace("\"", "\\\"")},");
+                            t.AppendLine($"{item},");
                     }
                 }
                 t.Append("]");

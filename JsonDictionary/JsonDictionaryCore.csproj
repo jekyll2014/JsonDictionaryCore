@@ -44,11 +44,6 @@
     <ApplicationIcon>jd.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="descriptions.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
       <Visible>False</Visible>
       <ProductName>Microsoft .NET Framework 4.7.2 %28x86 and x64%29</ProductName>

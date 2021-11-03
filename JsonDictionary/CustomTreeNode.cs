@@ -11,34 +11,11 @@ namespace JsonDictionaryCore
 {
     public class CustomTreeNode
     {
-        public CustomTreeNode()
-        {
-            this.ChildNodes = new List<CustomTreeNode>();
-        }
-
-        public CustomTreeNode(TreeNode rootNode)
-        {
-            var newNode = RunNodeMsgPack(rootNode);
-
-            this.NodeText = newNode.NodeText;
-            this.NodePath = newNode.NodePath;
-            this.NodeTag = newNode.NodeTag;
-            this.ChildNodes = newNode.ChildNodes;
-        }
-
-        public CustomTreeNode(string text, string nodePath, JsonProperty nodeTag, List<CustomTreeNode> childNodes = null)
-        {
-            NodeText = text;
-            NodeTag = nodeTag;
-            NodePath = nodePath;
-            if (childNodes != null)
-            {
-                this.ChildNodes = childNodes;
-            }
-        }
-
-        [JsonProperty("value")]
+        [JsonProperty("Node")]
         public string NodeText { get; set; }
+
+        [MessagePack.IgnoreMember]
+        public string Description { get; set; }
 
         //[JsonProperty("isChecked")]
         [JsonIgnore]
@@ -48,7 +25,7 @@ namespace JsonDictionaryCore
         public JsonProperty NodeTag { get; set; }
 
         //[JsonIgnore]
-        [JsonProperty("children", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("Children", NullValueHandling = NullValueHandling.Ignore)]
         public List<CustomTreeNode> ChildNodes { get; set; }
 
         [JsonIgnore]
@@ -76,7 +53,43 @@ namespace JsonDictionaryCore
             }
         }
 
-        public string GetJsonTree(TreeNode rootNode)
+        public CustomTreeNode()
+        {
+            this.NodeText = string.Empty;
+            this.NodePath = string.Empty;
+            this.Description = null;
+            this.NodeTag = new JsonProperty();
+            this.ChildNodes = new List<CustomTreeNode>();
+        }
+
+        public CustomTreeNode(TreeNode rootNode, Dictionary<string, string> nodeDescriptions = null)
+        {
+            var newNode = RunNodeMsgPack(rootNode);
+
+            string nodeDescription = null;
+            nodeDescriptions?.TryGetValue(rootNode.Name, out nodeDescription);
+
+            this.NodeText = newNode.NodeText;
+            this.Description = nodeDescription;
+            this.NodePath = newNode.NodePath;
+            this.NodeTag = newNode.NodeTag;
+            this.ChildNodes = newNode.ChildNodes;
+        }
+
+        public CustomTreeNode(string text, string nodeDescription, string nodePath, JsonProperty nodeTag, List<CustomTreeNode> childNodes = null)
+        {
+            NodeText = text;
+            Description = nodeDescription;
+            NodePath = nodePath;
+            NodeTag = nodeTag;
+
+            if (childNodes != null)
+            {
+                this.ChildNodes = childNodes;
+            }
+        }
+
+        public string GetJsonTree(TreeNode rootNode, Dictionary<string, string> nodeDescriptions = null)
         {
             if (rootNode == null || rootNode.Nodes.Count <= 0)
                 return null;
@@ -84,15 +97,23 @@ namespace JsonDictionaryCore
             var parents = new List<CustomTreeNode>();
             foreach (TreeNode node1 in rootNode.Nodes)
             {
-                List<CustomTreeNode> childs = this.RunNode(node1);
-                parents.Add(new CustomTreeNode(node1.Text, node1.Name, (JsonProperty)node1.Tag, childs));
+                List<CustomTreeNode> children = this.RunNode(node1, nodeDescriptions);
+                if (children != null)
+                {
+                    string nodeDescription = null;
+                    nodeDescriptions?.TryGetValue(node1.Name, out nodeDescription);
+                    parents.Add(new CustomTreeNode(node1.Text, nodeDescription, node1.Name, (JsonProperty)node1.Tag, children));
+                }
             }
-            var root = new CustomTreeNode(rootNode.Text, rootNode.Name, (JsonProperty)rootNode.Tag, parents);
+
+            string nodeDesc = null;
+            nodeDescriptions?.TryGetValue(rootNode.Name, out nodeDesc);
+            var root = new CustomTreeNode(rootNode.Text, nodeDesc, rootNode.Name, (JsonProperty)rootNode.Tag, parents);
 
             return root.JsonString;
         }
 
-        public List<CustomTreeNode> RunNode(TreeNode node)
+        public List<CustomTreeNode> RunNode(TreeNode node, Dictionary<string, string> nodeDescriptions = null)
         {
             if (node == null || node.Nodes.Count <= 0)
                 return null;
@@ -100,8 +121,13 @@ namespace JsonDictionaryCore
             var nodeOut = new List<CustomTreeNode>();
             foreach (TreeNode child in node.Nodes)
             {
-                var grandchild = RunNode(child);
-                nodeOut.Add(new CustomTreeNode(child.Text, child.Name, (JsonProperty)child.Tag, grandchild));
+                var grandchild = RunNode(child, nodeDescriptions);
+                if (grandchild != null)
+                {
+                    string nodeDescription = null;
+                    nodeDescriptions?.TryGetValue(child.Name, out nodeDescription);
+                    nodeOut.Add(new CustomTreeNode(child.Text, nodeDescription, child.Name, (JsonProperty)child.Tag, grandchild));
+                }
             }
             return nodeOut;
         }

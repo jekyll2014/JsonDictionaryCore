@@ -435,5 +435,70 @@ namespace JsonDictionaryCore
 
             return result.ToString().Trim();
         }
+
+        public static string ConvertStringForJSON(string s)
+        {
+            if (s == null || s.Length == 0)
+            {
+                return "";
+            }
+
+            char[] _escapeChars = new char[] { '\"', '\\', '/', 'b', 'f', 'n', 'r', 't', 'u' };
+            char c;
+            int len = s.Length;
+            StringBuilder sb = new StringBuilder((int)(len * 1.1));
+            String t;
+
+            for (var i = 0; i < len; i += 1)
+            {
+                c = s[i];
+
+                if (c == '\\' && i < len - 1 && _escapeChars.Contains(s[i + 1]))
+                {
+                    i++;
+                    sb.Append("\\" + s[i]);
+                }
+                else
+                {
+                    switch (c)
+                    {
+                        case '"':
+                        case '/':
+                        case '\\':
+                            sb.Append('\\');
+                            sb.Append(c);
+                            break;
+                        case '\b':
+                            sb.Append("\\b");
+                            break;
+                        case '\t':
+                            sb.Append("\\t");
+                            break;
+                        case '\n':
+                            sb.Append("\\n");
+                            break;
+                        case '\f':
+                            sb.Append("\\f");
+                            break;
+                        case '\r':
+                            sb.Append("\\r");
+                            break;
+                        default:
+                            if (c < ' ')
+                            {
+                                t = $"\\u{((int)c).ToString("X4")}";
+                                sb.Append($"\\u{t.Substring(t.Length - 4)}");
+                            }
+                            else
+                            {
+                                sb.Append(c);
+                            }
+                            break;
+                    }
+                }
+            }
+            return sb.ToString();
+        }
+
     }
 }

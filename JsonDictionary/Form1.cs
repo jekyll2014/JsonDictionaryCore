@@ -42,7 +42,7 @@ namespace JsonDictionaryCore
         private volatile bool _isDoubleClick;
         private JsonViewer _sideViewer;
         private WinPosition _editorPosition;
-        private Dictionary<string, string> _nodeDescription;
+        private Dictionary<string, string> _nodeDescriptions;
         private ISchemaTreeBase _rightSchema;
         private ISchemaTreeBase _leftSchema;
         private UserControl _rightDataPanel;
@@ -86,9 +86,9 @@ namespace JsonDictionaryCore
             checkBox_schemaSelectionSync.Checked = appConfig.ConfigStorage.SchemaFollowSelection;
             folderBrowserDialog1.SelectedPath = appConfig.ConfigStorage.LastRootFolder;
 
-            _nodeDescription = LoadJson<Dictionary<string, string>>(appConfig.ConfigStorage.DefaultDescriptionFileName);
-            if (_nodeDescription == null)
-                _nodeDescription = new Dictionary<string, string>();
+            _nodeDescriptions = LoadJson<Dictionary<string, string>>(appConfig.ConfigStorage.DefaultDescriptionFileName);
+            if (_nodeDescriptions == null)
+                _nodeDescriptions = new Dictionary<string, string>();
 
             if (appConfig.ConfigStorage.MainWindowPosition.Initialized)
             {
@@ -106,7 +106,7 @@ namespace JsonDictionaryCore
 
             TopMost = appConfig.ConfigStorage.AlwaysOnTop;
 
-            comboBox_ExCondition.Items.AddRange(typeof(SearchItem.SearchCondition).GetEnumNames());
+            comboBox_ExCondition.Items.AddRange(typeof(SearchItem.SearchCondition)?.GetEnumNames());
             comboBox_ExCondition.SelectedIndex = 0;
 
             _examplesTable = new DataTable("Examples");
@@ -140,7 +140,7 @@ namespace JsonDictionaryCore
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            SaveJson(_nodeDescription, appConfig.ConfigStorage.DefaultDescriptionFileName, true);
+            SaveJson(_nodeDescriptions, appConfig.ConfigStorage.DefaultDescriptionFileName, true);
 
             appConfig.ConfigStorage.MainWindowPosition = new WinPosition()
             {
@@ -297,14 +297,14 @@ namespace JsonDictionaryCore
                         appConfig.ConfigStorage.DefaultTreeFileExtension);
                     var examplesFile = Path.ChangeExtension(saveFileDialog1.FileName,
                         appConfig.ConfigStorage.DefaultExamplesFileExtension);
-                    var m = new CustomTreeNode(_rootNodeExamples);
-                    File.WriteAllBytes(treeFile, m.MessagePack);
+                    var treeExport = new CustomTreeNode(_rootNodeExamples);
+                    File.WriteAllBytes(treeFile, treeExport.MessagePack);
                     SaveBinary(_exampleLinkCollection, examplesFile);
                     appConfig.ConfigStorage.LastDbName = saveFileDialog1.FileName;
 
                     if (appConfig.ConfigStorage.SaveJsonTree)
                     {
-                        File.WriteAllText(treeFile + ".json", m.GetJsonTree(_rootNodeExamples));
+                        File.WriteAllText(treeFile + ".json", treeExport.GetJsonTree(_rootNodeExamples, _nodeDescriptions));
                     }
                 }
                 catch (Exception ex)
@@ -405,7 +405,7 @@ namespace JsonDictionaryCore
             textBox_description.ReadOnly = true;
             label_descSave.Visible = false;
             var descText = "";
-            _nodeDescription?.TryGetValue(e.Node.Name, out descText);
+            _nodeDescriptions?.TryGetValue(e.Node.Name, out descText);
             textBox_description.Text = descText;
         }
 
@@ -493,8 +493,11 @@ namespace JsonDictionaryCore
 
             ActivateUiControls(false);
 
-            var records = _exampleLinkCollection.Where(n => n.Key.StartsWith(treeView_examples.SelectedNode.Name))
-                .Select(n => n.Key).ToArray();
+            var records = _exampleLinkCollection?
+                .Where(n => n.Key.StartsWith(treeView_examples.SelectedNode.Name))?
+                .Select(n => n.Key)?
+                .ToArray() ?? new string[] { };
+
             for (var i = 0; i < records.Length; i++)
             {
                 _exampleLinkCollection.Remove(records[i]);
@@ -643,8 +646,10 @@ namespace JsonDictionaryCore
                 if (jsonPaths?.Length > 0)
                 {
                     var jsonPath = appConfig.ConfigStorage.JsonPathDiv + jsonPaths?[0];
-                    var samplesCollection = _exampleLinkCollection.Where(n => n.Key == jsonPath);
-                    samplesCollection.FirstOrDefault().Value.RemoveAll(n => n.Value == CompactJson(jsonSample));
+                    var samplesCollection = _exampleLinkCollection?.Where(n => n.Key == jsonPath);
+                    samplesCollection.FirstOrDefault()
+                        .Value?
+                        .RemoveAll(n => n.Value == CompactJson(jsonSample));
                 }
             }
         }
@@ -771,7 +776,7 @@ namespace JsonDictionaryCore
                 JsonPathDivider = appConfig.ConfigStorage.JsonPathDiv
             };
 
-            var schemaProperties = parser.ParseJsonToPathList(schemaData, out var endPos, out var errorFound)
+            var schemaProperties = parser.ParseJsonToPathList(schemaData, out var endPos, out var errorFound)?
                 .Where(n =>
                     n.JsonPropertyType == JsonPropertyTypes.Array
                     || n.JsonPropertyType == JsonPropertyTypes.Object
@@ -982,10 +987,13 @@ namespace JsonDictionaryCore
 
         private void SaveFileDialog1_FileOk_LeftSchema(object sender, CancelEventArgs e)
         {
-            if (_leftSchema == null || string.IsNullOrEmpty(_leftSchema.ToJson()))
+            if (_leftSchema == null)
                 return;
 
-            File.WriteAllText(saveFileDialog1.FileName, ReformatJson(_leftSchema.ToJson(), Newtonsoft.Json.Formatting.Indented));
+            var jsonText = _leftSchema.ToJson();
+
+            if (!string.IsNullOrEmpty(jsonText))
+                File.WriteAllText(saveFileDialog1.FileName, ReformatJson(jsonText, Newtonsoft.Json.Formatting.Indented));
 
             GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
         }
@@ -1154,7 +1162,7 @@ namespace JsonDictionaryCore
                     result.Add(node.Name);
 
                 var res = CompareNode(node, rightNode.Nodes[node.Name], deepCompare);
-                result.AddRange(res);
+                result.AddRange(res ?? new List<string>());
             }
 
             return result;
@@ -1477,7 +1485,7 @@ namespace JsonDictionaryCore
             {
                 if (e.KeyCode == Keys.Escape)
                 {
-                    _nodeDescription.TryGetValue(treeView_examples?.SelectedNode?.Name ?? "", out var descText);
+                    _nodeDescriptions.TryGetValue(treeView_examples?.SelectedNode?.Name ?? "", out var descText);
                     textBox_description.Text = descText;
                     textBox_description.ReadOnly = true;
                     label_descSave.Visible = false;
@@ -1487,11 +1495,11 @@ namespace JsonDictionaryCore
                 {
                     try
                     {
-                        _nodeDescription[treeView_examples?.SelectedNode?.Name ?? ""] = textBox_description.Text;
+                        _nodeDescriptions[treeView_examples?.SelectedNode?.Name ?? ""] = textBox_description.Text;
                     }
                     catch
                     {
-                        _nodeDescription.Add(treeView_examples?.SelectedNode?.Name ?? "", textBox_description.Text);
+                        _nodeDescriptions.Add(treeView_examples?.SelectedNode?.Name ?? "", textBox_description.Text);
                     }
 
                     textBox_description.ReadOnly = true;
@@ -1567,20 +1575,22 @@ namespace JsonDictionaryCore
                 JsonPathDivider = appConfig.ConfigStorage.JsonPathDiv
             };
 
-            var jsonProperties = parser.ParseJsonToPathList(jsonStr, out var endPos, out var errorFound)
+            var jsonProperties = parser.ParseJsonToPathList(jsonStr, out var endPos, out var errorFound)?
                 .Where(item => item.JsonPropertyType != JsonPropertyTypes.Comment
                                && item.JsonPropertyType != JsonPropertyTypes.EndOfArray
                                && item.JsonPropertyType != JsonPropertyTypes.EndOfObject
                                && item.JsonPropertyType != JsonPropertyTypes.Error
-                               && item.JsonPropertyType != JsonPropertyTypes.Unknown)
+                               && item.JsonPropertyType != JsonPropertyTypes.Unknown)?
                 .ToList();
-            var version = jsonProperties.FirstOrDefault(n => n.Path == appConfig.ConfigStorage.VersionTagName)
-                ?.Value ?? "";
+            var version = jsonProperties?
+                .FirstOrDefault(n => n.Path == appConfig.ConfigStorage.VersionTagName)?
+                .Value ?? "";
 
-            var rootObject = jsonProperties.FirstOrDefault(n =>
-                n.JsonPropertyType == JsonPropertyTypes.Object
+            var rootObject = jsonProperties?
+                .FirstOrDefault(n => n.JsonPropertyType == JsonPropertyTypes.Object
                 && string.IsNullOrEmpty(n.Name)
                 && string.IsNullOrEmpty(n.Path));
+
             jsonProperties.Remove(rootObject);
 
             Parallel.ForEach(jsonProperties, item =>
@@ -1628,8 +1638,8 @@ namespace JsonDictionaryCore
                 return;
 
             //group collection by ContentType
-            var contentTypeGroupedProperties = propertiesCollection
-                .Where(n => n.ContentType == contentType)
+            var contentTypeGroupedProperties = propertiesCollection?
+                .Where(n => n.ContentType == contentType)?
                 .ToArray();
 
             for (var i = 0; i < parentName.Length; i++)
@@ -1641,19 +1651,19 @@ namespace JsonDictionaryCore
             IEnumerable<IGrouping<string, JsonProperty>> fileGroupedItems;
             if (parentName.Length > 1)
             {
-                fileGroupedItems = contentTypeGroupedProperties
+                fileGroupedItems = contentTypeGroupedProperties?
                     .Where(n => n.Name.Equals(itemName, StringComparison.OrdinalIgnoreCase)
-                                && parentName.Contains(n.UnifiedParent.ToLower()))
-                    .GroupBy(n => n.FullFileName)
+                                && parentName.Contains(n.UnifiedParent.ToLower()))?
+                    .GroupBy(n => n.FullFileName)?
                     .ToArray();
             }
             else
             {
-                fileGroupedItems = contentTypeGroupedProperties
+                fileGroupedItems = contentTypeGroupedProperties?
                     .Where(n =>
                         n.Name.Equals(itemName, StringComparison.OrdinalIgnoreCase)
-                        && parentName[0].Equals(n.UnifiedParent, StringComparison.OrdinalIgnoreCase))
-                    .GroupBy(n => n.FullFileName)
+                        && parentName[0].Equals(n.UnifiedParent, StringComparison.OrdinalIgnoreCase))?
+                    .GroupBy(n => n.FullFileName)?
                     .ToArray();
             }
 
@@ -1664,9 +1674,9 @@ namespace JsonDictionaryCore
             foreach (var actionItem in fileGroupedItems)
             {
                 // get properties for single file
-                var fileProperties = contentTypeGroupedProperties
+                var fileProperties = contentTypeGroupedProperties?
                     .Where(n =>
-                        n.FullFileName == actionItem.Key)
+                        n.FullFileName == actionItem.Key)?
                     .ToArray();
 
                 // iterate through single file item after item
@@ -1682,8 +1692,8 @@ namespace JsonDictionaryCore
                     moveToPathTmp.Append($".<{actionProperty.Value.Replace(appConfig.ConfigStorage.JsonPathDiv, '_')}>");
 
                     //get clildren in the file for single item
-                    var actionMembers = fileProperties
-                        .Where(n => n.JsonPath.Contains(actionProperty.ParentPath))
+                    var actionMembers = fileProperties?
+                        .Where(n => n.JsonPath.Contains(actionProperty.ParentPath))?
                         .ToArray();
 
                     foreach (var actionMember in actionMembers)
@@ -1744,7 +1754,7 @@ namespace JsonDictionaryCore
                     if (!tmpNode.Nodes.ContainsKey(tmpPath.ToString()))
                     {
                         var nodeName = token;
-                        var tagItem = rootCollection
+                        var tagItem = rootCollection?
                             .FirstOrDefault(n =>
                                 n.FullFileName == propertyItem.FullFileName
                                 && n.Name == nodeName
@@ -1910,13 +1920,13 @@ namespace JsonDictionaryCore
             comboBox_ExVersions.SelectedIndex = 0;
 
             var versionCollection = new List<string>();
-            var groupedByVersionRecords = records.GroupBy(n => n.Version);
+            var groupedByVersionRecords = records?.GroupBy(n => n.Version);
             foreach (var versionGroup in groupedByVersionRecords)
             {
                 var currentVersion = versionGroup.Key ?? "";
                 versionCollection.Add(currentVersion);
 
-                var groupedByValueRecords = versionGroup.GroupBy(n => n.Value);
+                var groupedByValueRecords = versionGroup?.GroupBy(n => n.Value);
                 foreach (var valueGroup in groupedByValueRecords)
                 {
                     var pathList = new StringBuilder();
@@ -1965,7 +1975,7 @@ namespace JsonDictionaryCore
                 _lastSearchList.Add(searchParam);
 
             SetSearchText(textBox_ExSearchHistory, _lastSearchList);
-            comboBox_ExVersions.Items.AddRange(versionCollection.ToArray());
+            comboBox_ExVersions.Items.AddRange(versionCollection?.ToArray() ?? new string[] { });
             toolStripStatusLabel1.Text = "";
 
             return true;
@@ -2319,12 +2329,18 @@ namespace JsonDictionaryCore
             {
                 var dirName = GetDirectoryName(longFileName);
                 return
-                    fileTypes.Where(n => dirName.EndsWith(n.FileTypeSign.TrimEnd(new char[] { '\\', '/' }))).Select(n => n.ContentType).FirstOrDefault() ?? "?";
+                    fileTypes?
+                    .Where(n => dirName.EndsWith(n.FileTypeSign.TrimEnd(new char[] { '\\', '/' })))?
+                    .Select(n => n.ContentType)?
+                    .FirstOrDefault() ?? "?";
             }
             else
             {
                 var shortFileName = GetShortFileName(longFileName);
-                return fileTypes.Where(n => shortFileName.EndsWith(n.FileTypeSign)).Select(n => n.ContentType).FirstOrDefault() ?? "?";
+                return fileTypes?
+                    .Where(n => shortFileName.EndsWith(n.FileTypeSign))?
+                    .Select(n => n.ContentType)?
+                    .FirstOrDefault() ?? "?";
             }
         }
 
@@ -2501,7 +2517,7 @@ namespace JsonDictionaryCore
             {
                 var childNodesTypes = rootCollection
                     .Where(n => n.ParentPath == typePropertyPathSample)?
-                    .Select(n => n.Value);
+                    .Select(n => n.Value) ?? new List<string>();
                 nodeTypes.AddRange(childNodesTypes);
             }
             else
@@ -2516,7 +2532,7 @@ namespace JsonDictionaryCore
             var nodeExamples = rootCollection
                 .Where(n => n.ParentPath == startPath + appConfig.ConfigStorage.JsonPathDiv + "examples")?
                 .Select(n => n.Value)?
-                .OrderBy(n => n)
+                .OrderBy(n => n)?
                 .ToList();
 
             // to do - get all available properties even if there is a mix of object/array/property
@@ -2557,7 +2573,7 @@ namespace JsonDictionaryCore
                     Required = rootCollection
                     .Where(n => n.ParentPath == startPath + appConfig.ConfigStorage.JsonPathDiv + "required")?
                     .Select(n => n.Value)?
-                    .OrderBy(n => n)
+                    .OrderBy(n => n)?
                     .ToList()
                 };
 
@@ -2567,7 +2583,7 @@ namespace JsonDictionaryCore
                     objectNode.AdditionalProperties = null;
 
                 foreach (var item in rootCollection
-                    .Where(n => n.ParentPath == startPath + appConfig.ConfigStorage.JsonPathDiv + "properties")
+                    .Where(n => n.ParentPath == startPath + appConfig.ConfigStorage.JsonPathDiv + "properties")?
                     .OrderBy(n => n.Name))
                 {
                     var newProperty = JsonPropertyListToSchemaObject(rootCollection, item.Path, item.Name);
@@ -2579,7 +2595,7 @@ namespace JsonDictionaryCore
                     objectNode.SchemaName = properties.FirstOrDefault(n => n.Name == "$schema")?.Value;
 
                     foreach (var item in rootCollection
-                        .Where(n => n.ParentPath == startPath + appConfig.ConfigStorage.JsonPathDiv + "definitions")
+                        .Where(n => n.ParentPath == startPath + appConfig.ConfigStorage.JsonPathDiv + "definitions")?
                         .OrderBy(n => n.Name))
                     {
                         var newProperty = JsonPropertyListToSchemaObject(rootCollection, item.Path, item.Name);
@@ -2602,7 +2618,7 @@ namespace JsonDictionaryCore
                 Enum = rootCollection
                     .Where(n => n.ParentPath == startPath + appConfig.ConfigStorage.JsonPathDiv + "enum")?
                     .Select(n => n.Value)?
-                    .OrderBy(n => n)
+                    .OrderBy(n => n)?
                     .ToList(),
             };
 
@@ -2615,7 +2631,7 @@ namespace JsonDictionaryCore
             if (treeRoot == null) return null;
 
             var descText = "";
-            _nodeDescription?.TryGetValue(treeRoot.Name, out descText);
+            _nodeDescriptions?.TryGetValue(treeRoot.Name, out descText);
 
             var newSchemaRoot = new SchemaTreeObject(nodeName)
             {
@@ -2648,10 +2664,12 @@ namespace JsonDictionaryCore
             if (node.Tag is JsonProperty p)
             {
                 nodeType = p.ObjectType;
-                _nodeDescription?.TryGetValue(node.Name, out nodeDescription);
+                _nodeDescriptions?.TryGetValue(node.Name, out nodeDescription);
             }
 
-            nodeDescription = nodeDescription?.Replace("\r", "\\r").Replace("\n", "\\n").Replace("\"", "\\\"");
+            //nodeDescription = nodeDescription?.Replace("\r", "\\r").Replace("\n", "\\n").Replace("\"", "\\\"");
+            //nodeDescription = JsonConvert.ToString(nodeDescription);
+            nodeDescription = ConvertStringForJSON(nodeDescription);
 
             examples.TryGetValue(node.Name, out var nodeExamples);
 
@@ -2665,11 +2683,12 @@ namespace JsonDictionaryCore
                     Examples = nodeExamples?
                     .Where(n => n.ObjectType == JsonPropertyTypes.Property
                     || n.ObjectType == JsonPropertyTypes.ArrayValue
-                    || n.VariableType == JsonValueTypes.String)
-                    .Select(n => n.Value)
-                    .Distinct()
-                    .OrderBy(n => n)
-                    .ToList(),
+                    || n.VariableType == JsonValueTypes.String)?
+                    .Select(n => n.Value)?
+                    .Distinct()?
+                    .Select(n => ConvertStringForJSON(n))?
+                    .OrderBy(n => n)?
+                    .ToList() ?? null,
                     UniqueItemsOnly = true
                 };
 
@@ -2678,17 +2697,34 @@ namespace JsonDictionaryCore
                 foreach (TreeNode item in node.Nodes)
                 {
                     var newItemsNode = TreeNodeToSchemaObject(item, nodePath + "/items/properties", examples);
-                    objList.Add(newItemsNode);
+                    if (newItemsNode != null) objList.Add(newItemsNode);
                 }
 
                 if (!objList.Any())
                 {
-                    var arrayExamples = examples.Where(n => n.Key.StartsWith(node.Name)).ToArray();
+                    var arrayExamples = examples?
+                        .Where(n => n.Key.StartsWith(node.Name))?
+                        .ToArray();
 
-                    var enumList = arrayExamples.FirstOrDefault().Value.Select(n => n.Value).Distinct().OrderBy(n => n).ToList();
+                    var enumList = arrayExamples?
+                        .FirstOrDefault()
+                        .Value?
+                        .Select(n => n.Value)?
+                        .Distinct()?
+                        .Select(n => ConvertStringForJSON(n))?
+                        .OrderBy(n => n)?
+                        .ToList() ?? null;
 
-                    var enumListTypes = arrayExamples.FirstOrDefault().Value.Select(n => n.VariableType).Distinct();
-                    var typesList = enumListTypes.Select(n => n.ToString().ToLower()).OrderBy(n => n).ToList();
+                    var enumListTypes = arrayExamples?
+                        .FirstOrDefault()
+                        .Value?
+                        .Select(n => n.VariableType)?
+                        .Distinct() ?? null;
+
+                    var typesList = enumListTypes?
+                        .Select(n => n.ToString().ToLower())?
+                        .OrderBy(n => n)?
+                        .ToList() ?? null;
 
                     arrayNode.Items = new SchemaTreeProperty("items")
                     {
@@ -2696,11 +2732,17 @@ namespace JsonDictionaryCore
                         Type = typesList,
                         Enum = enumList,
                         Description = nodeDescription,
-                        Examples = nodeExamples?.Select(n => n.Value).Distinct().OrderBy(n => n).ToList()
+                        Examples = nodeExamples?
+                        .Select(n => n.Value)?
+                        .Distinct()?
+                        .Select(n => ConvertStringForJSON(n))?
+                        .OrderBy(n => n)?
+                        .ToList()
                     };
 
                     return arrayNode;
                 }
+
                 arrayNode.Items = new SchemaTreeObject()
                 {
                     Path = nodePath + "/items",
@@ -2713,26 +2755,26 @@ namespace JsonDictionaryCore
             }
 
             var nodeVariableTypes = nodeExamples?
-                .Select(n => n.VariableType)
-                .Distinct()
+                .Select(n => n.VariableType)?
+                .Distinct()?
                 .Where(n => n == JsonValueTypes.String
                 || n == JsonValueTypes.Integer
                 || n == JsonValueTypes.Number
                 || n == JsonValueTypes.Null
-                || n == JsonValueTypes.Boolean)
-                .Select(n => n.ToString().ToLower())
+                || n == JsonValueTypes.Boolean)?
+                .Select(n => n.ToString().ToLower())?
                 .ToList() ?? new List<string>();
 
             var nodeObjectTypes = nodeExamples?
-                .Select(n => n.ObjectType)
-                .Distinct()
+                .Select(n => n.ObjectType)?
+                .Distinct()?
                 .Where(n => n == JsonPropertyTypes.Object
                 || n == JsonPropertyTypes.Array
-                || n == JsonPropertyTypes.ArrayValue)
+                || n == JsonPropertyTypes.ArrayValue)?
                 .Select(n => n.ToString().ToLower().Replace("arrayvalue", "array")) ?? new List<string>();
 
             nodeVariableTypes.AddRange(nodeObjectTypes);
-            nodeVariableTypes = nodeVariableTypes.Distinct().OrderBy(n => n).ToList();
+            nodeVariableTypes = nodeVariableTypes.Distinct().OrderBy(n => n)?.ToList();
 
             if (nodeType == JsonPropertyTypes.Object)
             {
@@ -2745,10 +2787,11 @@ namespace JsonDictionaryCore
                     Examples = nodeExamples?
                     .Where(n => n.ObjectType == JsonPropertyTypes.Property
                     || n.ObjectType == JsonPropertyTypes.ArrayValue
-                    || n.VariableType == JsonValueTypes.String)
-                    .Select(n => n.Value)
-                    .Distinct()
-                    .OrderBy(n => n)
+                    || n.VariableType == JsonValueTypes.String)?
+                    .Select(n => n.Value)?
+                    .Distinct()?
+                    .Select(n => ConvertStringForJSON(n))?
+                    .OrderBy(n => n)?
                     .ToList(),
                     AdditionalProperties = false
                 };
@@ -2756,7 +2799,7 @@ namespace JsonDictionaryCore
                 foreach (TreeNode item in node.Nodes)
                 {
                     var newProperty = TreeNodeToSchemaObject(item, nodePath + "/properties", examples);
-                    objectNode.Properties.Add(newProperty);
+                    if (newProperty != null) objectNode.Properties.Add(newProperty);
                 }
 
                 return objectNode;
@@ -2770,10 +2813,11 @@ namespace JsonDictionaryCore
                 Examples = nodeExamples?
                     .Where(n => n.ObjectType == JsonPropertyTypes.Property
                     || n.ObjectType == JsonPropertyTypes.ArrayValue
-                    || n.VariableType == JsonValueTypes.String)
-                    .Select(n => n.Value)
-                    .Distinct()
-                    .OrderBy(n => n)
+                    || n.VariableType == JsonValueTypes.String)?
+                    .Select(n => n.Value)?
+                    .Distinct()?
+                    .Select(n => ConvertStringForJSON(n))?
+                    .OrderBy(n => n)?
                     .ToList(),
             };
 
@@ -2784,8 +2828,9 @@ namespace JsonDictionaryCore
                     .Where(n => n.VariableType == JsonValueTypes.String)?
                     .Select(n => n.Value)?
                     .Distinct()?
+                    .Select(n => ConvertStringForJSON(n))?
                     .OrderBy(n => n)?
-                    .ToList();
+                    .ToList() ?? new List<string>();
 
                 if (propertyNode.Type.Contains("boolean"))
                 {
