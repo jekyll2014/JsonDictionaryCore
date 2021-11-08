@@ -19,11 +19,7 @@ namespace JsonDictionaryCore
         public int WinW;
         public int WinH;
 
-        [JsonIgnore]
-        public bool Initialized
-        {
-            get => !(WinX <= 0 && WinY <= 0 && WinW <= 0 && WinH <= 0);
-        }
+        [JsonIgnore] public bool Initialized => !(WinX <= 0 && WinY <= 0 && WinW <= 0 && WinH <= 0);
     }
 
     public class JsonDictionarySettings
@@ -62,7 +58,7 @@ namespace JsonDictionaryCore
             WinX = 400,
             WinY = 10,
             WinW = 200,
-            WinH = 400,
+            WinH = 400
         };
 
         public WinPosition MainWindowPosition { get; set; } = new WinPosition
@@ -70,10 +66,11 @@ namespace JsonDictionaryCore
             WinX = 10,
             WinY = 10,
             WinW = 200,
-            WinH = 400,
+            WinH = 400
         };
 
-        public ContentTypeItem[] FileTypes = {
+        public ContentTypeItem[] FileTypes =
+        {
             new ContentTypeItem
             {
                 FileTypeSign = "dataviews.jsonc",
@@ -127,10 +124,11 @@ namespace JsonDictionaryCore
                 FileTypeSign = "combo.jsonc",
                 PropertyTypeName = "combo",
                 ContentType = "Combo"
-            },
+            }
         };
 
-        public ProcessingOptions[] FlattenParameters = {
+        public ProcessingOptions[] FlattenParameters =
+        {
             new ProcessingOptions
             {
                 ContentType = "Events",
@@ -158,22 +156,22 @@ namespace JsonDictionaryCore
                 ContentType = "Layout",
                 ItemName = "sourcetypeid",
                 MoveToPath = "",
-                ParentNames = new[] { "components" }
+                ParentNames = new[] {"components"}
             },
             new ProcessingOptions
             {
                 ContentType = "Rules",
                 ItemName = "action",
                 MoveToPath = "",
-                ParentNames = new[] { "actions" }
+                ParentNames = new[] {"actions"}
             },
             new ProcessingOptions
             {
                 ContentType = "Search",
                 ItemName = "sourcetypeid",
                 MoveToPath = "",
-                ParentNames = new[] { "component" }
+                ParentNames = new[] {"component"}
             }
-};
+        };
     }
 }

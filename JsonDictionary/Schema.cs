@@ -1,62 +1,67 @@
-﻿using System.Collections.Generic;
+﻿using JsonPathParserLib;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace JsonDictionaryCore
 {
     public interface ISchemaTreeBase
     {
         /// <summary>
-        /// property name
+        ///     property name
         /// </summary>
         public string Name { get; set; }
 
         /// <summary>
-        /// "$id" property
+        ///     "$id" property
         /// </summary>
-        public string Path { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
-        /// "type"
+        ///     "type"
         /// </summary>
         public List<string> Type { get; set; }
 
         /// <summary>
-        /// "description"(v07) or "title"(v04)
+        ///     "description"(v07) or "title"(v04)
         /// </summary>
         public string Description { get; set; }
 
         /// <summary>
-        /// Reference to predefined set of properties "$ref"
+        ///     Reference to predefined set of properties "$ref"
         /// </summary>
         public string Reference { get; set; }
 
         /// <summary>
-        /// "examples"
+        ///     "examples"
         /// </summary>
         public List<string> Examples { get; set; }
 
         /// <summary>
-        /// find node by it's path
+        ///     find node by it's path
         /// </summary>
-        /// <param name="path"></param>
-        public ISchemaTreeBase FindNodeByPath(string path);
+        /// <param name="id"></param>
+        public ISchemaTreeBase FindNodeByPath(string id);
 
         /// <summary>
-        /// Deep merge two objects
+        ///     Deep merge two objects
         /// </summary>
         /// <param name="newProperty"></param>
         /// <returns></returns>
         public bool Merge(ISchemaTreeBase newProperty);
 
         /// <summary>
-        /// Replace all object content with new content
+        ///     Replace all object content with new content
         /// </summary>
         /// <param name="newProperty"></param>
         /// <returns></returns>
         public bool Import(ISchemaTreeBase newProperty);
 
         /// <summary>
-        /// Deep compare with object
+        ///     Deep compare with object
         /// </summary>
         /// <param name="newProperty"></param>
         /// <param name="baseOnly"></param>
@@ -64,192 +69,487 @@ namespace JsonDictionaryCore
         public bool Compare(ISchemaTreeBase newProperty, bool baseOnly = false);
 
         /// <summary>
-        /// Returns JSON text of the object
+        ///     Returns JSON text of the object
         /// </summary>
         /// <returns></returns>
         public string ToJson(bool noSamples = true);
     }
 
-    public class SchemaTreeProperty : ISchemaTreeBase
+    public static class JsonSchemaTypes
     {
-        public string Name { get; set; }
-        public string Path { get; set; }
-        public List<string> Type { get; set; } = new List<string>();
-        public string Description { get; set; }
-        public string Reference { get; set; }
-        public List<string> Examples { get; set; } = new List<string>();
+        public const string String = "string";
+        public const string Number = "number";
+        public const string Integer = "integer";
+        public const string Object = "object";
+        public const string Array = "array";
+        public const string Boolean = "boolean";
+        public const string Null = "null";
+    }
 
-        // specific properties
-        public string Default { get; set; } // "default"
+    // default v07 schema property names
+    public class SchemaPropertyNames
+    {
+        public char Divider = '/';
+        public string Id = "$id";
+        public string Schema = "$schema";
+        public string Ref = "$ref";
+        public string Comment = "$comment";
+        public string Title = "title";
+        public string Description = "description";
+        public string Default = "default";
+        public string ReadOnly = "readOnly";
+        public string WriteOnly = "writeOnly";
+        public string Examples = "examples";
+        public string MultipleOf = "multipleOf";
+        public string Maximum = "maximum";
+        public string ExclusiveMaximum = "exclusiveMaximum";
+        public string Minimum = "minimum";
+        public string ExclusiveMinimum = "exclusiveMinimum";
+        public string MaxLength = "maxLength";
+        public string MinLength = "minLength";
+        public string Pattern = "pattern";
+        public string AdditionalItems = "additionalItems";
+        public string Items = "items";
+        public string MaxItems = "maxItems";
+        public string MinItems = "minItems";
+        public string UniqueItems = "uniqueItems";
+        public string Contains = "contains";
+        public string MaxProperties = "maxProperties";
+        public string MinProperties = "minProperties";
+        public string Required = "required";
+        public string AdditionalProperties = "additionalProperties";
+        public string Definitions = "definitions";
+        public string Properties = "properties";
+        public string PatternProperties = "patternProperties";
+        public string Dependencies = "dependencies";
+        public string PropertyNames = "propertyNames";
+        public string Const = "const";
+        public string Enum = "enum";
+        public string Type = "type";
+        public string Format = "format";
+        public string ContentMediaType = "contentMediaType";
+        public string ContentEncoding = "contentEncoding";
+        public string If = "if";
+        public string Then = "then";
+        public string Else = "else";
+        public string AllOf = "allOf";
+        public string AnyOf = "anyOf";
+        public string OneOf = "oneOf";
+        public string Not = "not";
+    }
 
-        public string Pattern { get; set; } // "pattern"
+    public class SchemaBaseClassv07
+    {
+        #region Common fields
 
-        public List<string> Enum { get; set; } = new List<string>(); // "enum"
+        /// <summary>
+        ///     Name of the property
+        /// </summary>
+        public string Name;
 
-        public SchemaTreeProperty() { }
+        /// <summary>
+        ///     The $id keyword defines a URI for the schema, and the base URI that other URI references within the schema are
+        ///     resolved against.
+        /// </summary>
+        public string Id
+        {
+            get => _id;
+            set
+            {
+                if (Uri.IsWellFormedUriString(value, UriKind.RelativeOrAbsolute))
+                    _id = value;
+                else
+                    throw new ArgumentException("Incorrect data type", nameof(Id));
+            }
+        }
 
-        public SchemaTreeProperty(string name)
+        private string _id;
+
+        /// <summary>
+        ///     The $schema keyword states that this schema is written according to a specific draft of the standard and used for a
+        ///     variety of reasons, primarily version control.
+        /// </summary>
+        public string Schema
+        {
+            get => _schema;
+            set
+            {
+                if (Uri.IsWellFormedUriString(value, UriKind.RelativeOrAbsolute))
+                    _schema = value;
+                else
+                    throw new ArgumentException("Incorrect data type", nameof(Schema));
+            }
+        }
+
+        private string _schema;
+
+        /// <summary>
+        /// </summary>
+        public string Reference
+        {
+            get => _reference;
+            set
+            {
+                if (Uri.IsWellFormedUriString(value, UriKind.RelativeOrAbsolute))
+                    _reference = value;
+                else
+                    throw new ArgumentException("Incorrect data type", nameof(Reference));
+            }
+        }
+
+        private string _reference;
+
+        /// <summary>
+        ///     The $comment keyword is strictly intended for adding comments to a schema
+        /// </summary>
+        public string Comment;
+
+        public string Title;
+        public string Description;
+
+        /// <summary>
+        ///     The length of a string can be constrained using the maxLength keyword. The value must be a non-negative number
+        /// </summary>
+        public int? MaxLength
+        {
+            get => _maxLength;
+            set
+            {
+                if (value >= 0)
+                    _maxLength = value;
+                else
+                    throw new ArgumentException("Incorrect data type", nameof(MaxLength));
+            }
+        }
+
+        private int? _maxLength;
+
+        /// <summary>
+        ///     The length of a string can be constrained using the minLength keyword. The value must be a non-negative number
+        /// </summary>
+        public int? MinLength
+        {
+            get => _minLength;
+            set
+            {
+                if (value >= 0)
+                    _minLength = value;
+                else
+                    throw new ArgumentException("Incorrect data type", nameof(MinLength));
+            }
+        }
+
+        private int? _minLength = 0;
+
+        /// <summary>
+        ///     The boolean keywords readOnly and writeOnly are typically used in an API context. readOnly indicates that a value
+        ///     should not be modified. It could be used to indicate that a PUT request that changes a value would result in a 400
+        ///     Bad Request response
+        /// </summary>
+        public bool? ReadOnly;
+
+        /// <summary>
+        ///     writeOnly indicates that a value may be set, but will remain hidden. In could be used to indicate you can set a
+        ///     value with a PUT request, but it would not be included when retrieving that record with a GET request
+        /// </summary>
+        public bool? WriteOnly;
+
+        /// <summary>
+        ///     The default keyword specifies a default value. This value is not used to fill in missing values during the
+        ///     validation process
+        /// </summary>
+        public SchemaBaseClassv07 Default;
+
+        /// <summary>
+        ///     The type validation keyword defines the first constraint on our JSON data
+        /// </summary>
+        public List<string> Type;
+
+        public List<string> Examples;
+
+        /// <summary>
+        ///     The enum keyword is used to restrict a value to a fixed set of values
+        /// </summary>
+        public List<string> Enum; // "enum"
+
+        public string Const;
+
+        public List<SchemaBaseClassv07> Definitions { get; set; }
+
+        #endregion
+
+        #region string specific
+
+        /// <summary>
+        ///     used to restrict a string to a particular regular expression. The regular expression syntax is the one defined in
+        ///     JavaScript (ECMA 262 specifically) with Unicode support
+        /// </summary>
+        public string Pattern
+        {
+            get => _pattern;
+            set
+            {
+                var rx = new Regex(@"\[Ref:(-?[0-9]+)/(-?[0-9]+)/(-?[0-9]+)\]");
+
+                if (rx.IsMatch(value))
+                    _pattern = value;
+                else
+                    throw new ArgumentException("Incorrect data type", nameof(Pattern));
+            }
+        }
+
+        private string _pattern;
+
+        /// <summary>
+        ///     allows for basic semantic identification of certain kinds of string values that are commonly used.
+        ///     Built-in formats:
+        ///     - date-time
+        ///     - time
+        ///     - date
+        ///     - duration - New in draft 2019-09
+        ///     - email
+        ///     - idn-email
+        ///     - hostname
+        ///     - idn-hostname
+        ///     - ipv4
+        ///     - ipv6
+        ///     - uuid
+        ///     - uri
+        ///     - uri-reference
+        ///     - iri
+        ///     - iri-reference
+        ///     - uri-template
+        ///     - json-pointer
+        ///     - relative-json-pointer
+        ///     - regex
+        /// </summary>
+        public string Format;
+
+        #endregion
+
+        #region number specific
+
+        /// <summary>
+        ///     Ranges of numbers are specified using a combination of the minimum and maximum keywords, (or exclusiveMinimum and
+        ///     exclusiveMaximum for expressing exclusive range).
+        ///     x ≥ minimum
+        ///     x > exclusiveMinimum
+        ///     x ≤ maximum
+        ///     x < exclusiveMaximum
+        /// </summary>
+        public decimal? MultipleOf
+        {
+            get => _multipleOf;
+            set
+            {
+                if (value > 0)
+                    _multipleOf = value;
+                else
+                    throw new ArgumentException("Incorrect data type", nameof(MultipleOf));
+            }
+        }
+
+        private decimal? _multipleOf;
+
+        public decimal? Maximum;
+
+        public decimal? ExclusiveMaximum;
+
+        /// <summary>
+        ///     include zero as a valid value
+        /// </summary>
+        public decimal? Minimum;
+
+        /// <summary>
+        ///     value must be something other than zero
+        /// </summary>
+        public decimal? ExclusiveMinimum;
+
+        #endregion
+
+        #region Object specific
+
+        /// <summary>
+        ///     The properties (key-value pairs) on an object are defined using the properties keyword. The value of properties is
+        ///     an object, where each key is the name of a property and each value is a schema used to validate that property. Any
+        ///     property that doesn’t match any of the property names in the properties keyword is ignored by this keyword
+        /// </summary>
+        public List<SchemaBaseClassv07> Properties;
+
+        /// <summary>
+        ///     it maps regular expressions to schemas. If a property name matches the given regular expression, the property value
+        ///     must validate against the corresponding schema
+        /// </summary>
+        public List<SchemaBaseClassv07> PatternProperties;
+
+        /// <summary>
+        ///     The names of properties can be validated against a schema, irrespective of their values. You might, for example,
+        ///     want to enforce that all names are valid ASCII tokens so they can be used as attributes in a particular programming
+        ///     language.
+        /// </summary>
+        public SchemaBaseClassv07 propertyNames;
+
+        /// <summary>
+        ///     is used to control the handling of extra stuff, that is, properties whose names are not listed in the properties
+        ///     keyword or match any of the regular expressions in the patternProperties keyword. By default any additional
+        ///     properties are allowed.
+        ///     // can be a list of objects or bool
+        /// </summary>
+        public object AdditionalProperties;
+
+        /// <summary>
+        ///     one can provide a list of required properties
+        /// </summary>
+        public List<string> Required;
+
+        /// <summary>
+        ///     The number of properties on an object can be restricted using the minProperties and maxProperties keywords. Each of
+        ///     these must be a non-negative integer.
+        /// </summary>
+        private int? _maxProperties;
+
+        /// <summary>
+        ///     The number of properties on an object can be restricted using the minProperties and maxProperties keywords. Each of
+        ///     these must be a non-negative integer.
+        /// </summary>
+        public int? MaxProperties
+        {
+            get => _maxProperties;
+            set
+            {
+                if (value >= 0)
+                    _maxProperties = value;
+                else
+                    throw new ArgumentException("Incorrect data type", nameof(MaxProperties));
+            }
+        }
+
+        /// <summary>
+        ///     The number of properties on an object can be restricted using the minProperties and maxProperties keywords. Each of
+        ///     these must be a non-negative integer.
+        /// </summary>
+        private int? _minProperties = 0;
+
+        /// <summary>
+        ///     The number of properties on an object can be restricted using the minProperties and maxProperties keywords. Each of
+        ///     these must be a non-negative integer.
+        /// </summary>
+        public int? MinProperties
+        {
+            get => _minProperties;
+            set
+            {
+                if (value >= 0)
+                    _minProperties = value;
+                else
+                    throw new ArgumentException("Incorrect data type", nameof(MinProperties));
+            }
+        }
+
+        #endregion
+
+        #region Array specific
+
+        /// <summary>
+        ///     define what appears in the array
+        /// </summary>
+        public object Items; // can be a List<SchemaBaseClass>, bool
+
+        public object AdditionalItems; // can be a List<SchemaBaseClass>, bool
+
+        /// <summary>
+        ///     The items keyword can be used to control whether it’s valid to have additional items in a tuple beyond what is
+        ///     defined in prefixItems. The value of the items keyword is a schema that all additional items must pass in order for
+        ///     the keyword to validate
+        /// </summary>
+        public List<SchemaBaseClassv07> PrefixItems;
+
+        /// <summary>
+        ///     While the items schema must be valid for every item in the array, the contains schema only needs to validate
+        ///     against one or more items in the array
+        /// </summary>
+        public object Contains;
+
+        /// <summary>
+        ///     The length of the array can be specified using the minItems and maxItems keywords. The value of each keyword must
+        ///     be a non-negative number
+        /// </summary>
+        public int? MaxItems
+        {
+            get => _maxItems;
+            set
+            {
+                if (value >= 0)
+                    _maxItems = value;
+                else
+                    throw new ArgumentException("Incorrect data type", nameof(MaxItems));
+            }
+        }
+
+        private int? _maxItems;
+
+        /// <summary>
+        ///     The length of the array can be specified using the minItems and maxItems keywords. The value of each keyword must
+        ///     be a non-negative number
+        /// </summary>
+        public int? MinItems
+        {
+            get => _minItems;
+            set
+            {
+                if (value >= 0)
+                    _minItems = value;
+                else
+                    throw new ArgumentException("Incorrect data type", nameof(MinItems));
+            }
+        }
+
+        private int? _minItems = 0;
+
+        /// <summary>
+        ///     keyword notes all of the items in the array must be unique relative to one another
+        /// </summary>
+        public bool? UniqueItemsOnly;
+
+        #endregion
+
+        #region Media
+
+        public string ContentMediaType;
+
+        public string ContentEncoding;
+
+        #endregion
+
+        #region Schema Composition
+
+        public List<SchemaBaseClassv07> AllOf;
+
+        public List<SchemaBaseClassv07> AnyOf;
+
+        public List<SchemaBaseClassv07> OneOf;
+
+        #endregion
+
+        #region If-Then-Else
+
+        public List<SchemaBaseClassv07> If;
+
+        public List<SchemaBaseClassv07> Then;
+
+        public List<SchemaBaseClassv07> Else;
+
+        public List<SchemaBaseClassv07> Not;
+
+        #endregion
+
+        public SchemaBaseClassv07()
+        {
+        }
+
+        public SchemaBaseClassv07(string name)
         {
             Name = name;
-        }
-
-        public ISchemaTreeBase FindNodeByPath(string path)
-        {
-            if (Path == path) return this;
-
-            return null;
-        }
-
-        public bool Merge(ISchemaTreeBase newProperty)
-        {
-            var tmpProperty = new SchemaTreeProperty();
-            if (!this.Compare(newProperty)) return false;
-
-            if (newProperty is SchemaTreeProperty prop)
-            {
-                tmpProperty.Name = this.Name;
-                tmpProperty.Path = this.Path;
-
-                if (this.Description != prop.Description)
-                    tmpProperty.Description = (this.Description + prop.Description).Trim();
-
-                if (string.IsNullOrEmpty(this.Reference) || string.IsNullOrEmpty(prop.Reference))
-                    tmpProperty.Reference = (this.Reference + prop.Reference).Trim();
-                else return false;
-
-                foreach (var t1 in prop.Type)
-                {
-                    if (!this.Type.Contains(t1))
-                        this.Type.Add(t1);
-                }
-
-                foreach (var t1 in prop.Examples)
-                {
-                    if (!this.Examples.Contains(t1))
-                        this.Examples.Add(t1);
-                }
-
-                foreach (var t1 in prop.Enum)
-                {
-                    if (!this.Enum.Contains(t1))
-                        this.Enum.Add(t1);
-                }
-
-                if (string.IsNullOrEmpty(this.Default) || string.IsNullOrEmpty(prop.Default))
-                    tmpProperty.Default = (this.Default + prop.Default).Trim();
-                else return false;
-
-                if (string.IsNullOrEmpty(this.Pattern) || string.IsNullOrEmpty(prop.Pattern))
-                    tmpProperty.Pattern = (this.Reference + prop.Pattern).Trim();
-                else return false;
-
-                this.Import(tmpProperty);
-
-                return true;
-            }
-
-            return false;
-        }
-
-        public bool Import(ISchemaTreeBase newProperty)
-        {
-            if (newProperty is SchemaTreeProperty prop)
-            {
-                Name = prop.Name;
-                Path = prop.Path;
-
-                Description = prop.Description;
-                Reference = prop.Reference;
-
-                Type = new List<string>();
-                foreach (var t2 in prop.Type)
-                {
-                    Type.Add(t2);
-                }
-
-                Examples = new List<string>();
-                foreach (var t2 in prop.Examples)
-                {
-                    Examples.Add(t2);
-                }
-
-                Default = prop.Default;
-                Pattern = prop.Pattern;
-
-                Enum = new List<string>();
-                foreach (var t2 in prop.Enum)
-                {
-                    Enum.Add(t2);
-                }
-
-                return true;
-            }
-
-            return false;
-        }
-
-        public bool Compare(ISchemaTreeBase newProperty, bool baseOnly = false)
-        {
-            var notSame = false;
-            if (newProperty is SchemaTreeProperty prop)
-            {
-                if (Name != prop.Name) notSame = true;
-                else if (Path != prop.Path) notSame = true;
-                else if (!baseOnly)
-                {
-                    if (Description != prop.Description) notSame = true;
-                    else if (Reference != prop.Reference) notSame = true;
-                    else
-                    {
-                        if (Type.Count == prop.Type.Count)
-                        {
-                            foreach (var t1 in Type)
-                            {
-                                if (!prop.Type.Contains(t1))
-                                {
-                                    notSame = true;
-                                    break;
-                                }
-                            }
-                        }
-                        else notSame = true;
-
-                        if (!notSame && Examples.Count == prop.Examples.Count)
-                        {
-                            foreach (var t1 in Examples)
-                            {
-                                if (!prop.Examples.Contains(t1))
-                                {
-                                    notSame = true;
-                                    break;
-                                }
-                            }
-                        }
-                        else notSame = true;
-                    }
-
-                    if (!notSame)
-                    {
-                        if (Default != prop.Default) notSame = true;
-                        else if (Pattern != prop.Pattern) notSame = true;
-                        else if (Enum.Count == prop.Enum.Count)
-                        {
-                            foreach (var t1 in Enum)
-                            {
-                                if (!prop.Enum.Contains(t1))
-                                {
-                                    notSame = true;
-                                    break;
-                                }
-                            }
-                        }
-                        else notSame = true;
-                    }
-                }
-            }
-            else notSame = true;
-
-            return notSame;
         }
 
         public string ToJson(bool noSamples = true)
@@ -259,8 +559,8 @@ namespace JsonDictionaryCore
             if (Name != null)
                 text.AppendLine($"\"{Name}\": {{");
 
-            if (Path != null)
-                text.AppendLine($"\"$id\": \"{Path}\",");
+            if (Id != null)
+                text.AppendLine($"\"$id\": \"{Id}\",");
 
             if (Type != null)
             {
@@ -270,9 +570,8 @@ namespace JsonDictionaryCore
                     t.Append("[");
 
                     foreach (var item in Type)
-                    {
                         t.Append($"\"{item}\",");
-                    }
+
                     t.Append("]");
                 }
                 else if (Type.Count == 1)
@@ -307,6 +606,442 @@ namespace JsonDictionaryCore
                             t.AppendLine($"{item},");
                     }
                 }
+
+                t.Append("]");
+                text.AppendLine($"\"examples\": {t},");
+            }
+
+            text.AppendLine("}");
+
+            return text.ToString();
+        }
+
+        public static SchemaBaseClassv07 JsonPropertyListToSchemaObject_v7(
+            IEnumerable<ParsedProperty> rootCollection,
+            string startPath,
+            string propertyName, char jsonPathDiv)
+        {
+            if (rootCollection == null) return null;
+
+            // select properties describing current node from complete collection
+            var properties = rootCollection.Where(n => n.ParentPath == startPath);
+
+            if (!properties.Any())
+                return null;
+
+            var propertyNames = new SchemaPropertyNames();
+
+            // get "schema"
+            var nodeSchemaVersion = properties.FirstOrDefault(n => n.Name == propertyNames.Schema)?.Value;
+
+            if (!string.IsNullOrEmpty(nodeSchemaVersion))
+            {
+                if (nodeSchemaVersion.Equals("http://json-schema.org/draft-04/schema#",
+                    StringComparison.OrdinalIgnoreCase))
+                    propertyNames.Id = "id";
+                else
+                    return null;
+            }
+            else
+            {
+                return null;
+            }
+
+            //get "type" of the object
+            var nodeTypes = new List<string>();
+            var typePropertyPathSample = startPath + jsonPathDiv + propertyNames.Type;
+            var currentNodeType = properties.FirstOrDefault(n => n.Path == typePropertyPathSample) ??
+                                  new ParsedProperty();
+
+            if (currentNodeType.JsonPropertyType == JsonPropertyTypes.Array)
+            {
+                var childNodesTypes = rootCollection
+                    .Where(n => n.ParentPath == typePropertyPathSample)?
+                    .Select(n => n.Value);
+                nodeTypes.AddRange(childNodesTypes);
+            }
+            else
+            {
+                nodeTypes.Add(currentNodeType.Value);
+            }
+
+            nodeTypes.Sort();
+
+            // get "id"
+            var nodeId = properties.FirstOrDefault(n => n.Name == propertyNames.Id)?.Value;
+
+            //get "title"
+            var nodeDescription = properties.FirstOrDefault(n => n.Name == propertyNames.Title)?.Value;
+            var reference = properties.FirstOrDefault(n => n.Name == propertyNames.Ref)?.Value;
+            var nodeExamples = rootCollection
+                .Where(n => n.ParentPath == startPath + jsonPathDiv + propertyNames.Examples)?
+                .Select(n => n.Value)?
+                .OrderBy(n => n)?
+                .ToList();
+
+            // to do - get all available properties even if there is a mix of object/array/property
+            if (nodeTypes.Any(n => n == JsonSchemaTypes.Array))
+            {
+                var arrayNode = new SchemaBaseClassv07(propertyName)
+                {
+                    Type = nodeTypes,
+                    Id = nodeId,
+                    Description = nodeDescription,
+                    Reference = reference,
+                    Examples = nodeExamples
+                };
+
+                if (bool.TryParse(properties.FirstOrDefault(n => n.Name == propertyNames.UniqueItems)?.Value,
+                    out var ap))
+                    arrayNode.UniqueItemsOnly = ap;
+                else
+                    arrayNode.UniqueItemsOnly = null;
+
+                var newItem = JsonPropertyListToSchemaObject_v7(rootCollection,
+                    startPath + jsonPathDiv + propertyNames.Items,
+                    propertyNames.Items,
+                    jsonPathDiv);
+                arrayNode.Items = newItem;
+
+                return arrayNode;
+            }
+
+            if (nodeTypes.Any(n => n == JsonSchemaTypes.Object))
+            {
+                var objectNode = new SchemaBaseClassv07(propertyName)
+                {
+                    Name = propertyName,
+                    Type = nodeTypes,
+                    Id = nodeId,
+                    Description = nodeDescription,
+                    Reference = reference,
+                    Examples = nodeExamples,
+                    Required = rootCollection
+                        .Where(n => n.ParentPath == startPath + jsonPathDiv + propertyNames.Required)?
+                        .Select(n => n.Value)?
+                        .OrderBy(n => n)?
+                        .ToList()
+                };
+
+                if (bool.TryParse(properties.FirstOrDefault(n => n.Name == propertyNames.AdditionalProperties)?.Value,
+                    out var ap))
+                    objectNode.AdditionalProperties = ap;
+                else
+                    objectNode.AdditionalProperties = null;
+
+                var childNodes = rootCollection
+                    .Where(n => n.ParentPath == startPath + jsonPathDiv + propertyNames.Properties)?
+                    .OrderBy(n => n.Name);
+
+                foreach (var item in childNodes)
+                {
+                    var newProperty =
+                        JsonPropertyListToSchemaObject_v7(rootCollection, item.Path, item.Name, jsonPathDiv);
+                    objectNode.Properties.Add(newProperty);
+                }
+
+                if (startPath == "#")
+                {
+                    objectNode.Schema = properties.FirstOrDefault(n => n.Name == propertyNames.Schema)?.Value;
+
+                    var childDefs = rootCollection
+                        .Where(n => n.ParentPath == startPath + jsonPathDiv + propertyNames.Definitions)?
+                        .OrderBy(n => n.Name);
+
+                    foreach (var item in childDefs)
+                    {
+                        var newProperty =
+                            JsonPropertyListToSchemaObject_v7(rootCollection, item.Path, item.Name, jsonPathDiv);
+                        objectNode.Definitions.Add(newProperty);
+                    }
+                }
+
+                return objectNode;
+            }
+
+            var propertyNode = new SchemaBaseClassv07(propertyName)
+            {
+                Type = nodeTypes,
+                Id = nodeId,
+                Description = nodeDescription,
+                Reference = reference,
+                Examples = nodeExamples,
+                Pattern = properties.FirstOrDefault(n => n.Name == propertyNames.Pattern)?.Value,
+                Enum = rootCollection
+                    .Where(n => n.ParentPath == startPath + jsonPathDiv + propertyNames.Enum)?
+                    .Select(n => n.Value)?
+                    .OrderBy(n => n)?
+                    .ToList()
+            };
+            propertyNode.Default = JsonPropertyListToSchemaObject_v7(rootCollection,
+                startPath + jsonPathDiv + propertyNames.Default, propertyNames.Default, jsonPathDiv);
+
+            return propertyNode;
+        }
+    }
+
+    public class SchemaTreeProperty : ISchemaTreeBase
+    {
+        public string Name { get; set; }
+        public string Id { get; set; }
+        public List<string> Type { get; set; } = new List<string>();
+        public string Description { get; set; }
+        public string Reference { get; set; }
+        public List<string> Examples { get; set; } = new List<string>();
+
+        // specific properties
+        public string Default { get; set; } // "default"
+
+        public string Pattern { get; set; } // "pattern"
+
+        public List<string> Enum { get; set; } = new List<string>(); // "enum"
+
+        public SchemaTreeProperty()
+        {
+        }
+
+        public SchemaTreeProperty(string name)
+        {
+            Name = name;
+        }
+
+        public ISchemaTreeBase FindNodeByPath(string id)
+        {
+            return Id == id ? this : null;
+        }
+
+        public bool Merge(ISchemaTreeBase newProperty)
+        {
+            var tmpProperty = new SchemaTreeProperty();
+            if (!Compare(newProperty)) return false;
+
+            if (newProperty is SchemaTreeProperty prop)
+            {
+                tmpProperty.Name = Name;
+                tmpProperty.Id = Id;
+
+                if (Description != prop.Description)
+                    tmpProperty.Description = (Description + prop.Description).Trim();
+
+                if (string.IsNullOrEmpty(Reference) || string.IsNullOrEmpty(prop.Reference))
+                    tmpProperty.Reference = (Reference + prop.Reference).Trim();
+                else
+                    return false;
+
+                foreach (var t1 in prop.Type)
+                {
+                    if (!Type.Contains(t1))
+                        Type.Add(t1);
+                }
+
+                foreach (var t1 in prop.Examples)
+                {
+                    if (!Examples.Contains(t1))
+                        Examples.Add(t1);
+                }
+
+                foreach (var t1 in prop.Enum)
+                {
+                    if (!Enum.Contains(t1))
+                        Enum.Add(t1);
+                }
+
+                if (string.IsNullOrEmpty(Default) || string.IsNullOrEmpty(prop.Default))
+                    tmpProperty.Default = (Default + prop.Default).Trim();
+                else
+                    return false;
+
+                if (string.IsNullOrEmpty(Pattern) || string.IsNullOrEmpty(prop.Pattern))
+                    tmpProperty.Pattern = (Reference + prop.Pattern).Trim();
+                else
+                    return false;
+
+                Import(tmpProperty);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool Import(ISchemaTreeBase newProperty)
+        {
+            if (newProperty is SchemaTreeProperty prop)
+            {
+                Name = prop.Name;
+                Id = prop.Id;
+
+                Description = prop.Description;
+                Reference = prop.Reference;
+
+                Type = new List<string>();
+                foreach (var t2 in prop.Type) Type.Add(t2);
+
+                Examples = new List<string>();
+                foreach (var t2 in prop.Examples) Examples.Add(t2);
+
+                Default = prop.Default;
+                Pattern = prop.Pattern;
+
+                Enum = new List<string>();
+
+                foreach (var t2 in prop.Enum)
+                    Enum.Add(t2);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool Compare(ISchemaTreeBase newProperty, bool baseOnly = false)
+        {
+            var notSame = false;
+            if (newProperty is SchemaTreeProperty prop)
+            {
+                if (Name != prop.Name)
+                {
+                    notSame = true;
+                }
+                else if (Id != prop.Id)
+                {
+                    notSame = true;
+                }
+                else if (!baseOnly)
+                {
+                    if (Description != prop.Description)
+                    {
+                        notSame = true;
+                    }
+                    else if (Reference != prop.Reference)
+                    {
+                        notSame = true;
+                    }
+                    else
+                    {
+                        if (Type.Count == prop.Type.Count)
+                        {
+                            foreach (var t1 in Type)
+                            {
+                                if (!prop.Type.Contains(t1))
+                                {
+                                    notSame = true;
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            notSame = true;
+                        }
+
+                        if (!notSame && Examples.Count == prop.Examples.Count)
+                        {
+                            foreach (var t1 in Examples)
+                            {
+                                if (!prop.Examples.Contains(t1))
+                                {
+                                    notSame = true;
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            notSame = true;
+                        }
+                    }
+
+                    if (!notSame)
+                    {
+                        if (Default != prop.Default)
+                        {
+                            notSame = true;
+                        }
+                        else if (Pattern != prop.Pattern)
+                        {
+                            notSame = true;
+                        }
+                        else if (Enum.Count == prop.Enum.Count)
+                        {
+                            foreach (var t1 in Enum)
+                            {
+                                if (!prop.Enum.Contains(t1))
+                                {
+                                    notSame = true;
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            notSame = true;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                notSame = true;
+            }
+
+            return notSame;
+        }
+
+        public string ToJson(bool noSamples = true)
+        {
+            var text = new StringBuilder();
+
+            if (Name != null)
+                text.AppendLine($"\"{Name}\": {{");
+
+            if (Id != null)
+                text.AppendLine($"\"$id\": \"{Id}\",");
+
+            if (Type != null)
+            {
+                var t = new StringBuilder();
+                if (Type.Count > 1)
+                {
+                    t.Append("[");
+
+                    foreach (var item in Type) t.Append($"\"{item}\",");
+
+                    t.Append("]");
+                }
+                else if (Type.Count == 1)
+                {
+                    t.Append($"\"{Type[0]}\"");
+                }
+                else
+                {
+                    t.Append("\"\"");
+                }
+
+                text.AppendLine($"\"type\": {t},");
+            }
+
+            if (Description != null)
+                text.AppendLine($"\"title\": \"{Description}\",");
+
+            if (Reference != null)
+                text.AppendLine($"\"$ref\": \"{Reference}\",");
+
+            if (!noSamples && Examples != null && Examples.Count > 0)
+            {
+                var t = new StringBuilder();
+                t.AppendLine("[");
+                foreach (var item in Examples)
+                {
+                    if (!string.IsNullOrEmpty(item))
+                    {
+                        if (Type?.Contains("string") ?? false)
+                            t.AppendLine($"\"{item}\",");
+                        else
+                            t.AppendLine($"{item},");
+                    }
+                }
+
                 t.Append("]");
                 text.AppendLine($"\"examples\": {t},");
             }
@@ -346,9 +1081,7 @@ namespace JsonDictionaryCore
                     }
 
                     if (Type.Contains("null"))
-                    {
                         t.AppendLine("null,");
-                    }
                 }
 
                 t.Append("]");
@@ -364,7 +1097,7 @@ namespace JsonDictionaryCore
     public class SchemaTreeObject : ISchemaTreeBase
     {
         public string Name { get; set; }
-        public string Path { get; set; }
+        public string Id { get; set; }
         public List<string> Type { get; set; } = new List<string>();
         public string Description { get; set; }
         public string Reference { get; set; }
@@ -381,7 +1114,9 @@ namespace JsonDictionaryCore
 
         public List<ISchemaTreeBase> Definitions { get; set; } = new List<ISchemaTreeBase>(); // "definitions"
 
-        public SchemaTreeObject() { }
+        public SchemaTreeObject()
+        {
+        }
 
         public SchemaTreeObject(string name)
         {
@@ -390,11 +1125,12 @@ namespace JsonDictionaryCore
 
         public ISchemaTreeBase FindNodeByPath(string path)
         {
-            if (Path == path) return this;
+            if (Id == path) return this;
 
             foreach (var property in Properties)
             {
                 var foundProperty = property.FindNodeByPath(path);
+
                 if (foundProperty != null)
                     return foundProperty;
             }
@@ -405,54 +1141,53 @@ namespace JsonDictionaryCore
         public bool Merge(ISchemaTreeBase newProperty)
         {
             var tmpProperty = new SchemaTreeObject();
-            if (!this.Compare(newProperty)) return false;
+
+            if (!Compare(newProperty))
+                return false;
 
             if (newProperty is SchemaTreeObject prop)
             {
-                tmpProperty.Name = this.Name;
-                tmpProperty.Path = this.Path;
+                tmpProperty.Name = Name;
+                tmpProperty.Id = Id;
 
-                if (this.Description != prop.Description)
-                    tmpProperty.Description = (this.Description + prop.Description).Trim();
+                if (Description != prop.Description)
+                    tmpProperty.Description = (Description + prop.Description).Trim();
 
-                if (string.IsNullOrEmpty(this.Reference) || string.IsNullOrEmpty(prop.Reference))
-                    tmpProperty.Reference = (this.Reference + prop.Reference).Trim();
-                else return false;
+                if (string.IsNullOrEmpty(Reference) || string.IsNullOrEmpty(prop.Reference))
+                    tmpProperty.Reference = (Reference + prop.Reference).Trim();
+                else
+                    return false;
 
-                foreach (var p in this.Type)
-                {
+                foreach (var p in Type)
                     tmpProperty.Type.Add(p);
-                }
+
                 foreach (var t1 in prop.Type)
                 {
                     if (!tmpProperty.Type.Contains(t1))
                         tmpProperty.Type.Add(t1);
                 }
 
-                foreach (var p in this.Examples)
-                {
+                foreach (var p in Examples)
                     tmpProperty.Examples.Add(p);
-                }
+
                 foreach (var t1 in prop.Examples)
                 {
                     if (!tmpProperty.Examples.Contains(t1))
                         tmpProperty.Examples.Add(t1);
                 }
 
-                foreach (var p in this.Required)
-                {
+                foreach (var p in Required)
                     tmpProperty.Required.Add(p);
-                }
+
                 foreach (var t1 in prop.Required)
                 {
                     if (!tmpProperty.Required.Contains(t1))
                         tmpProperty.Required.Add(t1);
                 }
 
-                foreach (var p in this.Properties)
-                {
+                foreach (var p in Properties)
                     tmpProperty.Properties.Add(p);
-                }
+
                 for (var i = 0; i < tmpProperty.Properties.Count; i++)
                 {
                     foreach (var p2 in prop.Properties)
@@ -464,9 +1199,12 @@ namespace JsonDictionaryCore
                         else
                         {
                             ISchemaTreeBase newProp;
-                            if (p2 is SchemaTreeArray) newProp = new SchemaTreeArray();
-                            else if (p2 is SchemaTreeObject) newProp = new SchemaTreeObject();
-                            else newProp = new SchemaTreeProperty();
+                            if (p2 is SchemaTreeArray)
+                                newProp = new SchemaTreeArray();
+                            else if (p2 is SchemaTreeObject)
+                                newProp = new SchemaTreeObject();
+                            else
+                                newProp = new SchemaTreeProperty();
 
                             newProp.Import(p2);
                             tmpProperty.Properties.Add(newProp);
@@ -474,7 +1212,7 @@ namespace JsonDictionaryCore
                     }
                 }
 
-                this.Import(tmpProperty);
+                Import(tmpProperty);
 
                 return true;
             }
@@ -487,38 +1225,36 @@ namespace JsonDictionaryCore
             if (newProperty is SchemaTreeObject prop)
             {
                 Name = prop.Name;
-                Path = prop.Path;
+                Id = prop.Id;
 
                 Description = prop.Description;
                 Reference = prop.Reference;
 
                 Type = new List<string>();
                 foreach (var t2 in prop.Type)
-                {
                     Type.Add(t2);
-                }
 
                 Examples = new List<string>();
                 foreach (var t2 in prop.Examples)
-                {
                     Examples.Add(t2);
-                }
 
                 AdditionalProperties = prop.AdditionalProperties;
 
+                Required = new List<string>();
                 foreach (var t2 in prop.Required)
-                {
                     Required.Add(t2);
-                }
 
                 // process Properties
                 Properties = new List<ISchemaTreeBase>();
                 foreach (var p2 in prop.Properties)
                 {
                     ISchemaTreeBase newProp;
-                    if (p2 is SchemaTreeArray) newProp = new SchemaTreeArray();
-                    else if (p2 is SchemaTreeObject) newProp = new SchemaTreeObject();
-                    else newProp = new SchemaTreeProperty();
+                    if (p2 is SchemaTreeArray)
+                        newProp = new SchemaTreeArray();
+                    else if (p2 is SchemaTreeObject)
+                        newProp = new SchemaTreeObject();
+                    else
+                        newProp = new SchemaTreeProperty();
 
                     newProp.Import(p2);
                     Properties.Add(newProp);
@@ -536,12 +1272,24 @@ namespace JsonDictionaryCore
             var notSame = false;
             if (newProperty is SchemaTreeObject prop)
             {
-                if (Name != prop.Name) notSame = true;
-                else if (Path != prop.Path) notSame = true;
+                if (Name != prop.Name)
+                {
+                    notSame = true;
+                }
+                else if (Id != prop.Id)
+                {
+                    notSame = true;
+                }
                 else if (!baseOnly)
                 {
-                    if (Description != prop.Description) notSame = true;
-                    else if (Reference != prop.Reference) notSame = true;
+                    if (Description != prop.Description)
+                    {
+                        notSame = true;
+                    }
+                    else if (Reference != prop.Reference)
+                    {
+                        notSame = true;
+                    }
                     else
                     {
                         if (Type.Count == prop.Type.Count)
@@ -555,7 +1303,10 @@ namespace JsonDictionaryCore
                                 }
                             }
                         }
-                        else notSame = true;
+                        else
+                        {
+                            notSame = true;
+                        }
 
                         if (!notSame && Examples.Count == prop.Examples.Count)
                         {
@@ -568,12 +1319,18 @@ namespace JsonDictionaryCore
                                 }
                             }
                         }
-                        else notSame = true;
+                        else
+                        {
+                            notSame = true;
+                        }
                     }
 
                     if (!notSame)
                     {
-                        if (AdditionalProperties != prop.AdditionalProperties) notSame = true;
+                        if (AdditionalProperties != prop.AdditionalProperties)
+                        {
+                            notSame = true;
+                        }
                         else if (Required.Count == prop.Required.Count)
                         {
                             foreach (var t1 in Required)
@@ -585,10 +1342,12 @@ namespace JsonDictionaryCore
                                 }
                             }
                         }
-                        else notSame = true;
+                        else
+                        {
+                            notSame = true;
+                        }
 
                         if (!notSame && Properties.Count == prop.Properties.Count)
-                        {
                             foreach (var t1 in Properties)
                             {
                                 foreach (var t2 in prop.Properties)
@@ -599,14 +1358,19 @@ namespace JsonDictionaryCore
                                         break;
                                     }
                                 }
-                                if (notSame == true) break;
+
+                                if (notSame)
+                                    break;
                             }
-                        }
-                        else notSame = true;
+                        else
+                            notSame = true;
                     }
                 }
             }
-            else notSame = true;
+            else
+            {
+                notSame = true;
+            }
 
             return notSame;
         }
@@ -623,8 +1387,8 @@ namespace JsonDictionaryCore
             if (SchemaName != null)
                 text.AppendLine($"\"$schema\": \"{SchemaName}\",");
 
-            if (Path != null)
-                text.AppendLine($"\"$id\": \"{Path}\",");
+            if (Id != null)
+                text.AppendLine($"\"$id\": \"{Id}\",");
 
             if (Type != null)
             {
@@ -633,10 +1397,8 @@ namespace JsonDictionaryCore
                 {
                     t.Append("[");
 
-                    foreach (var item in Type)
-                    {
-                        t.Append($"\"{item}\",");
-                    }
+                    foreach (var item in Type) t.Append($"\"{item}\",");
+
                     t.Append("]");
                 }
                 else if (Type.Count == 1)
@@ -671,6 +1433,7 @@ namespace JsonDictionaryCore
                             t.AppendLine($"{item},");
                     }
                 }
+
                 t.Append("]");
                 text.AppendLine($"\"examples\": {t},");
             }
@@ -684,6 +1447,7 @@ namespace JsonDictionaryCore
                     if (!string.IsNullOrEmpty(item))
                         t.AppendLine($"\"{item}\",");
                 }
+
                 t.Append("]");
                 text.AppendLine($"\"required\": {t},");
             }
@@ -695,9 +1459,8 @@ namespace JsonDictionaryCore
             {
                 text.AppendLine("\"properties\": {");
                 foreach (var prop in Properties)
-                {
                     text.AppendLine(prop.ToJson() + ",");
-                }
+
                 text.AppendLine("}");
             }
 
@@ -705,9 +1468,8 @@ namespace JsonDictionaryCore
             {
                 text.AppendLine("\"definitions\": {");
                 foreach (var prop in Definitions)
-                {
                     text.AppendLine(prop.ToJson() + ",");
-                }
+
                 text.AppendLine("}");
             }
 
@@ -720,7 +1482,7 @@ namespace JsonDictionaryCore
     public class SchemaTreeArray : ISchemaTreeBase
     {
         public string Name { get; set; }
-        public string Path { get; set; }
+        public string Id { get; set; }
         public List<string> Type { get; set; } = new List<string>();
         public string Description { get; set; }
         public string Reference { get; set; }
@@ -731,7 +1493,9 @@ namespace JsonDictionaryCore
 
         public ISchemaTreeBase Items { get; set; } // "items"
 
-        public SchemaTreeArray() { }
+        public SchemaTreeArray()
+        {
+        }
 
         public SchemaTreeArray(string name)
         {
@@ -740,13 +1504,13 @@ namespace JsonDictionaryCore
 
         public ISchemaTreeBase FindNodeByPath(string path)
         {
-            if (Path == path) return this;
+            if (Id == path)
+                return this;
 
             if (Items is SchemaTreeProperty schemaProperty)
-            {
                 return schemaProperty.FindNodeByPath(path);
-            }
-            else if (Items is SchemaTreeObject schemaObject)
+
+            if (Items is SchemaTreeObject schemaObject)
             {
                 foreach (var property in schemaObject.Properties)
                 {
@@ -756,9 +1520,7 @@ namespace JsonDictionaryCore
                 }
             }
             else if (Items is SchemaTreeArray schemaArray)
-            {
                 return schemaArray.FindNodeByPath(path);
-            }
 
             return null;
         }
@@ -766,42 +1528,44 @@ namespace JsonDictionaryCore
         public bool Merge(ISchemaTreeBase newProperty)
         {
             var tmpProperty = new SchemaTreeArray();
-            if (!this.Compare(newProperty)) return false;
+            if (!Compare(newProperty))
+                return false;
 
             if (newProperty is SchemaTreeArray prop)
             {
-                tmpProperty.Name = this.Name;
-                tmpProperty.Path = this.Path;
+                tmpProperty.Name = Name;
+                tmpProperty.Id = Id;
 
-                if (this.Description != prop.Description)
-                    tmpProperty.Description = (this.Description + prop.Description).Trim();
+                if (Description != prop.Description)
+                    tmpProperty.Description = (Description + prop.Description).Trim();
 
-                if (string.IsNullOrEmpty(this.Reference) || string.IsNullOrEmpty(prop.Reference))
-                    tmpProperty.Reference = (this.Reference + prop.Reference).Trim();
-                else return false;
+                if (string.IsNullOrEmpty(Reference) || string.IsNullOrEmpty(prop.Reference))
+                    tmpProperty.Reference = (Reference + prop.Reference).Trim();
+                else
+                    return false;
 
                 foreach (var t1 in prop.Type)
                 {
-                    if (!this.Type.Contains(t1))
-                        this.Type.Add(t1);
+                    if (!Type.Contains(t1))
+                        Type.Add(t1);
                 }
 
                 foreach (var t1 in prop.Examples)
                 {
-                    if (!this.Examples.Contains(t1))
-                        this.Examples.Add(t1);
+                    if (!Examples.Contains(t1))
+                        Examples.Add(t1);
                 }
 
-                if (this.UniqueItemsOnly != null && prop.UniqueItemsOnly != null)
-                    tmpProperty.UniqueItemsOnly = (bool)this.UniqueItemsOnly || (bool)prop.UniqueItemsOnly;
+                if (UniqueItemsOnly != null && prop.UniqueItemsOnly != null)
+                {
+                    tmpProperty.UniqueItemsOnly = (bool)UniqueItemsOnly || (bool)prop.UniqueItemsOnly;
+                }
 
                 tmpProperty.Items.Import(prop.Items);
-                this.Import(tmpProperty);
+                Import(tmpProperty);
 
                 return true;
             }
-
-
 
 
             return false;
@@ -812,22 +1576,18 @@ namespace JsonDictionaryCore
             if (newProperty is SchemaTreeArray prop)
             {
                 Name = prop.Name;
-                Path = prop.Path;
+                Id = prop.Id;
 
                 Description = prop.Description;
                 Reference = prop.Reference;
 
                 Type = new List<string>();
                 foreach (var t2 in prop.Type)
-                {
                     Type.Add(t2);
-                }
 
                 Examples = new List<string>();
                 foreach (var t2 in prop.Examples)
-                {
                     Examples.Add(t2);
-                }
 
                 UniqueItemsOnly = prop.UniqueItemsOnly;
 
@@ -846,12 +1606,24 @@ namespace JsonDictionaryCore
 
             if (newProperty is SchemaTreeArray prop)
             {
-                if (Name != prop.Name) notSame = true;
-                else if (Path != prop.Path) notSame = true;
+                if (Name != prop.Name)
+                {
+                    notSame = true;
+                }
+                else if (Id != prop.Id)
+                {
+                    notSame = true;
+                }
                 else if (!baseOnly)
                 {
-                    if (Description != prop.Description) notSame = true;
-                    else if (Reference != prop.Reference) notSame = true;
+                    if (Description != prop.Description)
+                    {
+                        notSame = true;
+                    }
+                    else if (Reference != prop.Reference)
+                    {
+                        notSame = true;
+                    }
                     else
                     {
                         if (Type.Count == prop.Type.Count)
@@ -865,7 +1637,10 @@ namespace JsonDictionaryCore
                                 }
                             }
                         }
-                        else notSame = true;
+                        else
+                        {
+                            notSame = true;
+                        }
 
                         if (!notSame)
                         {
@@ -880,16 +1655,21 @@ namespace JsonDictionaryCore
                                     }
                                 }
                             }
-                            else notSame = true;
+                            else
+                            {
+                                notSame = true;
+                            }
                         }
                     }
 
                     if (!notSame)
                     {
-                        if (UniqueItemsOnly != prop.UniqueItemsOnly) notSame = true;
-                        else if (Items == null && prop.Items != null
-                            || Items != null && prop.Items == null) notSame = true;
-                        else if (!Items.Compare(prop.Items)) notSame = true;
+                        if (UniqueItemsOnly != prop.UniqueItemsOnly)
+                            notSame = true;
+                        else if (Items == null && prop.Items != null || Items != null && prop.Items == null)
+                            notSame = true;
+                        else if (Items != null && prop.Items != null && !Items.Compare(prop.Items))
+                            notSame = true;
                     }
                 }
             }
@@ -904,8 +1684,8 @@ namespace JsonDictionaryCore
             if (!string.IsNullOrEmpty(Name))
                 text.AppendLine($"\"{Name}\": {{");
 
-            if (Path != null)
-                text.AppendLine($"\"$id\": \"{Path}\",");
+            if (Id != null)
+                text.AppendLine($"\"$id\": \"{Id}\",");
 
             if (Type != null)
             {
@@ -914,10 +1694,8 @@ namespace JsonDictionaryCore
                 {
                     t.Append("[");
 
-                    foreach (var item in Type)
-                    {
-                        t.Append($"\"{item}\",");
-                    }
+                    foreach (var item in Type) t.Append($"\"{item}\",");
+
                     t.Append("]");
                 }
                 else if (Type.Count == 1)
@@ -952,6 +1730,7 @@ namespace JsonDictionaryCore
                             t.AppendLine($"{item},");
                     }
                 }
+
                 t.Append("]");
                 text.AppendLine($"\"examples\": {t},");
             }
@@ -960,9 +1739,7 @@ namespace JsonDictionaryCore
                 text.AppendLine($"\"uniqueItems\": {UniqueItemsOnly.ToString().ToLower()},");
 
             if (Items != null)
-            {
                 text.AppendLine(Items.ToJson());
-            }
 
             text.AppendLine("}");
 

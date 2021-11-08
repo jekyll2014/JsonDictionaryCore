@@ -34,17 +34,19 @@ namespace JsonDictionaryCore
             {
                 Condition = Condition,
                 CaseSensitive = CaseSensitive,
-                Value = Value,
+                Value = Value
             };
         }
 
         bool IEqualityComparer.Equals(object x, object y)
         {
             if (x is SearchItem itemX && y is SearchItem itemY)
+            {
                 return itemX.Version == itemY.Version
                        && itemX.Condition == itemY.Condition
                        && itemX.CaseSensitive == itemY.CaseSensitive
                        && itemX.Value == itemY.Value;
+            }
 
             return false;
         }

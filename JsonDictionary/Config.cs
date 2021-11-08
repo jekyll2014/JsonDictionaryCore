@@ -14,10 +14,7 @@ namespace JsonDictionaryCore
 
         public JsonDictionarySettings ConfigStorage
         {
-            get
-            {
-                return _configStorage != null ? _configStorage : new JsonDictionarySettings();
-            }
+            get => _configStorage ?? new JsonDictionarySettings();
             set => _configStorage = value;
         }
 
@@ -29,7 +26,8 @@ namespace JsonDictionaryCore
 
         public bool LoadConfig()
         {
-            if (string.IsNullOrEmpty(_configFileName)) return false;
+            if (string.IsNullOrEmpty(_configFileName))
+                return false;
 
             try
             {
@@ -46,13 +44,15 @@ namespace JsonDictionaryCore
 
         public T GetSection<T>(JObject json, string sectionName = null) where T : class
         {
-            if (string.IsNullOrEmpty(_configFileName)) return default;
+            if (string.IsNullOrEmpty(_configFileName))
+                return default;
 
             if (string.IsNullOrEmpty(sectionName))
             {
                 return json?.ToObject<T>() ??
-                   throw new InvalidOperationException($"Cannot find section {sectionName}");
+                       throw new InvalidOperationException($"Cannot find section {sectionName}");
             }
+
             return json[sectionName]?.ToObject<T>() ??
                    throw new InvalidOperationException($"Cannot find section {sectionName}");
         }
@@ -62,5 +62,4 @@ namespace JsonDictionaryCore
             return SaveJson(ConfigStorage, _configFileName, true);
         }
     }
-
 }

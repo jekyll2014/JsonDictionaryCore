@@ -22,6 +22,7 @@ namespace JsonDictionaryCore
         [DataMember] public string Version; // schema version declared in the beginning of the file
 
         [DataMember] private string _jsonPath;
+
         public string JsonPath // JSON path of the property
         {
             set
@@ -34,6 +35,7 @@ namespace JsonDictionaryCore
         }
 
         [DataMember] private string _parent; // parent name
+
         public string Parent // JSON path of the property
         {
             get
@@ -55,7 +57,9 @@ namespace JsonDictionaryCore
                         }
                     }
                     else
+                    {
                         _parent = "";
+                    }
                 }
 
                 return _parent;
@@ -63,21 +67,19 @@ namespace JsonDictionaryCore
         }
 
         [DataMember] private string _unifiedParent; // parent name
+
         public string UnifiedParent // JSON path of the property
         {
             get
             {
-                if (_unifiedParent == null)
-                {
-
-                    _unifiedParent = UnifyPath(Parent, PathDelimiter);
-                }
+                if (_unifiedParent == null) _unifiedParent = UnifyPath(Parent, PathDelimiter);
 
                 return _unifiedParent;
             }
         }
 
         [DataMember] private string _parentPath;
+
         public string ParentPath // parent object path
         {
             get
@@ -97,24 +99,27 @@ namespace JsonDictionaryCore
         [DataMember] public string FlattenedJsonPath; // JSON path of the property after  flattening
 
         [DataMember] private string _unifiedFlattenedJsonPath;
-        public string UnifiedFlattenedJsonPath => _unifiedFlattenedJsonPath ??= UnifyPath(FlattenedJsonPath, PathDelimiter); // json flattened path with no array [] brackets
+
+        public string UnifiedFlattenedJsonPath =>
+            _unifiedFlattenedJsonPath ??=
+                UnifyPath(FlattenedJsonPath, PathDelimiter); // json flattened path with no array [] brackets
 
         [DataMember] private int _jsonDepth = -1; // depth in the original JSON structure
+
         public int JsonDepth
         {
             get
             {
-                if (_jsonDepth < 0)
-                {
-                    _jsonDepth = GetPathDepth(_jsonPath, PathDelimiter);
-                }
+                if (_jsonDepth < 0) _jsonDepth = GetPathDepth(_jsonPath, PathDelimiter);
 
                 return _jsonDepth;
             }
         }
 
         [DataMember] private string _unifiedPath;
-        public string UnifiedPath => _unifiedPath ??= UnifyPath(JsonPath, PathDelimiter); // json path with no array [] brackets
+
+        public string UnifiedPath =>
+            _unifiedPath ??= UnifyPath(JsonPath, PathDelimiter); // json path with no array [] brackets
 
         public JsonProperty()
         {
@@ -138,14 +143,11 @@ namespace JsonDictionaryCore
             {
                 var pos = token.IndexOf('[');
                 if (pos >= 0)
-                {
                     unifiedPath.Append(token.Substring(0, pos) + delimiter);
-                }
                 else
-                {
                     unifiedPath.Append(token + delimiter);
-                }
             }
+
             return unifiedPath.ToString().TrimStart(delimiter).TrimEnd(delimiter);
         }
 
