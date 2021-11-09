@@ -118,8 +118,7 @@ namespace JsonEditorForm
                     }
                 }
                 catch
-                {
-                }
+                { }
             }
 
             return json;

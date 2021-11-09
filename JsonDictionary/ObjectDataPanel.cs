@@ -78,7 +78,7 @@ namespace JsonDictionaryCore
                 treePath = treePath.Replace('\\', '/');
                 if (treePath.EndsWith("/properties"))
                 {
-                    var pos = treePath.LastIndexOf("/properties");
+                    var pos = treePath.LastIndexOf("/properties", StringComparison.OrdinalIgnoreCase);
                     treePath = treePath.Substring(0, pos);
                 }
             }

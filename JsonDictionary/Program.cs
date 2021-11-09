@@ -13,7 +13,7 @@ namespace JsonDictionaryCore
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new JsonDictionaryCore.Form1());
+            Application.Run(new Form1());
         }
     }
 }

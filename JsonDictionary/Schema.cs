@@ -140,6 +140,7 @@ namespace JsonDictionaryCore
 
     public class SchemaBaseClassv07
     {
+        private const string typeErrorMessage = "Incorrect data type";
         #region Common fields
 
         /// <summary>
@@ -159,7 +160,7 @@ namespace JsonDictionaryCore
                 if (Uri.IsWellFormedUriString(value, UriKind.RelativeOrAbsolute))
                     _id = value;
                 else
-                    throw new ArgumentException("Incorrect data type", nameof(Id));
+                    throw new ArgumentException(typeErrorMessage, nameof(Id));
             }
         }
 
@@ -177,7 +178,7 @@ namespace JsonDictionaryCore
                 if (Uri.IsWellFormedUriString(value, UriKind.RelativeOrAbsolute))
                     _schema = value;
                 else
-                    throw new ArgumentException("Incorrect data type", nameof(Schema));
+                    throw new ArgumentException(typeErrorMessage, nameof(Schema));
             }
         }
 
@@ -193,7 +194,7 @@ namespace JsonDictionaryCore
                 if (Uri.IsWellFormedUriString(value, UriKind.RelativeOrAbsolute))
                     _reference = value;
                 else
-                    throw new ArgumentException("Incorrect data type", nameof(Reference));
+                    throw new ArgumentException(typeErrorMessage, nameof(Reference));
             }
         }
 
@@ -218,7 +219,7 @@ namespace JsonDictionaryCore
                 if (value >= 0)
                     _maxLength = value;
                 else
-                    throw new ArgumentException("Incorrect data type", nameof(MaxLength));
+                    throw new ArgumentException(typeErrorMessage, nameof(MaxLength));
             }
         }
 
@@ -235,7 +236,7 @@ namespace JsonDictionaryCore
                 if (value >= 0)
                     _minLength = value;
                 else
-                    throw new ArgumentException("Incorrect data type", nameof(MinLength));
+                    throw new ArgumentException(typeErrorMessage, nameof(MinLength));
             }
         }
 
@@ -294,7 +295,7 @@ namespace JsonDictionaryCore
                 if (rx.IsMatch(value))
                     _pattern = value;
                 else
-                    throw new ArgumentException("Incorrect data type", nameof(Pattern));
+                    throw new ArgumentException(typeErrorMessage, nameof(Pattern));
             }
         }
 
@@ -336,7 +337,7 @@ namespace JsonDictionaryCore
         ///     x > exclusiveMinimum
         ///     x ≤ maximum
         ///     x < exclusiveMaximum
-        /// </summary>
+        ///     x < summary
         public decimal? MultipleOf
         {
             get => _multipleOf;
@@ -345,7 +346,7 @@ namespace JsonDictionaryCore
                 if (value > 0)
                     _multipleOf = value;
                 else
-                    throw new ArgumentException("Incorrect data type", nameof(MultipleOf));
+                    throw new ArgumentException(typeErrorMessage, nameof(MultipleOf));
             }
         }
 
@@ -387,7 +388,7 @@ namespace JsonDictionaryCore
         ///     want to enforce that all names are valid ASCII tokens so they can be used as attributes in a particular programming
         ///     language.
         /// </summary>
-        public SchemaBaseClassv07 propertyNames;
+        public SchemaBaseClassv07 PropertyNames;
 
         /// <summary>
         ///     is used to control the handling of extra stuff, that is, properties whose names are not listed in the properties
@@ -420,7 +421,7 @@ namespace JsonDictionaryCore
                 if (value >= 0)
                     _maxProperties = value;
                 else
-                    throw new ArgumentException("Incorrect data type", nameof(MaxProperties));
+                    throw new ArgumentException(typeErrorMessage, nameof(MaxProperties));
             }
         }
 
@@ -442,7 +443,7 @@ namespace JsonDictionaryCore
                 if (value >= 0)
                     _minProperties = value;
                 else
-                    throw new ArgumentException("Incorrect data type", nameof(MinProperties));
+                    throw new ArgumentException(typeErrorMessage, nameof(MinProperties));
             }
         }
 
@@ -482,7 +483,7 @@ namespace JsonDictionaryCore
                 if (value >= 0)
                     _maxItems = value;
                 else
-                    throw new ArgumentException("Incorrect data type", nameof(MaxItems));
+                    throw new ArgumentException(typeErrorMessage, nameof(MaxItems));
             }
         }
 
@@ -500,7 +501,7 @@ namespace JsonDictionaryCore
                 if (value >= 0)
                     _minItems = value;
                 else
-                    throw new ArgumentException("Incorrect data type", nameof(MinItems));
+                    throw new ArgumentException(typeErrorMessage, nameof(MinItems));
             }
         }
 
@@ -639,12 +640,6 @@ namespace JsonDictionaryCore
                 if (nodeSchemaVersion.Equals("http://json-schema.org/draft-04/schema#",
                     StringComparison.OrdinalIgnoreCase))
                     propertyNames.Id = "id";
-                else
-                    return null;
-            }
-            else
-            {
-                return null;
             }
 
             //get "type" of the object
@@ -656,7 +651,7 @@ namespace JsonDictionaryCore
             if (currentNodeType.JsonPropertyType == JsonPropertyTypes.Array)
             {
                 var childNodesTypes = rootCollection
-                    .Where(n => n.ParentPath == typePropertyPathSample)?
+                    .Where(n => n.ParentPath == typePropertyPathSample)
                     .Select(n => n.Value);
                 nodeTypes.AddRange(childNodesTypes);
             }
@@ -674,9 +669,9 @@ namespace JsonDictionaryCore
             var nodeDescription = properties.FirstOrDefault(n => n.Name == propertyNames.Title)?.Value;
             var reference = properties.FirstOrDefault(n => n.Name == propertyNames.Ref)?.Value;
             var nodeExamples = rootCollection
-                .Where(n => n.ParentPath == startPath + jsonPathDiv + propertyNames.Examples)?
-                .Select(n => n.Value)?
-                .OrderBy(n => n)?
+                .Where(n => n.ParentPath == startPath + jsonPathDiv + propertyNames.Examples)
+                .Select(n => n.Value)
+                .OrderBy(n => n)
                 .ToList();
 
             // to do - get all available properties even if there is a mix of object/array/property
@@ -717,9 +712,9 @@ namespace JsonDictionaryCore
                     Reference = reference,
                     Examples = nodeExamples,
                     Required = rootCollection
-                        .Where(n => n.ParentPath == startPath + jsonPathDiv + propertyNames.Required)?
-                        .Select(n => n.Value)?
-                        .OrderBy(n => n)?
+                        .Where(n => n.ParentPath == startPath + jsonPathDiv + propertyNames.Required)
+                        .Select(n => n.Value)
+                        .OrderBy(n => n)
                         .ToList()
                 };
 
@@ -730,7 +725,7 @@ namespace JsonDictionaryCore
                     objectNode.AdditionalProperties = null;
 
                 var childNodes = rootCollection
-                    .Where(n => n.ParentPath == startPath + jsonPathDiv + propertyNames.Properties)?
+                    .Where(n => n.ParentPath == startPath + jsonPathDiv + propertyNames.Properties)
                     .OrderBy(n => n.Name);
 
                 foreach (var item in childNodes)
@@ -745,7 +740,7 @@ namespace JsonDictionaryCore
                     objectNode.Schema = properties.FirstOrDefault(n => n.Name == propertyNames.Schema)?.Value;
 
                     var childDefs = rootCollection
-                        .Where(n => n.ParentPath == startPath + jsonPathDiv + propertyNames.Definitions)?
+                        .Where(n => n.ParentPath == startPath + jsonPathDiv + propertyNames.Definitions)
                         .OrderBy(n => n.Name);
 
                     foreach (var item in childDefs)
@@ -768,9 +763,9 @@ namespace JsonDictionaryCore
                 Examples = nodeExamples,
                 Pattern = properties.FirstOrDefault(n => n.Name == propertyNames.Pattern)?.Value,
                 Enum = rootCollection
-                    .Where(n => n.ParentPath == startPath + jsonPathDiv + propertyNames.Enum)?
-                    .Select(n => n.Value)?
-                    .OrderBy(n => n)?
+                    .Where(n => n.ParentPath == startPath + jsonPathDiv + propertyNames.Enum)
+                    .Select(n => n.Value)
+                    .OrderBy(n => n)
                     .ToList()
             };
             propertyNode.Default = JsonPropertyListToSchemaObject_v7(rootCollection,

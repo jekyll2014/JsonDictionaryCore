@@ -10,6 +10,7 @@ using System.Text;
 
 using MessagePack;
 using MessagePack.Resolvers;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 
@@ -27,7 +28,7 @@ namespace JsonDictionaryCore
                 File.WriteAllText(fileName,
                     JsonConvert.SerializeObject(data, formatted ? Formatting.Indented : Formatting.None));
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -47,7 +48,7 @@ namespace JsonDictionaryCore
 
             using var jsonFile = File.OpenText(fileName);
             var serializer = new JsonSerializer();
-            newValues = (T) serializer.Deserialize(jsonFile, typeof(T));
+            newValues = (T)serializer.Deserialize(jsonFile, typeof(T));
 
             return newValues;
         }
@@ -68,7 +69,7 @@ namespace JsonDictionaryCore
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -142,7 +143,7 @@ namespace JsonDictionaryCore
                     bf.Serialize(file, data);
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -159,7 +160,7 @@ namespace JsonDictionaryCore
             using (Stream file = File.Open(fileName, FileMode.Open))
             {
                 var bf = new BinaryFormatter();
-                nodeList = (T) bf.Deserialize(file);
+                nodeList = (T)bf.Deserialize(file);
             }
 
             return nodeList;
@@ -171,7 +172,7 @@ namespace JsonDictionaryCore
             if (string.IsNullOrEmpty(data))
                 return stringCollection.ToArray();
 
-            var lineDivider = new List<char> {'\x0d', '\x0a'};
+            var lineDivider = new List<char> { '\x0d', '\x0a' };
             var unparsedData = new StringBuilder();
             foreach (var t in data)
                 if (lineDivider.Contains(t))
@@ -267,7 +268,7 @@ namespace JsonDictionaryCore
                         using (var jsonReader = new JsonTextReader(stringReader))
                         {
                             jsonReader.SupportMultipleContent = true;
-                            using (var jsonWriter = new JsonTextWriter(stringWriter) {Formatting = formatting})
+                            using (var jsonWriter = new JsonTextWriter(stringWriter) { Formatting = formatting })
                             {
                                 jsonWriter.WriteToken(jsonReader);
                                 json = stringWriter.ToString();
@@ -277,8 +278,7 @@ namespace JsonDictionaryCore
                 }
             }
             catch
-            {
-            }
+            { }
 
             return trim ? json.Substring(1, json.Length - 2).Trim() : json;
         }
@@ -289,7 +289,7 @@ namespace JsonDictionaryCore
             if (string.IsNullOrEmpty(original))
                 return original;
 
-            var searchTokens = new[] {": {", ": ["};
+            var searchTokens = new[] { ": {", ": [" };
             foreach (var token in searchTokens)
             {
                 var i = original.IndexOf(token, StringComparison.Ordinal);
@@ -339,7 +339,7 @@ namespace JsonDictionaryCore
             if (string.IsNullOrEmpty(original))
                 return original;
 
-            var searchTokens = new[] {": {", ": [", ":{", ":["};
+            var searchTokens = new[] { ": {", ": [", ":{", ":[" };
             try
             {
                 foreach (var token in searchTokens)
@@ -392,8 +392,8 @@ namespace JsonDictionaryCore
 
             const char prefixItem = ' ';
             const int prefixStep = 2;
-            var openBrackets = new[] {'{', '['};
-            var closeBrackets = new[] {'}', ']'};
+            var openBrackets = new[] { '{', '[' };
+            var closeBrackets = new[] { '}', ']' };
 
             var prefixLength = 0;
             var prefix = "";
@@ -436,17 +436,17 @@ namespace JsonDictionaryCore
         {
             if (s == null || s.Length == 0) return "";
 
-            var _escapeChars = new[] {'\"', '\\', '/', 'b', 'f', 'n', 'r', 't', 'u'};
+            var escapeChars = new[] { '\"', '\\', '/', 'b', 'f', 'n', 'r', 't', 'u' };
             char c;
             var len = s.Length;
-            var sb = new StringBuilder((int) (len * 1.1));
+            var sb = new StringBuilder((int)(len * 1.1));
             string t;
 
             for (var i = 0; i < len; i += 1)
             {
                 c = s[i];
 
-                if (c == '\\' && i < len - 1 && _escapeChars.Contains(s[i + 1]))
+                if (c == '\\' && i < len - 1 && escapeChars.Contains(s[i + 1]))
                 {
                     i++;
                     sb.Append("\\" + s[i]);
@@ -479,7 +479,7 @@ namespace JsonDictionaryCore
                         default:
                             if (c < ' ')
                             {
-                                t = $"\\u{((int) c).ToString("X4")}";
+                                t = $"\\u{((int)c).ToString("X4")}";
                                 sb.Append($"\\u{t.Substring(t.Length - 4)}");
                             }
                             else

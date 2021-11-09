@@ -100,6 +100,7 @@
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.checkBox_selectedSchema = new System.Windows.Forms.CheckBox();
             this.tabControl1.SuspendLayout();
             this.tabPage_DataCollection.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer_buttons)).BeginInit();
@@ -690,7 +691,7 @@
             // 
             this.label_edit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.label_edit.AutoSize = true;
-            this.label_edit.Location = new System.Drawing.Point(542, 56);
+            this.label_edit.Location = new System.Drawing.Point(542, 55);
             this.label_edit.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label_edit.Name = "label_edit";
             this.label_edit.Size = new System.Drawing.Size(111, 15);
@@ -701,7 +702,7 @@
             // 
             this.label_descSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.label_descSave.AutoSize = true;
-            this.label_descSave.Location = new System.Drawing.Point(478, 56);
+            this.label_descSave.Location = new System.Drawing.Point(478, 55);
             this.label_descSave.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label_descSave.Name = "label_descSave";
             this.label_descSave.Size = new System.Drawing.Size(175, 15);
@@ -727,6 +728,7 @@
             this.tabPage_Schema.AutoScroll = true;
             this.tabPage_Schema.Controls.Add(this.button_compareNode);
             this.tabPage_Schema.Controls.Add(this.button_clearCompare);
+            this.tabPage_Schema.Controls.Add(this.checkBox_selectedSchema);
             this.tabPage_Schema.Controls.Add(this.checkBox_deepCompare);
             this.tabPage_Schema.Controls.Add(this.button_compare);
             this.tabPage_Schema.Controls.Add(this.textBox_find);
@@ -768,7 +770,7 @@
             // checkBox_deepCompare
             // 
             this.checkBox_deepCompare.AutoSize = true;
-            this.checkBox_deepCompare.Location = new System.Drawing.Point(75, 7);
+            this.checkBox_deepCompare.Location = new System.Drawing.Point(75, 0);
             this.checkBox_deepCompare.Name = "checkBox_deepCompare";
             this.checkBox_deepCompare.Size = new System.Drawing.Size(102, 19);
             this.checkBox_deepCompare.TabIndex = 15;
@@ -838,7 +840,7 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.splitContainer_schemaMain.Cursor = System.Windows.Forms.Cursors.Default;
-            this.splitContainer_schemaMain.Location = new System.Drawing.Point(0, 32);
+            this.splitContainer_schemaMain.Location = new System.Drawing.Point(0, 35);
             this.splitContainer_schemaMain.Name = "splitContainer_schemaMain";
             // 
             // splitContainer_schemaMain.Panel1
@@ -848,7 +850,7 @@
             // splitContainer_schemaMain.Panel2
             // 
             this.splitContainer_schemaMain.Panel2.Controls.Add(this.splitContainer_schemaRight);
-            this.splitContainer_schemaMain.Size = new System.Drawing.Size(907, 561);
+            this.splitContainer_schemaMain.Size = new System.Drawing.Size(907, 558);
             this.splitContainer_schemaMain.SplitterDistance = 449;
             this.splitContainer_schemaMain.TabIndex = 0;
             // 
@@ -864,8 +866,8 @@
             this.splitContainer_schemaLeft.Panel1.Controls.Add(this.button_saveLeftSchema);
             this.splitContainer_schemaLeft.Panel1.Controls.Add(this.button_generateSchema);
             this.splitContainer_schemaLeft.Panel1.Controls.Add(this.treeView_leftSchema);
-            this.splitContainer_schemaLeft.Size = new System.Drawing.Size(449, 561);
-            this.splitContainer_schemaLeft.SplitterDistance = 219;
+            this.splitContainer_schemaLeft.Size = new System.Drawing.Size(449, 558);
+            this.splitContainer_schemaLeft.SplitterDistance = 217;
             this.splitContainer_schemaLeft.TabIndex = 0;
             this.splitContainer_schemaLeft.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.SplitContainer_schemaLeft_SplitterMoved);
             // 
@@ -900,7 +902,7 @@
             this.treeView_leftSchema.Dock = System.Windows.Forms.DockStyle.Fill;
             this.treeView_leftSchema.Location = new System.Drawing.Point(0, 0);
             this.treeView_leftSchema.Name = "treeView_leftSchema";
-            this.treeView_leftSchema.Size = new System.Drawing.Size(449, 219);
+            this.treeView_leftSchema.Size = new System.Drawing.Size(449, 217);
             this.treeView_leftSchema.TabIndex = 0;
             this.treeView_leftSchema.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.TreeView_leftSchema_AfterSelect);
             this.treeView_leftSchema.Enter += new System.EventHandler(this.TreeView_leftSchema_Enter);
@@ -922,8 +924,8 @@
             // splitContainer_schemaRight.Panel2
             // 
             this.splitContainer_schemaRight.Panel2.AutoScroll = true;
-            this.splitContainer_schemaRight.Size = new System.Drawing.Size(454, 561);
-            this.splitContainer_schemaRight.SplitterDistance = 224;
+            this.splitContainer_schemaRight.Size = new System.Drawing.Size(454, 558);
+            this.splitContainer_schemaRight.SplitterDistance = 222;
             this.splitContainer_schemaRight.TabIndex = 0;
             this.splitContainer_schemaRight.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.SplitContainer_schemaRight_SplitterMoved);
             // 
@@ -956,7 +958,7 @@
             this.treeView_rightSchema.Dock = System.Windows.Forms.DockStyle.Fill;
             this.treeView_rightSchema.Location = new System.Drawing.Point(0, 0);
             this.treeView_rightSchema.Name = "treeView_rightSchema";
-            this.treeView_rightSchema.Size = new System.Drawing.Size(454, 224);
+            this.treeView_rightSchema.Size = new System.Drawing.Size(454, 222);
             this.treeView_rightSchema.TabIndex = 0;
             this.treeView_rightSchema.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.TreeView_rightSchema_AfterSelect);
             this.treeView_rightSchema.Enter += new System.EventHandler(this.TreeView_rightSchema_Enter);
@@ -991,6 +993,16 @@
             // 
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
             this.toolStripStatusLabel1.Size = new System.Drawing.Size(0, 17);
+            // 
+            // checkBox_selectedSchema
+            // 
+            this.checkBox_selectedSchema.AutoSize = true;
+            this.checkBox_selectedSchema.Location = new System.Drawing.Point(75, 15);
+            this.checkBox_selectedSchema.Name = "checkBox_selectedSchema";
+            this.checkBox_selectedSchema.Size = new System.Drawing.Size(69, 19);
+            this.checkBox_selectedSchema.TabIndex = 15;
+            this.checkBox_selectedSchema.Text = "selected";
+            this.checkBox_selectedSchema.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
@@ -1125,6 +1137,7 @@
         private System.Windows.Forms.CheckBox checkBox_deepCompare;
         private System.Windows.Forms.Button button_clearCompare;
         private System.Windows.Forms.Button button_compareNode;
+        private System.Windows.Forms.CheckBox checkBox_selectedSchema;
     }
 }
 

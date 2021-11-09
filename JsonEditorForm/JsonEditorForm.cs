@@ -389,9 +389,9 @@ namespace JsonEditorForm
             {
                 fileContent = File.ReadAllText(fullFileName);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-
+                return false;
             }
 
             _textArea.Text = fileContent;
@@ -425,10 +425,8 @@ namespace JsonEditorForm
             {
                 fileContent = File.ReadAllText(fullFileName);
             }
-            catch (Exception ex)
-            {
-
-            }
+            catch
+            { }
 
             _textArea.Text = SingleLineBrackets
                 ? Utilities.BeautifyJson(fileContent, SingleLineBrackets)
@@ -476,7 +474,7 @@ namespace JsonEditorForm
 
                 File.WriteAllText(fullFileName, _textArea.Text);
             }
-            catch (Exception Ex)
+            catch
             {
                 return false;
             }
