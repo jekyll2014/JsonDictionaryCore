@@ -11,6 +11,11 @@ namespace JsonDictionaryCore
     public interface ISchemaTreeBase
     {
         /// <summary>
+        /// Parent node reference
+        /// </summary>
+        public ISchemaTreeBase Parent { get; set; }
+
+        /// <summary>
         ///     property name
         /// </summary>
         public string Name { get; set; }
@@ -45,6 +50,11 @@ namespace JsonDictionaryCore
         /// </summary>
         /// <param name="id"></param>
         public ISchemaTreeBase FindNodeByPath(string id);
+
+        /// <summary>
+        /// Delete current node from parent
+        /// </summary>
+        public bool DeleteNode();
 
         /// <summary>
         ///     Deep merge two objects
@@ -777,6 +787,7 @@ namespace JsonDictionaryCore
 
     public class SchemaTreeProperty : ISchemaTreeBase
     {
+        public ISchemaTreeBase Parent { get; set; }
         public string Name { get; set; }
         public string Id { get; set; }
         public List<string> Type { get; set; } = new List<string>();
@@ -803,6 +814,72 @@ namespace JsonDictionaryCore
         public ISchemaTreeBase FindNodeByPath(string id)
         {
             return Id == id ? this : null;
+        }
+
+        public bool DeleteNode()
+        {
+            ISchemaTreeBase result = null;
+            var parent = this.Parent;
+            var name = this.Name;
+
+            if (parent is SchemaTreeObject schemaObject)
+            {
+                foreach (var childNode in schemaObject.Properties)
+                {
+                    if (childNode.Name == name)
+                        result = childNode;
+                }
+
+                if (result != null)
+                {
+                    schemaObject.Properties.Remove(result);
+                    return true;
+                }
+
+                foreach (var childNode in schemaObject.Definitions)
+                {
+                    if (childNode.Name == name)
+                        result = childNode;
+                }
+
+                if (result != null)
+                {
+                    schemaObject.Definitions.Remove(result);
+                    return true;
+                }
+            }
+            else if (parent is SchemaTreeArray schemaArray)
+            {
+                if (schemaArray.Items.Name == name)
+                    schemaArray.Items = null;
+                else if (schemaArray.Items is SchemaTreeObject tmpItem)
+                {
+                    foreach (var childNode in tmpItem.Properties)
+                    {
+                        if (childNode.Name == name)
+                            result = childNode;
+                    }
+                    if (result != null)
+                    {
+                        tmpItem.Properties.Remove(result);
+                        return true;
+                    }
+
+                    foreach (var childNode in tmpItem.Definitions)
+                    {
+                        if (childNode.Name == name)
+                            result = childNode;
+                    }
+
+                    if (result != null)
+                    {
+                        tmpItem.Definitions.Remove(result);
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         public bool Merge(ISchemaTreeBase newProperty)
@@ -1091,6 +1168,7 @@ namespace JsonDictionaryCore
 
     public class SchemaTreeObject : ISchemaTreeBase
     {
+        public ISchemaTreeBase Parent { get; set; }
         public string Name { get; set; }
         public string Id { get; set; }
         public List<string> Type { get; set; } = new List<string>();
@@ -1118,19 +1196,85 @@ namespace JsonDictionaryCore
             Name = name;
         }
 
-        public ISchemaTreeBase FindNodeByPath(string path)
+        public ISchemaTreeBase FindNodeByPath(string id)
         {
-            if (Id == path) return this;
+            if (Id == id) return this;
 
             foreach (var property in Properties)
             {
-                var foundProperty = property.FindNodeByPath(path);
+                var foundProperty = property.FindNodeByPath(id);
 
                 if (foundProperty != null)
                     return foundProperty;
             }
 
             return null;
+        }
+
+        public bool DeleteNode()
+        {
+            ISchemaTreeBase result = null;
+            var parent = this.Parent;
+            var name = this.Name;
+
+            if (parent is SchemaTreeObject schemaObject)
+            {
+                foreach (var childNode in schemaObject.Properties)
+                {
+                    if (childNode.Name == name)
+                        result = childNode;
+                }
+
+                if (result != null)
+                {
+                    schemaObject.Properties.Remove(result);
+                    return true;
+                }
+
+                foreach (var childNode in schemaObject.Definitions)
+                {
+                    if (childNode.Name == name)
+                        result = childNode;
+                }
+
+                if (result != null)
+                {
+                    schemaObject.Definitions.Remove(result);
+                    return true;
+                }
+            }
+            else if (parent is SchemaTreeArray schemaArray)
+            {
+                if (schemaArray.Items.Name == name)
+                    schemaArray.Items = null;
+                else if (schemaArray.Items is SchemaTreeObject tmpItem)
+                {
+                    foreach (var childNode in tmpItem.Properties)
+                    {
+                        if (childNode.Name == name)
+                            result = childNode;
+                    }
+                    if (result != null)
+                    {
+                        tmpItem.Properties.Remove(result);
+                        return true;
+                    }
+
+                    foreach (var childNode in tmpItem.Definitions)
+                    {
+                        if (childNode.Name == name)
+                            result = childNode;
+                    }
+
+                    if (result != null)
+                    {
+                        tmpItem.Definitions.Remove(result);
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         public bool Merge(ISchemaTreeBase newProperty)
@@ -1476,6 +1620,7 @@ namespace JsonDictionaryCore
 
     public class SchemaTreeArray : ISchemaTreeBase
     {
+        public ISchemaTreeBase Parent { get; set; }
         public string Name { get; set; }
         public string Id { get; set; }
         public List<string> Type { get; set; } = new List<string>();
@@ -1497,27 +1642,93 @@ namespace JsonDictionaryCore
             Name = name;
         }
 
-        public ISchemaTreeBase FindNodeByPath(string path)
+        public ISchemaTreeBase FindNodeByPath(string id)
         {
-            if (Id == path)
+            if (Id == id)
                 return this;
 
             if (Items is SchemaTreeProperty schemaProperty)
-                return schemaProperty.FindNodeByPath(path);
+                return schemaProperty.FindNodeByPath(id);
 
             if (Items is SchemaTreeObject schemaObject)
             {
                 foreach (var property in schemaObject.Properties)
                 {
-                    var foundProperty = property.FindNodeByPath(path);
+                    var foundProperty = property.FindNodeByPath(id);
                     if (foundProperty != null)
                         return foundProperty;
                 }
             }
             else if (Items is SchemaTreeArray schemaArray)
-                return schemaArray.FindNodeByPath(path);
+                return schemaArray.FindNodeByPath(id);
 
             return null;
+        }
+
+        public bool DeleteNode()
+        {
+            ISchemaTreeBase result = null;
+            var parent = this.Parent;
+            var name = this.Name;
+
+            if (parent is SchemaTreeObject schemaObject)
+            {
+                foreach (var childNode in schemaObject.Properties)
+                {
+                    if (childNode.Name == name)
+                        result = childNode;
+                }
+
+                if (result != null)
+                {
+                    schemaObject.Properties.Remove(result);
+                    return true;
+                }
+
+                foreach (var childNode in schemaObject.Definitions)
+                {
+                    if (childNode.Name == name)
+                        result = childNode;
+                }
+
+                if (result != null)
+                {
+                    schemaObject.Definitions.Remove(result);
+                    return true;
+                }
+            }
+            else if (parent is SchemaTreeArray schemaArray)
+            {
+                if (schemaArray.Items.Name == name)
+                    schemaArray.Items = null;
+                else if (schemaArray.Items is SchemaTreeObject tmpItem)
+                {
+                    foreach (var childNode in tmpItem.Properties)
+                    {
+                        if (childNode.Name == name)
+                            result = childNode;
+                    }
+                    if (result != null)
+                    {
+                        tmpItem.Properties.Remove(result);
+                        return true;
+                    }
+
+                    foreach (var childNode in tmpItem.Definitions)
+                    {
+                        if (childNode.Name == name)
+                            result = childNode;
+                    }
+
+                    if (result != null)
+                    {
+                        tmpItem.Definitions.Remove(result);
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         public bool Merge(ISchemaTreeBase newProperty)

@@ -234,25 +234,25 @@ namespace JsonEditorForm
                 return stringCollection.ToArray();
 
             var lineDivider = new List<char> { '\x0d', '\x0a' };
-            var unparsedData = "";
+            var unparsedData = new StringBuilder();
             foreach (var t in data)
             {
                 if (lineDivider.Contains(t))
                 {
                     if (unparsedData.Length > 0)
                     {
-                        stringCollection.Add(unparsedData);
-                        unparsedData = "";
+                        stringCollection.Add(unparsedData.ToString());
+                        unparsedData.Clear();
                     }
                 }
                 else
                 {
-                    unparsedData += t;
+                    unparsedData.Append(t);
                 }
             }
 
             if (unparsedData.Length > 0)
-                stringCollection.Add(unparsedData);
+                stringCollection.Add(unparsedData.ToString());
 
             return stringCollection.ToArray();
         }

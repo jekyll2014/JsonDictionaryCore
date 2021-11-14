@@ -155,7 +155,6 @@ namespace JsonEditorForm
             }
             else
             {
-                //Text += _fileName;
                 _textArea.Text = _text;
             }
 
@@ -381,7 +380,6 @@ namespace JsonEditorForm
                 return false;
             }
 
-            //Text += fullFileName;
             _fileName = fullFileName;
 
             var fileContent = "";
@@ -417,7 +415,6 @@ namespace JsonEditorForm
                 return false;
             }
 
-            //Text += fullFileName;
             _fileName = fullFileName;
 
             var fileContent = "";
@@ -461,7 +458,6 @@ namespace JsonEditorForm
             {
                 if (makeBackup)
                 {
-                    //var bakFileName = ChangeFileExt(fullFileName, "bak");
                     var bakFileName = fullFileName + ".bak";
 
                     if (File.Exists(fullFileName))
@@ -907,8 +903,6 @@ namespace JsonEditorForm
 
             var startLine = _textArea.Lines[lineStart];
             var endLine = _textArea.Lines[lineStart + lineNum - 1];
-            //_textArea.SetSelection(startLine.Position, endLine.Position + endLine.Length);
-            //_textArea.ScrollCaret();
 
             return SelectPosition(startLine.Position, endLine.Position + endLine.Length);
         }
@@ -969,7 +963,6 @@ namespace JsonEditorForm
             // Mark the search results with the current indicator
             _textArea.IndicatorFillRange(start, end - start);
             _textArea.ScrollRange(start, end);
-            //_textArea.LineScroll(5, 0);
 
             _multipleSearchActive = true;
 

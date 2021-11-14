@@ -80,6 +80,7 @@
             this.tabPage_Schema = new System.Windows.Forms.TabPage();
             this.button_compareNode = new System.Windows.Forms.Button();
             this.button_clearCompare = new System.Windows.Forms.Button();
+            this.checkBox_selectedSchema = new System.Windows.Forms.CheckBox();
             this.checkBox_deepCompare = new System.Windows.Forms.CheckBox();
             this.button_compare = new System.Windows.Forms.Button();
             this.textBox_find = new System.Windows.Forms.TextBox();
@@ -91,6 +92,13 @@
             this.button_saveLeftSchema = new System.Windows.Forms.Button();
             this.button_generateSchema = new System.Windows.Forms.Button();
             this.treeView_leftSchema = new System.Windows.Forms.TreeView();
+            this.contextMenuStrip_leftSchema = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.toolStripMenuItem_addLS = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_renameLS = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_deleteLS = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_copyLS = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_foldLS = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_unfoldLS = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer_schemaRight = new System.Windows.Forms.SplitContainer();
             this.button_saveRightSchema = new System.Windows.Forms.Button();
             this.button_loadSchema = new System.Windows.Forms.Button();
@@ -100,7 +108,13 @@
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.checkBox_selectedSchema = new System.Windows.Forms.CheckBox();
+            this.contextMenuStrip_rightSchema = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.toolStripMenuItem_addRS = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_renameRS = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_deleteRS = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_copyRS = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_foldRS = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_unfoldRS = new System.Windows.Forms.ToolStripMenuItem();
             this.tabControl1.SuspendLayout();
             this.tabPage_DataCollection.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer_buttons)).BeginInit();
@@ -132,16 +146,18 @@
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer_schemaLeft)).BeginInit();
             this.splitContainer_schemaLeft.Panel1.SuspendLayout();
             this.splitContainer_schemaLeft.SuspendLayout();
+            this.contextMenuStrip_leftSchema.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer_schemaRight)).BeginInit();
             this.splitContainer_schemaRight.Panel1.SuspendLayout();
             this.splitContainer_schemaRight.SuspendLayout();
             this.statusStrip1.SuspendLayout();
+            this.contextMenuStrip_rightSchema.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl1
             // 
-            this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tabControl1.Controls.Add(this.tabPage_DataCollection);
             this.tabControl1.Controls.Add(this.tabPage_SamplesTree);
@@ -268,7 +284,7 @@
             // 
             // button_saveDb
             // 
-            this.button_saveDb.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.button_saveDb.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.button_saveDb.Location = new System.Drawing.Point(0, 70);
             this.button_saveDb.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -281,7 +297,7 @@
             // 
             // button_loadDb
             // 
-            this.button_loadDb.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.button_loadDb.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.button_loadDb.Location = new System.Drawing.Point(0, 37);
             this.button_loadDb.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -294,7 +310,7 @@
             // 
             // button_collectDatabase
             // 
-            this.button_collectDatabase.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.button_collectDatabase.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.button_collectDatabase.Location = new System.Drawing.Point(0, 3);
             this.button_collectDatabase.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -409,14 +425,16 @@
             // 
             this.toolStripMenuItem_treeCopy.Name = "toolStripMenuItem_treeCopy";
             this.toolStripMenuItem_treeCopy.ShortcutKeyDisplayString = "Ctrl-C";
+            this.toolStripMenuItem_treeCopy.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C)));
             this.toolStripMenuItem_treeCopy.Size = new System.Drawing.Size(189, 22);
-            this.toolStripMenuItem_treeCopy.Text = "Copy";
+            this.toolStripMenuItem_treeCopy.Text = "Copy name";
             this.toolStripMenuItem_treeCopy.Click += new System.EventHandler(this.ToolStripMenuItem_treeCopy_Click);
             // 
             // toolStripMenuItem_treeDelete
             // 
             this.toolStripMenuItem_treeDelete.Name = "toolStripMenuItem_treeDelete";
             this.toolStripMenuItem_treeDelete.ShortcutKeyDisplayString = "Del";
+            this.toolStripMenuItem_treeDelete.ShortcutKeys = System.Windows.Forms.Keys.Delete;
             this.toolStripMenuItem_treeDelete.Size = new System.Drawing.Size(189, 22);
             this.toolStripMenuItem_treeDelete.Text = "Delete";
             this.toolStripMenuItem_treeDelete.Click += new System.EventHandler(this.ToolStripMenuItem_treeDelete_Click);
@@ -452,8 +470,8 @@
             // 
             // splitContainer_fileList
             // 
-            this.splitContainer_fileList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.splitContainer_fileList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.splitContainer_fileList.Location = new System.Drawing.Point(0, 37);
             this.splitContainer_fileList.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -515,14 +533,14 @@
             this.toolStripMenuItem_SampleDelete,
             this.toolStripMenuItem_SampleCopy});
             this.contextMenuStrip_samples.Name = "contextMenuStrip_samples";
-            this.contextMenuStrip_samples.Size = new System.Drawing.Size(163, 70);
+            this.contextMenuStrip_samples.Size = new System.Drawing.Size(175, 70);
             // 
             // toolStripMenuItem_SampleOpen
             // 
             this.toolStripMenuItem_SampleOpen.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.toolStripMenuItem_SampleOpen.Name = "toolStripMenuItem_SampleOpen";
             this.toolStripMenuItem_SampleOpen.ShortcutKeyDisplayString = "Enter";
-            this.toolStripMenuItem_SampleOpen.Size = new System.Drawing.Size(162, 22);
+            this.toolStripMenuItem_SampleOpen.Size = new System.Drawing.Size(174, 22);
             this.toolStripMenuItem_SampleOpen.Text = "Open file";
             this.toolStripMenuItem_SampleOpen.Click += new System.EventHandler(this.ToolStripMenuItem_SampleOpen_Click);
             // 
@@ -530,7 +548,8 @@
             // 
             this.toolStripMenuItem_SampleDelete.Name = "toolStripMenuItem_SampleDelete";
             this.toolStripMenuItem_SampleDelete.ShortcutKeyDisplayString = "Del";
-            this.toolStripMenuItem_SampleDelete.Size = new System.Drawing.Size(162, 22);
+            this.toolStripMenuItem_SampleDelete.ShortcutKeys = System.Windows.Forms.Keys.Delete;
+            this.toolStripMenuItem_SampleDelete.Size = new System.Drawing.Size(174, 22);
             this.toolStripMenuItem_SampleDelete.Text = "Delete";
             this.toolStripMenuItem_SampleDelete.Visible = false;
             this.toolStripMenuItem_SampleDelete.Click += new System.EventHandler(this.ToolStripMenuItem_SampleDelete_Click);
@@ -539,8 +558,9 @@
             // 
             this.toolStripMenuItem_SampleCopy.Name = "toolStripMenuItem_SampleCopy";
             this.toolStripMenuItem_SampleCopy.ShortcutKeyDisplayString = "Ctrl-C";
-            this.toolStripMenuItem_SampleCopy.Size = new System.Drawing.Size(162, 22);
-            this.toolStripMenuItem_SampleCopy.Text = "Copy";
+            this.toolStripMenuItem_SampleCopy.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C)));
+            this.toolStripMenuItem_SampleCopy.Size = new System.Drawing.Size(174, 22);
+            this.toolStripMenuItem_SampleCopy.Text = "Copy name";
             this.toolStripMenuItem_SampleCopy.Click += new System.EventHandler(this.ToolStripMenuItem_SampleCopy_Click);
             // 
             // listBox_fileList
@@ -567,21 +587,21 @@
             this.toolStripMenuItem_FileDelete,
             this.toolStripMenuItem_copy});
             this.contextMenuStrip_fileList.Name = "contextMenuStrip_fileList";
-            this.contextMenuStrip_fileList.Size = new System.Drawing.Size(173, 92);
+            this.contextMenuStrip_fileList.Size = new System.Drawing.Size(175, 92);
             // 
             // toolStripMenuItem_openFile
             // 
             this.toolStripMenuItem_openFile.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.toolStripMenuItem_openFile.Name = "toolStripMenuItem_openFile";
             this.toolStripMenuItem_openFile.ShortcutKeyDisplayString = "Enter";
-            this.toolStripMenuItem_openFile.Size = new System.Drawing.Size(172, 22);
+            this.toolStripMenuItem_openFile.Size = new System.Drawing.Size(174, 22);
             this.toolStripMenuItem_openFile.Text = "Open file";
             this.toolStripMenuItem_openFile.Click += new System.EventHandler(this.ToolStripMenuItem_openFile_Click);
             // 
             // toolStripMenuItem_openFolder
             // 
             this.toolStripMenuItem_openFolder.Name = "toolStripMenuItem_openFolder";
-            this.toolStripMenuItem_openFolder.Size = new System.Drawing.Size(172, 22);
+            this.toolStripMenuItem_openFolder.Size = new System.Drawing.Size(174, 22);
             this.toolStripMenuItem_openFolder.Text = "Open folder";
             this.toolStripMenuItem_openFolder.Click += new System.EventHandler(this.ToolStripMenuItem_openFolder_Click);
             // 
@@ -589,7 +609,8 @@
             // 
             this.toolStripMenuItem_FileDelete.Name = "toolStripMenuItem_FileDelete";
             this.toolStripMenuItem_FileDelete.ShortcutKeyDisplayString = "Del";
-            this.toolStripMenuItem_FileDelete.Size = new System.Drawing.Size(172, 22);
+            this.toolStripMenuItem_FileDelete.ShortcutKeys = System.Windows.Forms.Keys.Delete;
+            this.toolStripMenuItem_FileDelete.Size = new System.Drawing.Size(174, 22);
             this.toolStripMenuItem_FileDelete.Text = "Delete sample";
             this.toolStripMenuItem_FileDelete.Visible = false;
             this.toolStripMenuItem_FileDelete.Click += new System.EventHandler(this.ToolStripMenuItem_FileDelete_Click);
@@ -598,13 +619,14 @@
             // 
             this.toolStripMenuItem_copy.Name = "toolStripMenuItem_copy";
             this.toolStripMenuItem_copy.ShortcutKeyDisplayString = "Ctrl-C";
-            this.toolStripMenuItem_copy.Size = new System.Drawing.Size(172, 22);
-            this.toolStripMenuItem_copy.Text = "Copy";
+            this.toolStripMenuItem_copy.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C)));
+            this.toolStripMenuItem_copy.Size = new System.Drawing.Size(174, 22);
+            this.toolStripMenuItem_copy.Text = "Copy name";
             this.toolStripMenuItem_copy.Click += new System.EventHandler(this.ToolStripMenuItem_copy_Click);
             // 
             // textBox_ExSearchHistory
             // 
-            this.textBox_ExSearchHistory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            this.textBox_ExSearchHistory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textBox_ExSearchHistory.Location = new System.Drawing.Point(4, 470);
             this.textBox_ExSearchHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -652,7 +674,7 @@
             // 
             // textBox_ExSearchString
             // 
-            this.textBox_ExSearchString.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.textBox_ExSearchString.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textBox_ExSearchString.Location = new System.Drawing.Point(170, 6);
             this.textBox_ExSearchString.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -691,7 +713,7 @@
             // 
             this.label_edit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.label_edit.AutoSize = true;
-            this.label_edit.Location = new System.Drawing.Point(542, 55);
+            this.label_edit.Location = new System.Drawing.Point(542, 52);
             this.label_edit.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label_edit.Name = "label_edit";
             this.label_edit.Size = new System.Drawing.Size(111, 15);
@@ -702,7 +724,7 @@
             // 
             this.label_descSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.label_descSave.AutoSize = true;
-            this.label_descSave.Location = new System.Drawing.Point(478, 55);
+            this.label_descSave.Location = new System.Drawing.Point(478, 52);
             this.label_descSave.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label_descSave.Name = "label_descSave";
             this.label_descSave.Size = new System.Drawing.Size(175, 15);
@@ -767,6 +789,16 @@
             this.button_clearCompare.UseVisualStyleBackColor = true;
             this.button_clearCompare.Click += new System.EventHandler(this.Button_clearCompare_Click);
             // 
+            // checkBox_selectedSchema
+            // 
+            this.checkBox_selectedSchema.AutoSize = true;
+            this.checkBox_selectedSchema.Location = new System.Drawing.Point(75, 15);
+            this.checkBox_selectedSchema.Name = "checkBox_selectedSchema";
+            this.checkBox_selectedSchema.Size = new System.Drawing.Size(69, 19);
+            this.checkBox_selectedSchema.TabIndex = 15;
+            this.checkBox_selectedSchema.Text = "selected";
+            this.checkBox_selectedSchema.UseVisualStyleBackColor = true;
+            // 
             // checkBox_deepCompare
             // 
             this.checkBox_deepCompare.AutoSize = true;
@@ -791,7 +823,7 @@
             // 
             // textBox_find
             // 
-            this.textBox_find.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.textBox_find.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textBox_find.Location = new System.Drawing.Point(401, 5);
             this.textBox_find.Name = "textBox_find";
@@ -836,8 +868,8 @@
             // 
             // splitContainer_schemaMain
             // 
-            this.splitContainer_schemaMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.splitContainer_schemaMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.splitContainer_schemaMain.Cursor = System.Windows.Forms.Cursors.Default;
             this.splitContainer_schemaMain.Location = new System.Drawing.Point(0, 35);
@@ -851,7 +883,7 @@
             // 
             this.splitContainer_schemaMain.Panel2.Controls.Add(this.splitContainer_schemaRight);
             this.splitContainer_schemaMain.Size = new System.Drawing.Size(907, 558);
-            this.splitContainer_schemaMain.SplitterDistance = 449;
+            this.splitContainer_schemaMain.SplitterDistance = 442;
             this.splitContainer_schemaMain.TabIndex = 0;
             // 
             // splitContainer_schemaLeft
@@ -866,8 +898,8 @@
             this.splitContainer_schemaLeft.Panel1.Controls.Add(this.button_saveLeftSchema);
             this.splitContainer_schemaLeft.Panel1.Controls.Add(this.button_generateSchema);
             this.splitContainer_schemaLeft.Panel1.Controls.Add(this.treeView_leftSchema);
-            this.splitContainer_schemaLeft.Size = new System.Drawing.Size(449, 558);
-            this.splitContainer_schemaLeft.SplitterDistance = 217;
+            this.splitContainer_schemaLeft.Size = new System.Drawing.Size(442, 558);
+            this.splitContainer_schemaLeft.SplitterDistance = 216;
             this.splitContainer_schemaLeft.TabIndex = 0;
             this.splitContainer_schemaLeft.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.SplitContainer_schemaLeft_SplitterMoved);
             // 
@@ -876,7 +908,7 @@
             this.button_saveLeftSchema.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.button_saveLeftSchema.AutoSize = true;
             this.button_saveLeftSchema.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.button_saveLeftSchema.Location = new System.Drawing.Point(341, 32);
+            this.button_saveLeftSchema.Location = new System.Drawing.Point(334, 32);
             this.button_saveLeftSchema.Name = "button_saveLeftSchema";
             this.button_saveLeftSchema.Size = new System.Drawing.Size(85, 25);
             this.button_saveLeftSchema.TabIndex = 1;
@@ -889,7 +921,7 @@
             this.button_generateSchema.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.button_generateSchema.AutoSize = true;
             this.button_generateSchema.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.button_generateSchema.Location = new System.Drawing.Point(318, 3);
+            this.button_generateSchema.Location = new System.Drawing.Point(311, 3);
             this.button_generateSchema.Name = "button_generateSchema";
             this.button_generateSchema.Size = new System.Drawing.Size(108, 25);
             this.button_generateSchema.TabIndex = 1;
@@ -899,13 +931,76 @@
             // 
             // treeView_leftSchema
             // 
+            this.treeView_leftSchema.ContextMenuStrip = this.contextMenuStrip_leftSchema;
             this.treeView_leftSchema.Dock = System.Windows.Forms.DockStyle.Fill;
             this.treeView_leftSchema.Location = new System.Drawing.Point(0, 0);
             this.treeView_leftSchema.Name = "treeView_leftSchema";
-            this.treeView_leftSchema.Size = new System.Drawing.Size(449, 217);
+            this.treeView_leftSchema.Size = new System.Drawing.Size(442, 216);
             this.treeView_leftSchema.TabIndex = 0;
             this.treeView_leftSchema.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.TreeView_leftSchema_AfterSelect);
             this.treeView_leftSchema.Enter += new System.EventHandler(this.TreeView_leftSchema_Enter);
+            // 
+            // contextMenuStrip_leftSchema
+            // 
+            this.contextMenuStrip_leftSchema.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripMenuItem_unfoldLS,
+            this.toolStripMenuItem_foldLS,
+            this.toolStripMenuItem_copyLS,
+            this.toolStripMenuItem_addLS,
+            this.toolStripMenuItem_renameLS,
+            this.toolStripMenuItem_deleteLS});
+            this.contextMenuStrip_leftSchema.Name = "contextMenuStrip_schema";
+            this.contextMenuStrip_leftSchema.Size = new System.Drawing.Size(184, 136);
+            // 
+            // toolStripMenuItem_addLS
+            // 
+            this.toolStripMenuItem_addLS.Name = "toolStripMenuItem_addLS";
+            this.toolStripMenuItem_addLS.Size = new System.Drawing.Size(183, 22);
+            this.toolStripMenuItem_addLS.Text = "Add";
+            this.toolStripMenuItem_addLS.Click += new System.EventHandler(this.ToolStripMenuItem_addLS_Click);
+            // 
+            // toolStripMenuItem_renameLS
+            // 
+            this.toolStripMenuItem_renameLS.Name = "toolStripMenuItem_renameLS";
+            this.toolStripMenuItem_renameLS.Size = new System.Drawing.Size(183, 22);
+            this.toolStripMenuItem_renameLS.Text = "Rename";
+            this.toolStripMenuItem_renameLS.Click += new System.EventHandler(this.ToolStripMenuItem_renameLS_Click);
+            // 
+            // toolStripMenuItem_deleteLS
+            // 
+            this.toolStripMenuItem_deleteLS.Name = "toolStripMenuItem_deleteLS";
+            this.toolStripMenuItem_deleteLS.ShortcutKeyDisplayString = "Del";
+            this.toolStripMenuItem_deleteLS.ShortcutKeys = System.Windows.Forms.Keys.Delete;
+            this.toolStripMenuItem_deleteLS.Size = new System.Drawing.Size(183, 22);
+            this.toolStripMenuItem_deleteLS.Text = "Delete";
+            this.toolStripMenuItem_deleteLS.Click += new System.EventHandler(this.ToolStripMenuItem_deleteLS_Click);
+            // 
+            // toolStripMenuItem_copyLS
+            // 
+            this.toolStripMenuItem_copyLS.Name = "toolStripMenuItem_copyLS";
+            this.toolStripMenuItem_copyLS.ShortcutKeyDisplayString = "Ctrl+C";
+            this.toolStripMenuItem_copyLS.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C)));
+            this.toolStripMenuItem_copyLS.Size = new System.Drawing.Size(183, 22);
+            this.toolStripMenuItem_copyLS.Text = "Copy name";
+            this.toolStripMenuItem_copyLS.Click += new System.EventHandler(this.ToolStripMenuItem_copyLS_Click);
+            // 
+            // toolStripMenuItem_foldLS
+            // 
+            this.toolStripMenuItem_foldLS.Name = "toolStripMenuItem_foldLS";
+            this.toolStripMenuItem_foldLS.ShortcutKeyDisplayString = "+";
+            this.toolStripMenuItem_foldLS.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Oemplus)));
+            this.toolStripMenuItem_foldLS.Size = new System.Drawing.Size(183, 22);
+            this.toolStripMenuItem_foldLS.Text = "Fold all children";
+            this.toolStripMenuItem_foldLS.Click += new System.EventHandler(this.ToolStripMenuItem_foldLS_Click);
+            // 
+            // toolStripMenuItem_unfoldLS
+            // 
+            this.toolStripMenuItem_unfoldLS.Name = "toolStripMenuItem_unfoldLS";
+            this.toolStripMenuItem_unfoldLS.ShortcutKeyDisplayString = "-";
+            this.toolStripMenuItem_unfoldLS.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.OemMinus)));
+            this.toolStripMenuItem_unfoldLS.Size = new System.Drawing.Size(183, 22);
+            this.toolStripMenuItem_unfoldLS.Text = "Unfold all children";
+            this.toolStripMenuItem_unfoldLS.Click += new System.EventHandler(this.ToolStripMenuItem_unfoldLS_Click);
             // 
             // splitContainer_schemaRight
             // 
@@ -924,7 +1019,7 @@
             // splitContainer_schemaRight.Panel2
             // 
             this.splitContainer_schemaRight.Panel2.AutoScroll = true;
-            this.splitContainer_schemaRight.Size = new System.Drawing.Size(454, 558);
+            this.splitContainer_schemaRight.Size = new System.Drawing.Size(461, 558);
             this.splitContainer_schemaRight.SplitterDistance = 222;
             this.splitContainer_schemaRight.TabIndex = 0;
             this.splitContainer_schemaRight.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.SplitContainer_schemaRight_SplitterMoved);
@@ -932,7 +1027,7 @@
             // button_saveRightSchema
             // 
             this.button_saveRightSchema.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button_saveRightSchema.Location = new System.Drawing.Point(335, 32);
+            this.button_saveRightSchema.Location = new System.Drawing.Point(342, 32);
             this.button_saveRightSchema.Name = "button_saveRightSchema";
             this.button_saveRightSchema.Size = new System.Drawing.Size(96, 23);
             this.button_saveRightSchema.TabIndex = 1;
@@ -945,7 +1040,7 @@
             this.button_loadSchema.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.button_loadSchema.AutoSize = true;
             this.button_loadSchema.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.button_loadSchema.Location = new System.Drawing.Point(344, 3);
+            this.button_loadSchema.Location = new System.Drawing.Point(351, 3);
             this.button_loadSchema.Name = "button_loadSchema";
             this.button_loadSchema.Size = new System.Drawing.Size(87, 25);
             this.button_loadSchema.TabIndex = 7;
@@ -955,10 +1050,11 @@
             // 
             // treeView_rightSchema
             // 
+            this.treeView_rightSchema.ContextMenuStrip = this.contextMenuStrip_leftSchema;
             this.treeView_rightSchema.Dock = System.Windows.Forms.DockStyle.Fill;
             this.treeView_rightSchema.Location = new System.Drawing.Point(0, 0);
             this.treeView_rightSchema.Name = "treeView_rightSchema";
-            this.treeView_rightSchema.Size = new System.Drawing.Size(454, 222);
+            this.treeView_rightSchema.Size = new System.Drawing.Size(461, 222);
             this.treeView_rightSchema.TabIndex = 0;
             this.treeView_rightSchema.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.TreeView_rightSchema_AfterSelect);
             this.treeView_rightSchema.Enter += new System.EventHandler(this.TreeView_rightSchema_Enter);
@@ -994,15 +1090,67 @@
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
             this.toolStripStatusLabel1.Size = new System.Drawing.Size(0, 17);
             // 
-            // checkBox_selectedSchema
+            // contextMenuStrip_rightSchema
             // 
-            this.checkBox_selectedSchema.AutoSize = true;
-            this.checkBox_selectedSchema.Location = new System.Drawing.Point(75, 15);
-            this.checkBox_selectedSchema.Name = "checkBox_selectedSchema";
-            this.checkBox_selectedSchema.Size = new System.Drawing.Size(69, 19);
-            this.checkBox_selectedSchema.TabIndex = 15;
-            this.checkBox_selectedSchema.Text = "selected";
-            this.checkBox_selectedSchema.UseVisualStyleBackColor = true;
+            this.contextMenuStrip_rightSchema.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripMenuItem_unfoldRS,
+            this.toolStripMenuItem_foldRS,
+            this.toolStripMenuItem_copyRS,
+            this.toolStripMenuItem_addRS,
+            this.toolStripMenuItem_renameRS,
+            this.toolStripMenuItem_deleteRS});
+            this.contextMenuStrip_rightSchema.Name = "contextMenuStrip_schema";
+            this.contextMenuStrip_rightSchema.Size = new System.Drawing.Size(184, 136);
+            // 
+            // toolStripMenuItem_addRS
+            // 
+            this.toolStripMenuItem_addRS.Name = "toolStripMenuItem_addRS";
+            this.toolStripMenuItem_addRS.Size = new System.Drawing.Size(183, 22);
+            this.toolStripMenuItem_addRS.Text = "Add";
+            this.toolStripMenuItem_addRS.Click += new System.EventHandler(this.ToolStripMenuItem_addRS_Click);
+            // 
+            // toolStripMenuItem_renameRS
+            // 
+            this.toolStripMenuItem_renameRS.Name = "toolStripMenuItem_renameRS";
+            this.toolStripMenuItem_renameRS.Size = new System.Drawing.Size(183, 22);
+            this.toolStripMenuItem_renameRS.Text = "Rename";
+            this.toolStripMenuItem_renameRS.Click += new System.EventHandler(this.ToolStripMenuItem_renameRS_Click);
+            // 
+            // toolStripMenuItem_deleteRS
+            // 
+            this.toolStripMenuItem_deleteRS.Name = "toolStripMenuItem_deleteRS";
+            this.toolStripMenuItem_deleteRS.ShortcutKeyDisplayString = "Del";
+            this.toolStripMenuItem_deleteRS.ShortcutKeys = System.Windows.Forms.Keys.Delete;
+            this.toolStripMenuItem_deleteRS.Size = new System.Drawing.Size(183, 22);
+            this.toolStripMenuItem_deleteRS.Text = "Delete";
+            this.toolStripMenuItem_deleteRS.Click += new System.EventHandler(this.ToolStripMenuItem_deleteRS_Click);
+            // 
+            // toolStripMenuItem_copyRS
+            // 
+            this.toolStripMenuItem_copyRS.Name = "toolStripMenuItem_copyRS";
+            this.toolStripMenuItem_copyRS.ShortcutKeyDisplayString = "Ctrl+C";
+            this.toolStripMenuItem_copyRS.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C)));
+            this.toolStripMenuItem_copyRS.Size = new System.Drawing.Size(183, 22);
+            this.toolStripMenuItem_copyRS.Text = "Copy name";
+            this.toolStripMenuItem_copyRS.Click += new System.EventHandler(this.ToolStripMenuItem_copyRS_Click);
+            // 
+            // toolStripMenuItem_foldRS
+            // 
+            this.toolStripMenuItem_foldRS.Name = "toolStripMenuItem_foldRS";
+            this.toolStripMenuItem_foldRS.ShortcutKeyDisplayString = "+";
+            this.toolStripMenuItem_foldRS.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Oemplus)));
+            this.toolStripMenuItem_foldRS.Size = new System.Drawing.Size(183, 22);
+            this.toolStripMenuItem_foldRS.Text = "Fold all children";
+            this.toolStripMenuItem_foldRS.Click += new System.EventHandler(this.ToolStripMenuItem_foldRS_Click);
+            // 
+            // toolStripMenuItem_unfoldRS
+            // 
+            this.toolStripMenuItem_unfoldRS.Name = "toolStripMenuItem_unfoldRS";
+            this.toolStripMenuItem_unfoldRS.ShortcutKeyDisplayString = "-";
+            this.toolStripMenuItem_unfoldRS.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.OemMinus)));
+            this.toolStripMenuItem_unfoldRS.Size = new System.Drawing.Size(183, 22);
+            this.toolStripMenuItem_unfoldRS.Text = "Unfold all children";
+            this.toolStripMenuItem_unfoldRS.Click += new System.EventHandler(this.ToolStripMenuItem_unfoldRS_Click);
             // 
             // Form1
             // 
@@ -1056,12 +1204,14 @@
             this.splitContainer_schemaLeft.Panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer_schemaLeft)).EndInit();
             this.splitContainer_schemaLeft.ResumeLayout(false);
+            this.contextMenuStrip_leftSchema.ResumeLayout(false);
             this.splitContainer_schemaRight.Panel1.ResumeLayout(false);
             this.splitContainer_schemaRight.Panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer_schemaRight)).EndInit();
             this.splitContainer_schemaRight.ResumeLayout(false);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
+            this.contextMenuStrip_rightSchema.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1138,6 +1288,20 @@
         private System.Windows.Forms.Button button_clearCompare;
         private System.Windows.Forms.Button button_compareNode;
         private System.Windows.Forms.CheckBox checkBox_selectedSchema;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip_leftSchema;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_addLS;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_renameLS;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_deleteLS;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_copyLS;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_foldLS;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_unfoldLS;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip_rightSchema;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_addRS;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_renameRS;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_deleteRS;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_copyRS;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_foldRS;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_unfoldRS;
     }
 }
 

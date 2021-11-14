@@ -83,9 +83,6 @@ namespace JsonDictionaryCore
                 }
             }
 
-            if (!string.IsNullOrEmpty(treePath) && _sourceSchemaObject.Id != treePath)
-                textBox_path.BackColor = Color.Red;
-
             var t = new StringBuilder();
             if (_sourceSchemaObject.Type != null && _sourceSchemaObject.Type.Count > 0)
             {

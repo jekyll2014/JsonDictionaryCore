@@ -2,6 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
 using System.Windows.Forms;
+
 using ScintillaNET;
 
 namespace JsonEditorForm
@@ -17,8 +18,6 @@ namespace JsonEditorForm
 
         public static void Find(bool next, bool incremental)
         {
-            //var first = LastSearch != SearchBox.FormCaption;
-
             LastSearch = SearchBox.Text;
             if (LastSearch.Length > 0)
             {
