@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
@@ -8,7 +9,7 @@ namespace JsonDictionaryCore
 {
     public partial class ObjectDataPanel : UserControl
     {
-        private readonly SchemaTreeObject _sourceSchemaObject;
+        private readonly SchemaObject _sourceSchemaObject;
 
         public string ObjectPathText => textBox_path.Text;
 
@@ -63,7 +64,8 @@ namespace JsonDictionaryCore
             InitializeComponent();
         }
 
-        public ObjectDataPanel(SchemaTreeObject dataObject, string treePath)
+        //public ObjectDataPanel(SchemaObject dataObject, string treePath)
+        public ObjectDataPanel(SchemaObject dataObject)
         {
             _sourceSchemaObject = dataObject;
 
@@ -73,7 +75,7 @@ namespace JsonDictionaryCore
             InitializeComponent();
             textBox_path.Text = _sourceSchemaObject.Id;
 
-            if (!string.IsNullOrEmpty(treePath))
+            /*if (!string.IsNullOrEmpty(treePath))
             {
                 treePath = treePath.Replace('\\', '/');
                 if (treePath.EndsWith("/properties"))
@@ -81,7 +83,7 @@ namespace JsonDictionaryCore
                     var pos = treePath.LastIndexOf("/properties", StringComparison.OrdinalIgnoreCase);
                     treePath = treePath.Substring(0, pos);
                 }
-            }
+            }*/
 
             var t = new StringBuilder();
             if (_sourceSchemaObject.Type != null && _sourceSchemaObject.Type.Count > 0)
@@ -149,22 +151,11 @@ namespace JsonDictionaryCore
 
         private void TextBox_type_Leave(object sender, EventArgs e)
         {
-            var allowedTypes = new List<string>
-            {
-                "string",
-                "number",
-                "integer",
-                "boolean",
-                "null",
-                "array",
-                "object"
-            };
-
             var valueList = new List<string>();
             valueList.AddRange(textBox_type.Text.ToLower().Split(';'));
             for (var i = 0; i < valueList.Count; i++)
             {
-                if (!allowedTypes.Contains(valueList[i]))
+                if (!ISchemaBase.AllowedDataTypes.Contains(valueList[i]))
                 {
                     valueList.RemoveAt(i);
                     i--;
@@ -180,16 +171,9 @@ namespace JsonDictionaryCore
 
         private void TextBox_additional_Leave(object sender, EventArgs e)
         {
-            var allowedTypes = new List<string>
-            {
-                "true",
-                "false",
-                "null"
-            };
-
             var newValue = textBox_additional.Text.Trim().ToLower();
 
-            if (!allowedTypes.Contains(newValue))
+            if (!ISchemaBase.AllowedBoolTypes.Contains(newValue))
                 textBox_additional.Text = string.Empty;
         }
     }

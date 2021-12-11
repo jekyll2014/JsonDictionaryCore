@@ -240,9 +240,9 @@ namespace JsonDictionaryCore
             // 
             this.textBox_path.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBox_path.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point);
             this.textBox_path.Location = new System.Drawing.Point(3, 3);
             this.textBox_path.Name = "textBox_path";
-            this.textBox_path.ReadOnly = true;
             this.textBox_path.Size = new System.Drawing.Size(79, 23);
             this.textBox_path.TabIndex = 0;
             // 

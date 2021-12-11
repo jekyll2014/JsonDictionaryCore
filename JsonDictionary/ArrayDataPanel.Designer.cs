@@ -41,7 +41,7 @@ namespace JsonDictionaryCore
             this.textBox_unique = new System.Windows.Forms.TextBox();
             this.textBox_examples = new System.Windows.Forms.TextBox();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
-            this.textBox_path = new System.Windows.Forms.TextBox();
+            this.textBox_id = new System.Windows.Forms.TextBox();
             this.button_save = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.tableLayoutPanel1.SuspendLayout();
@@ -202,7 +202,7 @@ namespace JsonDictionaryCore
             this.tableLayoutPanel2.ColumnCount = 2;
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanel2.Controls.Add(this.textBox_path, 0, 0);
+            this.tableLayoutPanel2.Controls.Add(this.textBox_id, 0, 0);
             this.tableLayoutPanel2.Controls.Add(this.button_save, 1, 0);
             this.tableLayoutPanel2.Location = new System.Drawing.Point(131, 3);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
@@ -211,15 +211,15 @@ namespace JsonDictionaryCore
             this.tableLayoutPanel2.Size = new System.Drawing.Size(103, 31);
             this.tableLayoutPanel2.TabIndex = 2;
             // 
-            // textBox_path
+            // textBox_id
             // 
-            this.textBox_path.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.textBox_id.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox_path.Location = new System.Drawing.Point(3, 3);
-            this.textBox_path.Name = "textBox_path";
-            this.textBox_path.ReadOnly = true;
-            this.textBox_path.Size = new System.Drawing.Size(50, 23);
-            this.textBox_path.TabIndex = 0;
+            this.textBox_id.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point);
+            this.textBox_id.Location = new System.Drawing.Point(3, 3);
+            this.textBox_id.Name = "textBox_id";
+            this.textBox_id.Size = new System.Drawing.Size(50, 23);
+            this.textBox_id.TabIndex = 0;
             // 
             // button_save
             // 
@@ -270,7 +270,7 @@ namespace JsonDictionaryCore
         #endregion
 
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
-        private System.Windows.Forms.TextBox textBox_path;
+        private System.Windows.Forms.TextBox textBox_id;
         private System.Windows.Forms.TextBox textBox_examples;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TextBox textBox_description;

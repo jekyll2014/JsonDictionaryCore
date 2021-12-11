@@ -93,12 +93,12 @@
             this.button_generateSchema = new System.Windows.Forms.Button();
             this.treeView_leftSchema = new System.Windows.Forms.TreeView();
             this.contextMenuStrip_leftSchema = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.toolStripMenuItem_unfoldLS = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_foldLS = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_copyLS = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_addLS = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_renameLS = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_deleteLS = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem_copyLS = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem_foldLS = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem_unfoldLS = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer_schemaRight = new System.Windows.Forms.SplitContainer();
             this.button_saveRightSchema = new System.Windows.Forms.Button();
             this.button_loadSchema = new System.Windows.Forms.Button();
@@ -109,12 +109,12 @@
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.contextMenuStrip_rightSchema = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.toolStripMenuItem_unfoldRS = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_foldRS = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_copyRS = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_addRS = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_renameRS = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_deleteRS = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem_copyRS = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem_foldRS = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem_unfoldRS = new System.Windows.Forms.ToolStripMenuItem();
             this.tabControl1.SuspendLayout();
             this.tabPage_DataCollection.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer_buttons)).BeginInit();
@@ -156,8 +156,8 @@
             // 
             // tabControl1
             // 
-            this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tabControl1.Controls.Add(this.tabPage_DataCollection);
             this.tabControl1.Controls.Add(this.tabPage_SamplesTree);
@@ -284,7 +284,7 @@
             // 
             // button_saveDb
             // 
-            this.button_saveDb.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.button_saveDb.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.button_saveDb.Location = new System.Drawing.Point(0, 70);
             this.button_saveDb.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -297,7 +297,7 @@
             // 
             // button_loadDb
             // 
-            this.button_loadDb.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.button_loadDb.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.button_loadDb.Location = new System.Drawing.Point(0, 37);
             this.button_loadDb.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -310,7 +310,7 @@
             // 
             // button_collectDatabase
             // 
-            this.button_collectDatabase.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.button_collectDatabase.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.button_collectDatabase.Location = new System.Drawing.Point(0, 3);
             this.button_collectDatabase.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -470,8 +470,8 @@
             // 
             // splitContainer_fileList
             // 
-            this.splitContainer_fileList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.splitContainer_fileList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.splitContainer_fileList.Location = new System.Drawing.Point(0, 37);
             this.splitContainer_fileList.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -626,7 +626,7 @@
             // 
             // textBox_ExSearchHistory
             // 
-            this.textBox_ExSearchHistory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+            this.textBox_ExSearchHistory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textBox_ExSearchHistory.Location = new System.Drawing.Point(4, 470);
             this.textBox_ExSearchHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -674,7 +674,7 @@
             // 
             // textBox_ExSearchString
             // 
-            this.textBox_ExSearchString.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.textBox_ExSearchString.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textBox_ExSearchString.Location = new System.Drawing.Point(170, 6);
             this.textBox_ExSearchString.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -713,7 +713,7 @@
             // 
             this.label_edit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.label_edit.AutoSize = true;
-            this.label_edit.Location = new System.Drawing.Point(542, 52);
+            this.label_edit.Location = new System.Drawing.Point(542, 50);
             this.label_edit.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label_edit.Name = "label_edit";
             this.label_edit.Size = new System.Drawing.Size(111, 15);
@@ -724,7 +724,7 @@
             // 
             this.label_descSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.label_descSave.AutoSize = true;
-            this.label_descSave.Location = new System.Drawing.Point(478, 52);
+            this.label_descSave.Location = new System.Drawing.Point(478, 50);
             this.label_descSave.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label_descSave.Name = "label_descSave";
             this.label_descSave.Size = new System.Drawing.Size(175, 15);
@@ -823,7 +823,7 @@
             // 
             // textBox_find
             // 
-            this.textBox_find.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.textBox_find.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textBox_find.Location = new System.Drawing.Point(401, 5);
             this.textBox_find.Name = "textBox_find";
@@ -868,8 +868,8 @@
             // 
             // splitContainer_schemaMain
             // 
-            this.splitContainer_schemaMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.splitContainer_schemaMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.splitContainer_schemaMain.Cursor = System.Windows.Forms.Cursors.Default;
             this.splitContainer_schemaMain.Location = new System.Drawing.Point(0, 35);
@@ -933,10 +933,12 @@
             // 
             this.treeView_leftSchema.ContextMenuStrip = this.contextMenuStrip_leftSchema;
             this.treeView_leftSchema.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.treeView_leftSchema.LabelEdit = true;
             this.treeView_leftSchema.Location = new System.Drawing.Point(0, 0);
             this.treeView_leftSchema.Name = "treeView_leftSchema";
             this.treeView_leftSchema.Size = new System.Drawing.Size(442, 216);
             this.treeView_leftSchema.TabIndex = 0;
+            this.treeView_leftSchema.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.TreeView_leftSchema_AfterLabelEdit);
             this.treeView_leftSchema.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.TreeView_leftSchema_AfterSelect);
             this.treeView_leftSchema.Enter += new System.EventHandler(this.TreeView_leftSchema_Enter);
             // 
@@ -950,19 +952,46 @@
             this.toolStripMenuItem_renameLS,
             this.toolStripMenuItem_deleteLS});
             this.contextMenuStrip_leftSchema.Name = "contextMenuStrip_schema";
-            this.contextMenuStrip_leftSchema.Size = new System.Drawing.Size(184, 136);
+            this.contextMenuStrip_leftSchema.Size = new System.Drawing.Size(220, 136);
+            // 
+            // toolStripMenuItem_unfoldLS
+            // 
+            this.toolStripMenuItem_unfoldLS.Name = "toolStripMenuItem_unfoldLS";
+            this.toolStripMenuItem_unfoldLS.ShortcutKeyDisplayString = "Ctrl+\'+\'";
+            this.toolStripMenuItem_unfoldLS.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Oemplus)));
+            this.toolStripMenuItem_unfoldLS.Size = new System.Drawing.Size(219, 22);
+            this.toolStripMenuItem_unfoldLS.Text = "Unfold all children";
+            this.toolStripMenuItem_unfoldLS.Click += new System.EventHandler(this.ToolStripMenuItem_unfoldLS_Click);
+            // 
+            // toolStripMenuItem_foldLS
+            // 
+            this.toolStripMenuItem_foldLS.Name = "toolStripMenuItem_foldLS";
+            this.toolStripMenuItem_foldLS.ShortcutKeyDisplayString = "Ctrl+\'-\'";
+            this.toolStripMenuItem_foldLS.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.OemMinus)));
+            this.toolStripMenuItem_foldLS.Size = new System.Drawing.Size(219, 22);
+            this.toolStripMenuItem_foldLS.Text = "Fold all children";
+            this.toolStripMenuItem_foldLS.Click += new System.EventHandler(this.ToolStripMenuItem_foldLS_Click);
+            // 
+            // toolStripMenuItem_copyLS
+            // 
+            this.toolStripMenuItem_copyLS.Name = "toolStripMenuItem_copyLS";
+            this.toolStripMenuItem_copyLS.ShortcutKeyDisplayString = "Ctrl+C";
+            this.toolStripMenuItem_copyLS.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C)));
+            this.toolStripMenuItem_copyLS.Size = new System.Drawing.Size(219, 22);
+            this.toolStripMenuItem_copyLS.Text = "Copy name";
+            this.toolStripMenuItem_copyLS.Click += new System.EventHandler(this.ToolStripMenuItem_copyLS_Click);
             // 
             // toolStripMenuItem_addLS
             // 
             this.toolStripMenuItem_addLS.Name = "toolStripMenuItem_addLS";
-            this.toolStripMenuItem_addLS.Size = new System.Drawing.Size(183, 22);
+            this.toolStripMenuItem_addLS.Size = new System.Drawing.Size(219, 22);
             this.toolStripMenuItem_addLS.Text = "Add";
             this.toolStripMenuItem_addLS.Click += new System.EventHandler(this.ToolStripMenuItem_addLS_Click);
             // 
             // toolStripMenuItem_renameLS
             // 
             this.toolStripMenuItem_renameLS.Name = "toolStripMenuItem_renameLS";
-            this.toolStripMenuItem_renameLS.Size = new System.Drawing.Size(183, 22);
+            this.toolStripMenuItem_renameLS.Size = new System.Drawing.Size(219, 22);
             this.toolStripMenuItem_renameLS.Text = "Rename";
             this.toolStripMenuItem_renameLS.Click += new System.EventHandler(this.ToolStripMenuItem_renameLS_Click);
             // 
@@ -971,36 +1000,9 @@
             this.toolStripMenuItem_deleteLS.Name = "toolStripMenuItem_deleteLS";
             this.toolStripMenuItem_deleteLS.ShortcutKeyDisplayString = "Del";
             this.toolStripMenuItem_deleteLS.ShortcutKeys = System.Windows.Forms.Keys.Delete;
-            this.toolStripMenuItem_deleteLS.Size = new System.Drawing.Size(183, 22);
+            this.toolStripMenuItem_deleteLS.Size = new System.Drawing.Size(219, 22);
             this.toolStripMenuItem_deleteLS.Text = "Delete";
             this.toolStripMenuItem_deleteLS.Click += new System.EventHandler(this.ToolStripMenuItem_deleteLS_Click);
-            // 
-            // toolStripMenuItem_copyLS
-            // 
-            this.toolStripMenuItem_copyLS.Name = "toolStripMenuItem_copyLS";
-            this.toolStripMenuItem_copyLS.ShortcutKeyDisplayString = "Ctrl+C";
-            this.toolStripMenuItem_copyLS.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C)));
-            this.toolStripMenuItem_copyLS.Size = new System.Drawing.Size(183, 22);
-            this.toolStripMenuItem_copyLS.Text = "Copy name";
-            this.toolStripMenuItem_copyLS.Click += new System.EventHandler(this.ToolStripMenuItem_copyLS_Click);
-            // 
-            // toolStripMenuItem_foldLS
-            // 
-            this.toolStripMenuItem_foldLS.Name = "toolStripMenuItem_foldLS";
-            this.toolStripMenuItem_foldLS.ShortcutKeyDisplayString = "+";
-            this.toolStripMenuItem_foldLS.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Oemplus)));
-            this.toolStripMenuItem_foldLS.Size = new System.Drawing.Size(183, 22);
-            this.toolStripMenuItem_foldLS.Text = "Fold all children";
-            this.toolStripMenuItem_foldLS.Click += new System.EventHandler(this.ToolStripMenuItem_foldLS_Click);
-            // 
-            // toolStripMenuItem_unfoldLS
-            // 
-            this.toolStripMenuItem_unfoldLS.Name = "toolStripMenuItem_unfoldLS";
-            this.toolStripMenuItem_unfoldLS.ShortcutKeyDisplayString = "-";
-            this.toolStripMenuItem_unfoldLS.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.OemMinus)));
-            this.toolStripMenuItem_unfoldLS.Size = new System.Drawing.Size(183, 22);
-            this.toolStripMenuItem_unfoldLS.Text = "Unfold all children";
-            this.toolStripMenuItem_unfoldLS.Click += new System.EventHandler(this.ToolStripMenuItem_unfoldLS_Click);
             // 
             // splitContainer_schemaRight
             // 
@@ -1052,10 +1054,12 @@
             // 
             this.treeView_rightSchema.ContextMenuStrip = this.contextMenuStrip_leftSchema;
             this.treeView_rightSchema.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.treeView_rightSchema.LabelEdit = true;
             this.treeView_rightSchema.Location = new System.Drawing.Point(0, 0);
             this.treeView_rightSchema.Name = "treeView_rightSchema";
             this.treeView_rightSchema.Size = new System.Drawing.Size(461, 222);
             this.treeView_rightSchema.TabIndex = 0;
+            this.treeView_rightSchema.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.TreeView_rightSchema_AfterLabelEdit);
             this.treeView_rightSchema.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.TreeView_rightSchema_AfterSelect);
             this.treeView_rightSchema.Enter += new System.EventHandler(this.TreeView_rightSchema_Enter);
             // 
@@ -1100,19 +1104,46 @@
             this.toolStripMenuItem_renameRS,
             this.toolStripMenuItem_deleteRS});
             this.contextMenuStrip_rightSchema.Name = "contextMenuStrip_schema";
-            this.contextMenuStrip_rightSchema.Size = new System.Drawing.Size(184, 136);
+            this.contextMenuStrip_rightSchema.Size = new System.Drawing.Size(226, 136);
+            // 
+            // toolStripMenuItem_unfoldRS
+            // 
+            this.toolStripMenuItem_unfoldRS.Name = "toolStripMenuItem_unfoldRS";
+            this.toolStripMenuItem_unfoldRS.ShortcutKeyDisplayString = "Ctrel+\'+\'";
+            this.toolStripMenuItem_unfoldRS.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Oemplus)));
+            this.toolStripMenuItem_unfoldRS.Size = new System.Drawing.Size(225, 22);
+            this.toolStripMenuItem_unfoldRS.Text = "Unfold all children";
+            this.toolStripMenuItem_unfoldRS.Click += new System.EventHandler(this.ToolStripMenuItem_unfoldRS_Click);
+            // 
+            // toolStripMenuItem_foldRS
+            // 
+            this.toolStripMenuItem_foldRS.Name = "toolStripMenuItem_foldRS";
+            this.toolStripMenuItem_foldRS.ShortcutKeyDisplayString = "Ctrl+\'-\'";
+            this.toolStripMenuItem_foldRS.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.OemMinus)));
+            this.toolStripMenuItem_foldRS.Size = new System.Drawing.Size(225, 22);
+            this.toolStripMenuItem_foldRS.Text = "Fold all children";
+            this.toolStripMenuItem_foldRS.Click += new System.EventHandler(this.ToolStripMenuItem_foldRS_Click);
+            // 
+            // toolStripMenuItem_copyRS
+            // 
+            this.toolStripMenuItem_copyRS.Name = "toolStripMenuItem_copyRS";
+            this.toolStripMenuItem_copyRS.ShortcutKeyDisplayString = "Ctrl+C";
+            this.toolStripMenuItem_copyRS.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C)));
+            this.toolStripMenuItem_copyRS.Size = new System.Drawing.Size(225, 22);
+            this.toolStripMenuItem_copyRS.Text = "Copy name";
+            this.toolStripMenuItem_copyRS.Click += new System.EventHandler(this.ToolStripMenuItem_copyRS_Click);
             // 
             // toolStripMenuItem_addRS
             // 
             this.toolStripMenuItem_addRS.Name = "toolStripMenuItem_addRS";
-            this.toolStripMenuItem_addRS.Size = new System.Drawing.Size(183, 22);
+            this.toolStripMenuItem_addRS.Size = new System.Drawing.Size(225, 22);
             this.toolStripMenuItem_addRS.Text = "Add";
             this.toolStripMenuItem_addRS.Click += new System.EventHandler(this.ToolStripMenuItem_addRS_Click);
             // 
             // toolStripMenuItem_renameRS
             // 
             this.toolStripMenuItem_renameRS.Name = "toolStripMenuItem_renameRS";
-            this.toolStripMenuItem_renameRS.Size = new System.Drawing.Size(183, 22);
+            this.toolStripMenuItem_renameRS.Size = new System.Drawing.Size(225, 22);
             this.toolStripMenuItem_renameRS.Text = "Rename";
             this.toolStripMenuItem_renameRS.Click += new System.EventHandler(this.ToolStripMenuItem_renameRS_Click);
             // 
@@ -1121,36 +1152,9 @@
             this.toolStripMenuItem_deleteRS.Name = "toolStripMenuItem_deleteRS";
             this.toolStripMenuItem_deleteRS.ShortcutKeyDisplayString = "Del";
             this.toolStripMenuItem_deleteRS.ShortcutKeys = System.Windows.Forms.Keys.Delete;
-            this.toolStripMenuItem_deleteRS.Size = new System.Drawing.Size(183, 22);
+            this.toolStripMenuItem_deleteRS.Size = new System.Drawing.Size(225, 22);
             this.toolStripMenuItem_deleteRS.Text = "Delete";
             this.toolStripMenuItem_deleteRS.Click += new System.EventHandler(this.ToolStripMenuItem_deleteRS_Click);
-            // 
-            // toolStripMenuItem_copyRS
-            // 
-            this.toolStripMenuItem_copyRS.Name = "toolStripMenuItem_copyRS";
-            this.toolStripMenuItem_copyRS.ShortcutKeyDisplayString = "Ctrl+C";
-            this.toolStripMenuItem_copyRS.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C)));
-            this.toolStripMenuItem_copyRS.Size = new System.Drawing.Size(183, 22);
-            this.toolStripMenuItem_copyRS.Text = "Copy name";
-            this.toolStripMenuItem_copyRS.Click += new System.EventHandler(this.ToolStripMenuItem_copyRS_Click);
-            // 
-            // toolStripMenuItem_foldRS
-            // 
-            this.toolStripMenuItem_foldRS.Name = "toolStripMenuItem_foldRS";
-            this.toolStripMenuItem_foldRS.ShortcutKeyDisplayString = "+";
-            this.toolStripMenuItem_foldRS.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Oemplus)));
-            this.toolStripMenuItem_foldRS.Size = new System.Drawing.Size(183, 22);
-            this.toolStripMenuItem_foldRS.Text = "Fold all children";
-            this.toolStripMenuItem_foldRS.Click += new System.EventHandler(this.ToolStripMenuItem_foldRS_Click);
-            // 
-            // toolStripMenuItem_unfoldRS
-            // 
-            this.toolStripMenuItem_unfoldRS.Name = "toolStripMenuItem_unfoldRS";
-            this.toolStripMenuItem_unfoldRS.ShortcutKeyDisplayString = "-";
-            this.toolStripMenuItem_unfoldRS.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.OemMinus)));
-            this.toolStripMenuItem_unfoldRS.Size = new System.Drawing.Size(183, 22);
-            this.toolStripMenuItem_unfoldRS.Text = "Unfold all children";
-            this.toolStripMenuItem_unfoldRS.Click += new System.EventHandler(this.ToolStripMenuItem_unfoldRS_Click);
             // 
             // Form1
             // 

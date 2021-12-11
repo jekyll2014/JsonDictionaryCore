@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
@@ -8,7 +9,7 @@ namespace JsonDictionaryCore
 {
     public partial class PropertyDataPanel : UserControl
     {
-        private readonly SchemaTreeProperty _sourceSchemaObject;
+        private readonly SchemaProperty _sourceSchemaObject;
 
         public string ObjectPathText => textBox_path.Text;
 
@@ -63,7 +64,8 @@ namespace JsonDictionaryCore
             InitializeComponent();
         }
 
-        public PropertyDataPanel(SchemaTreeProperty dataObject, string treePath)
+        //public PropertyDataPanel(SchemaProperty dataObject, string treePath)
+        public PropertyDataPanel(SchemaProperty dataObject)
         {
             _sourceSchemaObject = dataObject;
 
@@ -73,7 +75,7 @@ namespace JsonDictionaryCore
             InitializeComponent();
             textBox_path.Text = _sourceSchemaObject.Id;
 
-            if (!string.IsNullOrEmpty(treePath))
+            /*if (!string.IsNullOrEmpty(treePath))
             {
                 treePath = treePath.Replace('\\', '/');
 
@@ -82,7 +84,7 @@ namespace JsonDictionaryCore
                     var pos = treePath.LastIndexOf("/properties", StringComparison.OrdinalIgnoreCase);
                     treePath = treePath.Substring(0, pos);
                 }
-            }
+            }*/
 
             var t = new StringBuilder();
             if (_sourceSchemaObject.Type != null && _sourceSchemaObject.Type.Count > 0)
@@ -150,22 +152,11 @@ namespace JsonDictionaryCore
 
         private void TextBox_type_Leave(object sender, EventArgs e)
         {
-            var allowedTypes = new List<string>
-            {
-                "string",
-                "number",
-                "integer",
-                "boolean",
-                "null",
-                "array",
-                "object"
-            };
-
             var valueList = new List<string>();
             valueList.AddRange(textBox_type.Text.ToLower().Split(';'));
             for (var i = 0; i < valueList.Count; i++)
             {
-                if (!allowedTypes.Contains(valueList[i]))
+                if (!ISchemaBase.AllowedDataTypes.Contains(valueList[i]))
                 {
                     valueList.RemoveAt(i);
                     i--;
