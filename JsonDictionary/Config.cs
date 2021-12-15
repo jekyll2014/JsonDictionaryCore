@@ -1,9 +1,9 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 using System;
 using System.IO;
 
-using static JsonDictionaryCore.JsonIo;
 
 namespace JsonDictionaryCore
 {
@@ -59,7 +59,20 @@ namespace JsonDictionaryCore
 
         public bool SaveConfig()
         {
-            return SaveJson(ConfigStorage, _configFileName, true);
+            if (string.IsNullOrEmpty(_configFileName))
+                return false;
+
+            try
+            {
+                File.WriteAllText(_configFileName,
+                    JsonConvert.SerializeObject(ConfigStorage, Formatting.Indented));
+            }
+            catch
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

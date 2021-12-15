@@ -96,7 +96,9 @@
             this.toolStripMenuItem_unfoldLS = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_foldLS = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_copyLS = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem_addLS = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_addPropertyLS = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_addObjectLS = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_addArrayLS = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_renameLS = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_deleteLS = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer_schemaRight = new System.Windows.Forms.SplitContainer();
@@ -112,7 +114,9 @@
             this.toolStripMenuItem_unfoldRS = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_foldRS = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_copyRS = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem_addRS = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_addPropertyRS = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_addObjectRS = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem_addArrayRS = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_renameRS = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_deleteRS = new System.Windows.Forms.ToolStripMenuItem();
             this.tabControl1.SuspendLayout();
@@ -713,7 +717,7 @@
             // 
             this.label_edit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.label_edit.AutoSize = true;
-            this.label_edit.Location = new System.Drawing.Point(542, 50);
+            this.label_edit.Location = new System.Drawing.Point(542, 43);
             this.label_edit.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label_edit.Name = "label_edit";
             this.label_edit.Size = new System.Drawing.Size(111, 15);
@@ -724,7 +728,7 @@
             // 
             this.label_descSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.label_descSave.AutoSize = true;
-            this.label_descSave.Location = new System.Drawing.Point(478, 50);
+            this.label_descSave.Location = new System.Drawing.Point(478, 43);
             this.label_descSave.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label_descSave.Name = "label_descSave";
             this.label_descSave.Size = new System.Drawing.Size(175, 15);
@@ -938,8 +942,10 @@
             this.treeView_leftSchema.Name = "treeView_leftSchema";
             this.treeView_leftSchema.Size = new System.Drawing.Size(442, 216);
             this.treeView_leftSchema.TabIndex = 0;
-            this.treeView_leftSchema.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.TreeView_leftSchema_AfterLabelEdit);
+            this.treeView_leftSchema.BeforeLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.TreeView_BeforeLabelEdit);
+            this.treeView_leftSchema.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.TreeView_AfterLabelEdit);
             this.treeView_leftSchema.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.TreeView_leftSchema_AfterSelect);
+            this.treeView_leftSchema.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.TreeView_NodeMouseClick);
             this.treeView_leftSchema.Enter += new System.EventHandler(this.TreeView_leftSchema_Enter);
             // 
             // contextMenuStrip_leftSchema
@@ -948,11 +954,14 @@
             this.toolStripMenuItem_unfoldLS,
             this.toolStripMenuItem_foldLS,
             this.toolStripMenuItem_copyLS,
-            this.toolStripMenuItem_addLS,
+            this.toolStripMenuItem_addPropertyLS,
+            this.toolStripMenuItem_addObjectLS,
+            this.toolStripMenuItem_addArrayLS,
             this.toolStripMenuItem_renameLS,
             this.toolStripMenuItem_deleteLS});
             this.contextMenuStrip_leftSchema.Name = "contextMenuStrip_schema";
-            this.contextMenuStrip_leftSchema.Size = new System.Drawing.Size(220, 136);
+            this.contextMenuStrip_leftSchema.Size = new System.Drawing.Size(220, 180);
+            this.contextMenuStrip_leftSchema.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip_leftSchema_Opening);
             // 
             // toolStripMenuItem_unfoldLS
             // 
@@ -981,12 +990,26 @@
             this.toolStripMenuItem_copyLS.Text = "Copy name";
             this.toolStripMenuItem_copyLS.Click += new System.EventHandler(this.ToolStripMenuItem_copyLS_Click);
             // 
-            // toolStripMenuItem_addLS
+            // toolStripMenuItem_addPropertyLS
             // 
-            this.toolStripMenuItem_addLS.Name = "toolStripMenuItem_addLS";
-            this.toolStripMenuItem_addLS.Size = new System.Drawing.Size(219, 22);
-            this.toolStripMenuItem_addLS.Text = "Add";
-            this.toolStripMenuItem_addLS.Click += new System.EventHandler(this.ToolStripMenuItem_addLS_Click);
+            this.toolStripMenuItem_addPropertyLS.Name = "toolStripMenuItem_addPropertyLS";
+            this.toolStripMenuItem_addPropertyLS.Size = new System.Drawing.Size(219, 22);
+            this.toolStripMenuItem_addPropertyLS.Text = "Add property";
+            this.toolStripMenuItem_addPropertyLS.Click += new System.EventHandler(this.ToolStripMenuItem_addPropertyLS_Click);
+            // 
+            // toolStripMenuItem_addObjectLS
+            // 
+            this.toolStripMenuItem_addObjectLS.Name = "toolStripMenuItem_addObjectLS";
+            this.toolStripMenuItem_addObjectLS.Size = new System.Drawing.Size(219, 22);
+            this.toolStripMenuItem_addObjectLS.Text = "Add object";
+            this.toolStripMenuItem_addObjectLS.Click += new System.EventHandler(this.ToolStripMenuItem_addObjectLS_Click);
+            // 
+            // toolStripMenuItem_addArrayLS
+            // 
+            this.toolStripMenuItem_addArrayLS.Name = "toolStripMenuItem_addArrayLS";
+            this.toolStripMenuItem_addArrayLS.Size = new System.Drawing.Size(219, 22);
+            this.toolStripMenuItem_addArrayLS.Text = "Add array";
+            this.toolStripMenuItem_addArrayLS.Click += new System.EventHandler(this.ToolStripMenuItem_addArrayLS_Click);
             // 
             // toolStripMenuItem_renameLS
             // 
@@ -1052,15 +1075,17 @@
             // 
             // treeView_rightSchema
             // 
-            this.treeView_rightSchema.ContextMenuStrip = this.contextMenuStrip_leftSchema;
+            this.treeView_rightSchema.ContextMenuStrip = this.contextMenuStrip_rightSchema;
             this.treeView_rightSchema.Dock = System.Windows.Forms.DockStyle.Fill;
             this.treeView_rightSchema.LabelEdit = true;
             this.treeView_rightSchema.Location = new System.Drawing.Point(0, 0);
             this.treeView_rightSchema.Name = "treeView_rightSchema";
             this.treeView_rightSchema.Size = new System.Drawing.Size(461, 222);
             this.treeView_rightSchema.TabIndex = 0;
-            this.treeView_rightSchema.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.TreeView_rightSchema_AfterLabelEdit);
+            this.treeView_rightSchema.BeforeLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.TreeView_BeforeLabelEdit);
+            this.treeView_rightSchema.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.TreeView_AfterLabelEdit);
             this.treeView_rightSchema.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.TreeView_rightSchema_AfterSelect);
+            this.treeView_rightSchema.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.TreeView_NodeMouseClick);
             this.treeView_rightSchema.Enter += new System.EventHandler(this.TreeView_rightSchema_Enter);
             // 
             // openFileDialog1
@@ -1100,11 +1125,14 @@
             this.toolStripMenuItem_unfoldRS,
             this.toolStripMenuItem_foldRS,
             this.toolStripMenuItem_copyRS,
-            this.toolStripMenuItem_addRS,
+            this.toolStripMenuItem_addPropertyRS,
+            this.toolStripMenuItem_addObjectRS,
+            this.toolStripMenuItem_addArrayRS,
             this.toolStripMenuItem_renameRS,
             this.toolStripMenuItem_deleteRS});
             this.contextMenuStrip_rightSchema.Name = "contextMenuStrip_schema";
-            this.contextMenuStrip_rightSchema.Size = new System.Drawing.Size(226, 136);
+            this.contextMenuStrip_rightSchema.Size = new System.Drawing.Size(226, 180);
+            this.contextMenuStrip_rightSchema.Opening += new System.ComponentModel.CancelEventHandler(this.ContextMenuStrip_rightSchema_Opening);
             // 
             // toolStripMenuItem_unfoldRS
             // 
@@ -1133,12 +1161,26 @@
             this.toolStripMenuItem_copyRS.Text = "Copy name";
             this.toolStripMenuItem_copyRS.Click += new System.EventHandler(this.ToolStripMenuItem_copyRS_Click);
             // 
-            // toolStripMenuItem_addRS
+            // toolStripMenuItem_addPropertyRS
             // 
-            this.toolStripMenuItem_addRS.Name = "toolStripMenuItem_addRS";
-            this.toolStripMenuItem_addRS.Size = new System.Drawing.Size(225, 22);
-            this.toolStripMenuItem_addRS.Text = "Add";
-            this.toolStripMenuItem_addRS.Click += new System.EventHandler(this.ToolStripMenuItem_addRS_Click);
+            this.toolStripMenuItem_addPropertyRS.Name = "toolStripMenuItem_addPropertyRS";
+            this.toolStripMenuItem_addPropertyRS.Size = new System.Drawing.Size(225, 22);
+            this.toolStripMenuItem_addPropertyRS.Text = "Add property";
+            this.toolStripMenuItem_addPropertyRS.Click += new System.EventHandler(this.ToolStripMenuItem_addPropertyRS_Click);
+            // 
+            // toolStripMenuItem_addObjectRS
+            // 
+            this.toolStripMenuItem_addObjectRS.Name = "toolStripMenuItem_addObjectRS";
+            this.toolStripMenuItem_addObjectRS.Size = new System.Drawing.Size(225, 22);
+            this.toolStripMenuItem_addObjectRS.Text = "Add object";
+            this.toolStripMenuItem_addObjectRS.Click += new System.EventHandler(this.ToolStripMenuItem_addObjectRS_Click);
+            // 
+            // toolStripMenuItem_addArrayRS
+            // 
+            this.toolStripMenuItem_addArrayRS.Name = "toolStripMenuItem_addArrayRS";
+            this.toolStripMenuItem_addArrayRS.Size = new System.Drawing.Size(225, 22);
+            this.toolStripMenuItem_addArrayRS.Text = "Add array";
+            this.toolStripMenuItem_addArrayRS.Click += new System.EventHandler(this.toolStripMenuItem_addArrayRS_Click);
             // 
             // toolStripMenuItem_renameRS
             // 
@@ -1293,19 +1335,23 @@
         private System.Windows.Forms.Button button_compareNode;
         private System.Windows.Forms.CheckBox checkBox_selectedSchema;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip_leftSchema;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_addLS;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_addPropertyLS;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_renameLS;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_deleteLS;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_copyLS;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_foldLS;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_unfoldLS;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip_rightSchema;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_addRS;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_addPropertyRS;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_renameRS;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_deleteRS;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_copyRS;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_foldRS;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_unfoldRS;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_addObjectLS;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_addArrayLS;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_addObjectRS;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_addArrayRS;
     }
 }
 

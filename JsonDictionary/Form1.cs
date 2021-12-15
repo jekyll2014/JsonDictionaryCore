@@ -759,7 +759,7 @@ namespace JsonDictionaryCore
             var treeSchemaProperties = parser.ConvertForTreeProcessing(schemaProperties);
             _rightSchema = JsonPropertyListToSchemaObject(null, treeSchemaProperties, rootName, rootName,
                 _appConfig.ConfigStorage.JsonPathDiv);
-            _rootNodeRightSchema = ConvertSchemaNodesToTreeNode(_rightSchema);
+            _rootNodeRightSchema = ConvertSchemaObjectToTreeNode(_rightSchema);
             treeView_rightSchema.Nodes.Clear();
             treeView_rightSchema.Nodes.Add(_rootNodeRightSchema);
             treeView_rightSchema.Sort();
@@ -795,9 +795,14 @@ namespace JsonDictionaryCore
                 splitContainer_schemaLeft.Panel2.Controls.Remove(_leftDataPanel);
             }
 
-            var nodePath = e.Node.FullPath;
-            var node = FindNodeByTreePath(nodePath, _leftSchema);
+            if (_lastSelectedLeftSchemaNode != null)
+                _lastSelectedLeftSchemaNode.BackColor = _lastSelectedLeftSchemaNodeColor;
 
+            _lastSelectedLeftSchemaNode = e.Node;
+            _lastSelectedLeftSchemaNodeColor = e.Node.BackColor;
+            e.Node.BackColor = Color.DodgerBlue;
+
+            var node = e.Node.Tag;
             if (node == null) return;
 
             if (node is SchemaProperty schemaProperty)
@@ -822,12 +827,6 @@ namespace JsonDictionaryCore
 
             SelectSchemaNode(e.Node.Name, true);
 
-            if (_lastSelectedLeftSchemaNode != null)
-                _lastSelectedLeftSchemaNode.BackColor = _lastSelectedLeftSchemaNodeColor;
-
-            _lastSelectedLeftSchemaNode = e.Node;
-            _lastSelectedLeftSchemaNodeColor = e.Node.BackColor;
-            e.Node.BackColor = Color.DodgerBlue;
         }
 
         private void FollowTheRefLinkLeft(object sender, RefLinkClickEventArgs e)
@@ -854,9 +853,14 @@ namespace JsonDictionaryCore
                 splitContainer_schemaRight.Panel2.Controls.Remove(_rightDataPanel);
             }
 
-            var nodePath = e.Node.FullPath;
-            var node = FindNodeByTreePath(nodePath, _rightSchema);
+            if (_lastSelectedRightSchemaNode != null)
+                _lastSelectedRightSchemaNode.BackColor = _lastSelectedRightSchemaNodeColor;
 
+            _lastSelectedRightSchemaNode = e.Node;
+            _lastSelectedRightSchemaNodeColor = e.Node.BackColor;
+            e.Node.BackColor = Color.DodgerBlue;
+
+            var node = e.Node.Tag;
             if (node == null) return;
 
             if (node is SchemaProperty schemaProperty)
@@ -877,13 +881,6 @@ namespace JsonDictionaryCore
             }
 
             SelectSchemaNode(e.Node.Name, false);
-
-            if (_lastSelectedRightSchemaNode != null)
-                _lastSelectedRightSchemaNode.BackColor = _lastSelectedRightSchemaNodeColor;
-
-            _lastSelectedRightSchemaNode = e.Node;
-            _lastSelectedRightSchemaNodeColor = e.Node.BackColor;
-            e.Node.BackColor = Color.DodgerBlue;
         }
 
         private void FollowTheRefLinkRight(object sender, RefLinkClickEventArgs e)
@@ -899,8 +896,8 @@ namespace JsonDictionaryCore
                 return;
 
             var rootName = "#";
-            _leftSchema = GenerateSchemaFromTree(treeView_examples.SelectedNode, _exampleLinkCollection, rootName, null);
-            _rootNodeLeftSchema = ConvertSchemaNodesToTreeNode(_leftSchema);
+            _leftSchema = GenerateSchemaFromSamplesTree(treeView_examples.SelectedNode, _exampleLinkCollection, rootName, null);
+            _rootNodeLeftSchema = ConvertSchemaObjectToTreeNode(_leftSchema);
 
             if (_rootNodeLeftSchema == null)
                 return;
@@ -1174,21 +1171,30 @@ namespace JsonDictionaryCore
             treeView_leftSchema.SelectedNode.BeginEdit();
         }
 
-        private void TreeView_leftSchema_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
+        private void TreeView_BeforeLabelEdit(object sender, NodeLabelEditEventArgs e)
         {
-            if (e.Label == null)
+            if (e.Node.Tag == null)
+                e.CancelEdit = true;
+        }
+
+        private void TreeView_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
+        {
+            var newName = e.Label;
+
+            if (newName == null)
                 e.CancelEdit = true;
 
-            var newName = e.Label.Trim();
-
-            if (string.IsNullOrEmpty(newName))
-                e.CancelEdit = true;
-            else if (newName != e.Node.Text)
+            try
             {
-                if (e.Node.Tag is ISchemaBase schemaObject)
-                {
-                    RenameNode(treeView_leftSchema, newName);
-                }
+                newName = newName?.Trim();
+                if (string.IsNullOrEmpty(newName))
+                    e.CancelEdit = true;
+                else if (newName != e.Node.Text)
+                    RenameSchemaNode(e.Node, newName);
+            }
+            catch
+            {
+                e.CancelEdit = true;
             }
         }
 
@@ -1217,21 +1223,6 @@ namespace JsonDictionaryCore
             treeView_rightSchema.SelectedNode.BeginEdit();
         }
 
-        private void TreeView_rightSchema_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
-        {
-            var newName = e.Label.Trim();
-
-            if (string.IsNullOrEmpty(newName))
-                e.CancelEdit = true;
-            else if (newName != e.Node.Text)
-            {
-                if (e.Node.Tag is ISchemaBase schemaObject)
-                {
-                    RenameNode(treeView_rightSchema, newName);
-                }
-            }
-        }
-
         private void ToolStripMenuItem_copyRS_Click(object sender, EventArgs e)
         {
             CopyNodeText(treeView_rightSchema);
@@ -1240,6 +1231,128 @@ namespace JsonDictionaryCore
         private void ToolStripMenuItem_deleteRS_Click(object sender, EventArgs e)
         {
             DeleteNodeFromSchema(treeView_rightSchema);
+        }
+
+        private void AddItemToSchemaTree(string newNodeName, TreeView tree, int itemType)
+        {
+            if (tree.SelectedNode != null
+                && tree.SelectedNode.Tag == null
+                && tree.SelectedNode.Text == "properties{}")
+            {
+                ISchemaBase newSchemaNode = null;
+                if (itemType == 0)
+                {
+                    newSchemaNode = new SchemaProperty(newNodeName);
+                }
+                if (itemType == 1)
+                {
+                    newSchemaNode = new SchemaObject(newNodeName)
+                    {
+                        Type = new List<string>() { "object" },
+                        Properties = new List<ISchemaBase>()
+                    };
+                }
+
+                if (itemType == 2)
+                {
+                    newSchemaNode = new SchemaArray(newNodeName)
+                    {
+                        Type = new List<string>() { "array" },
+                        Items = new SchemaObject("properties")
+                    };
+                }
+
+                //add node to the schema
+                ISchemaBase currentSchemaNode = null;
+                var currentTreeNode = tree.SelectedNode.Parent;
+
+                if (tree.SelectedNode.Parent?.Tag is SchemaObject schemaObject)
+                {
+                    //check if there is already a node with this name and rename new with counter
+                    var counter = 0;
+                    while (schemaObject.Properties.Any(n => n.Name == newSchemaNode.Name))
+                    {
+                        counter++;
+                        newSchemaNode.Name = newNodeName + counter;
+                    }
+
+                    newSchemaNode.Id = schemaObject.GetReferencePath() + "/properties/" + newSchemaNode.Name;
+                    newSchemaNode.Parent = schemaObject;
+                    schemaObject.Properties.Add(newSchemaNode);
+                    currentSchemaNode = schemaObject;
+                }
+                else return;
+
+
+                var currentNodePath = tree.SelectedNode.Name;
+
+                // refresh tree from current point
+                var newTree = ConvertSchemaObjectToTreeNode(currentSchemaNode);
+                currentTreeNode.Nodes.Clear();
+                foreach (TreeNode node in newTree.Nodes)
+                {
+                    currentTreeNode.Nodes.Add(node);
+                }
+
+                // select the current node again
+                var nodes = tree.Nodes.Find(currentNodePath + "/" + "newNode", true);
+                if (nodes.Any())
+                {
+                    tree.SelectedNode = nodes.First();
+                }
+            }
+        }
+
+        private void contextMenuStrip_leftSchema_Opening(object sender, CancelEventArgs e)
+        {
+            bool enableAdd = treeView_leftSchema.SelectedNode != null
+                             && treeView_leftSchema.SelectedNode.Tag == null
+                             && treeView_leftSchema.SelectedNode.Text == "properties{}";
+
+            contextMenuStrip_leftSchema.Items["toolStripMenuItem_addPropertyLS"].Enabled = enableAdd;
+            contextMenuStrip_leftSchema.Items["toolStripMenuItem_addObjectLS"].Enabled = enableAdd;
+            contextMenuStrip_leftSchema.Items["toolStripMenuItem_addArrayLS"].Enabled = enableAdd;
+        }
+
+        private void ToolStripMenuItem_addPropertyLS_Click(object sender, EventArgs e)
+        {
+            AddItemToSchemaTree("newNode", treeView_leftSchema, 0);
+        }
+
+        private void ToolStripMenuItem_addObjectLS_Click(object sender, EventArgs e)
+        {
+            AddItemToSchemaTree("newNode", treeView_leftSchema, 1);
+        }
+
+        private void ToolStripMenuItem_addArrayLS_Click(object sender, EventArgs e)
+        {
+            AddItemToSchemaTree("newNode", treeView_leftSchema, 2);
+        }
+
+        private void ContextMenuStrip_rightSchema_Opening(object sender, CancelEventArgs e)
+        {
+            bool enableAdd = treeView_rightSchema.SelectedNode != null
+                             && treeView_rightSchema.SelectedNode.Tag == null
+                             && treeView_rightSchema.SelectedNode.Text == "properties{}";
+
+            contextMenuStrip_rightSchema.Items["toolStripMenuItem_addPropertyRS"].Enabled = enableAdd;
+            contextMenuStrip_rightSchema.Items["toolStripMenuItem_addObjectRS"].Enabled = enableAdd;
+            contextMenuStrip_rightSchema.Items["toolStripMenuItem_addArrayRS"].Enabled = enableAdd;
+        }
+
+        private void ToolStripMenuItem_addPropertyRS_Click(object sender, EventArgs e)
+        {
+            AddItemToSchemaTree("newNode", treeView_rightSchema, 0);
+        }
+
+        private void ToolStripMenuItem_addObjectRS_Click(object sender, EventArgs e)
+        {
+            AddItemToSchemaTree("newNode", treeView_rightSchema, 1);
+        }
+
+        private void toolStripMenuItem_addArrayRS_Click(object sender, EventArgs e)
+        {
+            AddItemToSchemaTree("newNode", treeView_rightSchema, 2);
         }
 
         private void SearchNodeNameInTrees(string token)
@@ -1435,6 +1548,68 @@ namespace JsonDictionaryCore
             return result;
         }
 
+        private static ISchemaBase FindNodeByTreePath(string fullPath, ISchemaBase rootSchemaNode)
+        {
+            if (string.IsNullOrEmpty(fullPath) || rootSchemaNode == null)
+                return null;
+
+            var path = fullPath
+                .Replace("{", "")
+                .Replace("}", "")
+                .Replace("[", "")
+                .Replace("]", "");
+
+            var propertyNames = new SchemaPropertyNames();
+            ISchemaBase result = null;
+            var definitionsFlag = false;
+            foreach (var token in path.Split('\\'))
+            {
+                if (token == "#")
+                {
+                    result = rootSchemaNode;
+                }
+                else
+                {
+                    if (result is SchemaObject currentObject)
+                    {
+                        if (token == propertyNames.Properties)
+                            continue;
+
+                        if (token == propertyNames.Definitions)
+                        {
+                            definitionsFlag = true;
+                            continue;
+                        }
+
+                        if (definitionsFlag)
+                        {
+                            result = currentObject.Definitions.FirstOrDefault(n => n.Name == token);
+                            definitionsFlag = false;
+                        }
+                        else
+                        {
+                            result = currentObject.Properties.FirstOrDefault(n => n.Name == token);
+                        }
+                    }
+                    else if (result is SchemaArray currentArray)
+                    {
+                        if (token == propertyNames.Items)
+                            result = currentArray.Items;
+                    }
+                    else if (result is SchemaProperty currentProperty)
+                    {
+                        if (currentProperty.Name == token)
+                            result = currentProperty;
+                    }
+                }
+
+                if (result == null)
+                    return null;
+            }
+
+            return result;
+        }
+
         private static void ClearBackground(TreeNode rootNode)
         {
             rootNode.BackColor = Color.Empty;
@@ -1504,17 +1679,16 @@ namespace JsonDictionaryCore
             }
         }
 
-        private void RenameNode(TreeView tree, string newName)
+        private void RenameSchemaNode(TreeNode treeNode, string newName)
         {
-            if (tree.SelectedNode == null)
+            if (treeNode == null || treeNode.Tag == null)
                 return;
 
             ActivateUiControls(false);
 
-            if (tree.SelectedNode.Tag is ISchemaBase currentNode)
+            if (treeNode.Tag is ISchemaBase currentNode)
             {
                 currentNode.RenameNode(newName);
-                // find all references to this node and fix them
             }
 
             ActivateUiControls(true);
@@ -2853,7 +3027,7 @@ namespace JsonDictionaryCore
             return propertyNode;
         }
 
-        private ISchemaBase GenerateSchemaFromTree(TreeNode treeRoot,
+        private ISchemaBase GenerateSchemaFromSamplesTree(TreeNode treeRoot,
             Dictionary<string, List<JsonProperty>> examples, string nodeName, ISchemaBase parent)
         {
             if (treeRoot == null)
@@ -2876,7 +3050,7 @@ namespace JsonDictionaryCore
 
             foreach (TreeNode node in treeRoot.Nodes)
             {
-                var result = TreeNodeToSchemaObject(node, newSchemaRoot, nodeName + propertyNames.Divider + propertyNames.Properties,
+                var result = ConvertSamplesTreeNodeToSchemaObject(node, newSchemaRoot, nodeName + propertyNames.Divider + propertyNames.Properties,
                     examples);
 
                 if (result != null)
@@ -2886,7 +3060,7 @@ namespace JsonDictionaryCore
             return newSchemaRoot;
         }
 
-        private ISchemaBase TreeNodeToSchemaObject(TreeNode node, ISchemaBase parent, string parentPath,
+        private ISchemaBase ConvertSamplesTreeNodeToSchemaObject(TreeNode node, ISchemaBase parent, string parentPath,
             Dictionary<string, List<JsonProperty>> examples)
         {
             if (node == null)
@@ -2936,7 +3110,7 @@ namespace JsonDictionaryCore
                 var objList = new List<ISchemaBase>();
                 foreach (TreeNode item in node.Nodes)
                 {
-                    var newItemsNode = TreeNodeToSchemaObject(
+                    var newItemsNode = ConvertSamplesTreeNodeToSchemaObject(
                         item,
                         arrayNode,
                         nodePath + propertyNames.Divider + propertyNames.Items + propertyNames.Divider +
@@ -2946,57 +3120,57 @@ namespace JsonDictionaryCore
                         objList.Add(newItemsNode);
                 }
 
-                if (!objList.Any())
+                if (objList.Any())
                 {
-                    var arrayExamples = examples?
-                        .Where(n => n.Key.StartsWith(node.Name))
-                        .ToArray();
-
-                    var enumList = arrayExamples?
-                        .FirstOrDefault()
-                        .Value?
-                        .Where(n => !string.IsNullOrEmpty(n.Value))
-                        .Select(n => n.Value)
-                        .Distinct()
-                        .Select(n => ConvertStringForJson(n))
-                        .OrderBy(n => n)
-                        .ToList();
-
-                    var enumListTypes = arrayExamples?
-                        .FirstOrDefault()
-                        .Value?
-                        .Select(n => n.VariableType)
-                        .Distinct();
-
-                    var typesList = enumListTypes?
-                        .Select(n => n.ToString().ToLower())
-                        .OrderBy(n => n)
-                        .ToList();
-
-                    arrayNode.Items = new SchemaProperty(propertyNames.Items)
+                    arrayNode.Items = new SchemaObject
                     {
                         Id = nodePath + propertyNames.Divider + propertyNames.Items,
-                        Type = typesList,
-                        Enum = enumList,
-                        Description = nodeDescription,
-                        Examples = nodeExamples?
-                            .Where(n => !string.IsNullOrEmpty(n.Value))
-                            .Select(n => n.Value)
-                            .Distinct()
-                            .Select(n => ConvertStringForJson(n))
-                            .OrderBy(n => n)
-                            .ToList()
+                        Name = propertyNames.Items,
+                        Type = new List<string> { ISchemaBase.JsonSchemaTypes.Object },
+                        Properties = objList
                     };
 
                     return arrayNode;
                 }
 
-                arrayNode.Items = new SchemaObject
+                var arrayExamples = examples?
+                        .Where(n => n.Key.StartsWith(node.Name))
+                        .ToArray();
+
+                var enumList = arrayExamples?
+                    .FirstOrDefault()
+                    .Value?
+                    .Where(n => !string.IsNullOrEmpty(n.Value))
+                    .Select(n => n.Value)
+                    .Distinct()
+                    .Select(n => ConvertStringForJson(n))
+                    .OrderBy(n => n)
+                    .ToList();
+
+                var enumListTypes = arrayExamples?
+                    .FirstOrDefault()
+                    .Value?
+                    .Select(n => n.VariableType)
+                    .Distinct();
+
+                var typesList = enumListTypes?
+                    .Select(n => n.ToString().ToLower())
+                    .OrderBy(n => n)
+                    .ToList();
+
+                arrayNode.Items = new SchemaProperty(propertyNames.Items)
                 {
                     Id = nodePath + propertyNames.Divider + propertyNames.Items,
-                    Name = propertyNames.Items,
-                    Type = new List<string> { ISchemaBase.JsonSchemaTypes.Object },
-                    Properties = objList
+                    Type = typesList,
+                    Enum = enumList,
+                    Description = nodeDescription,
+                    Examples = nodeExamples?
+                        .Where(n => !string.IsNullOrEmpty(n.Value))
+                        .Select(n => n.Value)
+                        .Distinct()
+                        .Select(n => ConvertStringForJson(n))
+                        .OrderBy(n => n)
+                        .ToList()
                 };
 
                 return arrayNode;
@@ -3050,7 +3224,7 @@ namespace JsonDictionaryCore
 
                 foreach (TreeNode item in node.Nodes)
                 {
-                    var newProperty = TreeNodeToSchemaObject(item, objectNode, nodePath + "/properties", examples);
+                    var newProperty = ConvertSamplesTreeNodeToSchemaObject(item, objectNode, nodePath + "/properties", examples);
                     if (newProperty != null) objectNode.Properties.Add(newProperty);
                 }
 
@@ -3099,7 +3273,7 @@ namespace JsonDictionaryCore
             return propertyNode;
         }
 
-        private static TreeNode ConvertSchemaNodesToTreeNode(ISchemaBase schema)
+        private static TreeNode ConvertSchemaObjectToTreeNode(ISchemaBase schema)
         {
             if (schema == null) return null;
 
@@ -3115,24 +3289,22 @@ namespace JsonDictionaryCore
                 var propertyNames = new SchemaPropertyNames();
                 node.Text += "{}";
 
-                if (schemaObject.Properties != null && schemaObject.Properties.Count > 0)
+                var newNodeProperties = new TreeNode(propertyNames.Properties + "{}")
                 {
-                    var newNode = new TreeNode(propertyNames.Properties + "{}")
-                    {
-                        Text = propertyNames.Properties + "{}",
-                        Name = schema.Id + propertyNames.Divider + propertyNames.Properties
-                    };
-
+                    Text = propertyNames.Properties + "{}",
+                    Name = schema.Id + propertyNames.Divider + propertyNames.Properties
+                };
+                if (schemaObject.Properties != null)
+                {
                     foreach (var property in schemaObject.Properties)
                     {
-                        var newNodes = ConvertSchemaNodesToTreeNode(property);
+                        var newNodes = ConvertSchemaObjectToTreeNode(property);
 
                         if (newNodes != null)
-                            newNode.Nodes.Add(newNodes);
+                            newNodeProperties.Nodes.Add(newNodes);
                     }
-
-                    node.Nodes.Add(newNode);
                 }
+                node.Nodes.Add(newNodeProperties);
 
                 if (schemaObject.Definitions != null && schemaObject.Definitions.Count > 0)
                 {
@@ -3144,7 +3316,7 @@ namespace JsonDictionaryCore
 
                     foreach (var definition in schemaObject.Definitions)
                     {
-                        var newNodes = ConvertSchemaNodesToTreeNode(definition);
+                        var newNodes = ConvertSchemaObjectToTreeNode(definition);
 
                         if (newNodes != null)
                             newNode.Nodes.Add(newNodes);
@@ -3156,88 +3328,14 @@ namespace JsonDictionaryCore
             else if (schema is SchemaArray schemaArray)
             {
                 node.Text += "[]";
-                var newNodes = ConvertSchemaNodesToTreeNode(schemaArray.Items);
+                var newNodes = ConvertSchemaObjectToTreeNode(schemaArray.Items);
 
-                if (newNodes != null)
-                    node.Nodes.Add(newNodes);
+                node.Nodes.Add(newNodes);
             }
 
             return node;
         }
 
-        private static ISchemaBase FindNodeByTreePath(string fullPath, ISchemaBase rootSchemaNode)
-        {
-            if (string.IsNullOrEmpty(fullPath) || rootSchemaNode == null)
-                return null;
-
-            var path = fullPath
-                .Replace("{", "")
-                .Replace("}", "")
-                .Replace("[", "")
-                .Replace("]", "");
-
-            var propertyNames = new SchemaPropertyNames();
-            ISchemaBase result = null;
-            var definitionsFlag = false;
-            foreach (var token in path.Split('\\'))
-            {
-                if (token == "#")
-                {
-                    result = rootSchemaNode;
-                }
-                else
-                {
-                    if (result is SchemaObject currentObject)
-                    {
-                        if (token == propertyNames.Properties)
-                            continue;
-
-                        if (token == propertyNames.Definitions)
-                        {
-                            definitionsFlag = true;
-                            continue;
-                        }
-
-                        if (definitionsFlag)
-                        {
-                            result = currentObject.Definitions.FirstOrDefault(n => n.Name == token);
-                            definitionsFlag = false;
-                        }
-                        else
-                        {
-                            result = currentObject.Properties.FirstOrDefault(n => n.Name == token);
-                        }
-                    }
-                    else if (result is SchemaArray currentArray)
-                    {
-                        if (token == propertyNames.Items)
-                            result = currentArray.Items;
-                    }
-                    else if (result is SchemaProperty currentProperty)
-                    {
-                        if (currentProperty.Name == token)
-                            result = currentProperty;
-                    }
-                }
-
-                if (result == null)
-                    return null;
-            }
-
-            return result;
-        }
-
         #endregion
-
-        private void ToolStripMenuItem_addLS_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void ToolStripMenuItem_addRS_Click(object sender, EventArgs e)
-        {
-
-        }
-
     }
 }
