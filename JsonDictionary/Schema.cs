@@ -1005,27 +1005,18 @@ namespace JsonDictionaryCore
 
         public bool Compare(ISchemaBase newProperty, bool baseOnly = false)
         {
-            var notSame = false;
             if (newProperty is SchemaProperty prop)
             {
                 if (Name != prop.Name)
-                {
-                    notSame = true;
-                }
+                    return false;
                 else if (Id != prop.Id)
-                {
-                    notSame = true;
-                }
+                    return false;
                 else if (!baseOnly)
                 {
                     if (Description != prop.Description)
-                    {
-                        notSame = true;
-                    }
+                        return false;
                     else if (Reference != prop.Reference)
-                    {
-                        notSame = true;
-                    }
+                        return false;
                     else
                     {
                         if (Type.Count == prop.Type.Count)
@@ -1033,41 +1024,29 @@ namespace JsonDictionaryCore
                             foreach (var t1 in Type)
                             {
                                 if (!prop.Type.Contains(t1))
-                                {
-                                    notSame = true;
-                                    break;
-                                }
+                                    return false;
                             }
                         }
                         else
-                        {
-                            notSame = true;
-                        }
+                            return false;
 
-                        if (!notSame && Examples.Count == prop.Examples.Count)
+                        if (Examples.Count == prop.Examples.Count)
                         {
                             foreach (var t1 in Examples)
                             {
                                 if (!prop.Examples.Contains(t1))
-                                {
-                                    notSame = true;
-                                    break;
-                                }
+                                    return false;
                             }
                         }
                         else
-                        {
-                            notSame = true;
-                        }
+                            return false;
                     }
                 }
             }
             else
-            {
-                notSame = true;
-            }
+                return false;
 
-            return notSame;
+            return true;
         }
 
         public string ToJson(bool noSamples = true)
@@ -1368,27 +1347,18 @@ namespace JsonDictionaryCore
 
         public bool Compare(ISchemaBase newProperty, bool baseOnly = false)
         {
-            var notSame = false;
             if (newProperty is SchemaProperty prop)
             {
                 if (Name != prop.Name)
-                {
-                    notSame = true;
-                }
+                    return false;
                 else if (Id != prop.Id)
-                {
-                    notSame = true;
-                }
+                    return false;
                 else if (!baseOnly)
                 {
                     if (Description != prop.Description)
-                    {
-                        notSame = true;
-                    }
+                        return false;
                     else if (Reference != prop.Reference)
-                    {
-                        notSame = true;
-                    }
+                        return false;
                     else
                     {
                         if (Type.Count == prop.Type.Count)
@@ -1396,68 +1366,44 @@ namespace JsonDictionaryCore
                             foreach (var t1 in Type)
                             {
                                 if (!prop.Type.Contains(t1))
-                                {
-                                    notSame = true;
-                                    break;
-                                }
+                                    return false;
                             }
                         }
                         else
-                        {
-                            notSame = true;
-                        }
+                            return false;
 
-                        if (!notSame && Examples.Count == prop.Examples.Count)
+                        if (Examples.Count == prop.Examples.Count)
                         {
                             foreach (var t1 in Examples)
                             {
                                 if (!prop.Examples.Contains(t1))
-                                {
-                                    notSame = true;
-                                    break;
-                                }
+                                    return false;
                             }
                         }
                         else
-                        {
-                            notSame = true;
-                        }
+                            return false;
                     }
 
-                    if (!notSame)
+                    if (Default != prop.Default)
+                        return false;
+                    else if (Pattern != prop.Pattern)
+                        return false;
+                    else if (Enum.Count == prop.Enum.Count)
                     {
-                        if (Default != prop.Default)
+                        foreach (var t1 in Enum)
                         {
-                            notSame = true;
-                        }
-                        else if (Pattern != prop.Pattern)
-                        {
-                            notSame = true;
-                        }
-                        else if (Enum.Count == prop.Enum.Count)
-                        {
-                            foreach (var t1 in Enum)
-                            {
-                                if (!prop.Enum.Contains(t1))
-                                {
-                                    notSame = true;
-                                    break;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            notSame = true;
+                            if (!prop.Enum.Contains(t1))
+                                return false;
                         }
                     }
+                    else
+                        return false;
                 }
             }
             else
-            {
-                notSame = true;
-            }
+                return false;
 
-            return notSame;
+            return true;
         }
 
         public string ToJson(bool noSamples = true)
@@ -1870,27 +1816,18 @@ namespace JsonDictionaryCore
         // TODO: redesign
         public bool Compare(ISchemaBase newProperty, bool baseOnly = false)
         {
-            var notSame = false;
             if (newProperty is SchemaObject prop)
             {
                 if (Name != prop.Name)
-                {
-                    notSame = true;
-                }
+                    return false;
                 else if (Id != prop.Id)
-                {
-                    notSame = true;
-                }
+                    return false;
                 else if (!baseOnly)
                 {
                     if (Description != prop.Description)
-                    {
-                        notSame = true;
-                    }
+                        return false;
                     else if (Reference != prop.Reference)
-                    {
-                        notSame = true;
-                    }
+                        return false;
                     else
                     {
                         if (Type.Count == prop.Type.Count)
@@ -1898,82 +1835,54 @@ namespace JsonDictionaryCore
                             foreach (var t1 in Type)
                             {
                                 if (!prop.Type.Contains(t1))
-                                {
-                                    notSame = true;
-                                    break;
-                                }
+                                    return false;
                             }
                         }
                         else
-                        {
-                            notSame = true;
-                        }
+                            return false;
 
-                        if (!notSame && Examples.Count == prop.Examples.Count)
+                        if (Examples.Count == prop.Examples.Count)
                         {
                             foreach (var t1 in Examples)
                             {
                                 if (!prop.Examples.Contains(t1))
-                                {
-                                    notSame = true;
-                                    break;
-                                }
+                                    return false;
                             }
                         }
                         else
-                        {
-                            notSame = true;
-                        }
+                            return false;
                     }
 
-                    if (!notSame)
+                    if (AdditionalProperties != prop.AdditionalProperties)
+                        return false;
+                    else if (Required.Count == prop.Required.Count)
                     {
-                        if (AdditionalProperties != prop.AdditionalProperties)
+                        foreach (var t1 in Required)
                         {
-                            notSame = true;
+                            if (!prop.Required.Contains(t1))
+                                return false;
                         }
-                        else if (Required.Count == prop.Required.Count)
-                        {
-                            foreach (var t1 in Required)
-                            {
-                                if (!prop.Required.Contains(t1))
-                                {
-                                    notSame = true;
-                                    break;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            notSame = true;
-                        }
+                    }
+                    else
+                        return false;
 
-                        if (!notSame && Properties.Count == prop.Properties.Count)
-                            foreach (var t1 in Properties)
-                            {
-                                foreach (var t2 in prop.Properties)
-                                {
-                                    if (t2.Name == t1.Name && !t1.Compare(t2))
-                                    {
-                                        notSame = true;
-                                        break;
-                                    }
-                                }
+                    if (Properties.Count != prop.Properties.Count)
+                        return false;
 
-                                if (notSame)
-                                    break;
-                            }
-                        else
-                            notSame = true;
+                    foreach (var t1 in Properties)
+                    {
+                        foreach (var t2 in prop.Properties)
+                        {
+                            if (t2.Name == t1.Name && !t1.Compare(t2))
+                                return false;
+                        }
                     }
                 }
             }
             else
-            {
-                notSame = true;
-            }
+                return false;
 
-            return notSame;
+            return true;
         }
 
         public string ToJson(bool noSamples = true)
@@ -2327,29 +2236,21 @@ namespace JsonDictionaryCore
 
         public bool Compare(ISchemaBase newProperty, bool baseOnly = false)
         {
-            var notSame = false;
-            if (newProperty == null) return false;
+            if (newProperty == null)
+                return false;
 
             if (newProperty is SchemaArray prop)
             {
                 if (Name != prop.Name)
-                {
-                    notSame = true;
-                }
+                    return false;
                 else if (Id != prop.Id)
-                {
-                    notSame = true;
-                }
+                    return false;
                 else if (!baseOnly)
                 {
                     if (Description != prop.Description)
-                    {
-                        notSame = true;
-                    }
+                        return false;
                     else if (Reference != prop.Reference)
-                    {
-                        notSame = true;
-                    }
+                        return false;
                     else
                     {
                         if (Type.Count == prop.Type.Count)
@@ -2357,50 +2258,34 @@ namespace JsonDictionaryCore
                             foreach (var t1 in Type)
                             {
                                 if (!prop.Type.Contains(t1))
-                                {
-                                    notSame = true;
-                                    break;
-                                }
+                                    return false;
                             }
                         }
                         else
-                        {
-                            notSame = true;
-                        }
+                            return false;
 
-                        if (!notSame)
+                        if (Examples.Count == prop.Examples.Count)
                         {
-                            if (Examples.Count == prop.Examples.Count)
+                            foreach (var t1 in Examples)
                             {
-                                foreach (var t1 in Examples)
-                                {
-                                    if (!prop.Examples.Contains(t1))
-                                    {
-                                        notSame = true;
-                                        break;
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                notSame = true;
+                                if (!prop.Examples.Contains(t1))
+                                    return false;
                             }
                         }
+                        else
+                            return false;
                     }
 
-                    if (!notSame)
-                    {
-                        if (UniqueItemsOnly != prop.UniqueItemsOnly)
-                            notSame = true;
-                        else if (Items == null && prop.Items != null || Items != null && prop.Items == null)
-                            notSame = true;
-                        else if (Items != null && prop.Items != null && !Items.Compare(prop.Items))
-                            notSame = true;
-                    }
+                    if (UniqueItemsOnly != prop.UniqueItemsOnly)
+                        return false;
+                    else if (Items == null && prop.Items != null || Items != null && prop.Items == null)
+                        return false;
+                    else if (Items != null && prop.Items != null && !Items.Compare(prop.Items))
+                        return false;
                 }
             }
 
-            return notSame;
+            return true;
         }
 
         public string ToJson(bool noSamples = true)

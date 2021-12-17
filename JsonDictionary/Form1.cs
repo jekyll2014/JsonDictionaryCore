@@ -436,6 +436,11 @@ namespace JsonDictionaryCore
             DeleteNode();
         }
 
+        private void ToolStripMenuItem_generateSchema_Click(object sender, EventArgs e)
+        {
+            Button_generateSchema_Click(this, EventArgs.Empty);
+        }
+
         private void ShowSamples()
         {
             if (treeView_examples.SelectedNode == null)
@@ -1179,23 +1184,37 @@ namespace JsonDictionaryCore
 
         private void TreeView_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
         {
-            var newName = e.Label;
-
-            if (newName == null)
+            if (e.Label == null)
                 e.CancelEdit = true;
 
             try
             {
-                newName = newName?.Trim();
+                var newName = e.Label.Trim();
+
                 if (string.IsNullOrEmpty(newName))
                     e.CancelEdit = true;
                 else if (newName != e.Node.Text)
+                {
+                    if (newName.EndsWith("{}") || newName.EndsWith("[]"))
+                        newName = newName[..^2];
+
                     RenameSchemaNode(e.Node, newName);
+                }
+
+                if (e.Node.Tag is SchemaObject)
+                {
+                    e.Node.Text = newName + "{}";
+                }
+                else if (e.Node.Tag is SchemaArray)
+                {
+                    e.Node.Text = newName + "[]";
+                }
             }
             catch
             {
-                e.CancelEdit = true;
             }
+
+            e.CancelEdit = true;
         }
 
         private void ToolStripMenuItem_copyLS_Click(object sender, EventArgs e)
@@ -1692,8 +1711,13 @@ namespace JsonDictionaryCore
 
             if (treeNode.Tag is ISchemaBase currentNode)
             {
+                var oldPath = currentNode.GetReferencePath();
+
                 currentNode.RenameNode(newName);
-            }
+
+                if (currentNode.Id == oldPath)
+                    currentNode.Id = currentNode.GetReferencePath();
+            }           
 
             ActivateUiControls(true);
             _searchListPositionLeft = -1;
@@ -3067,7 +3091,9 @@ namespace JsonDictionaryCore
             return newSchemaRoot;
         }
 
-        private ISchemaBase ConvertSamplesTreeNodeToSchemaObject(TreeNode node, ISchemaBase parent, string parentPath,
+        private ISchemaBase ConvertSamplesTreeNodeToSchemaObject(TreeNode node,
+            ISchemaBase parent,
+            string parentPath,
             Dictionary<string, List<JsonProperty>> examples)
         {
             if (node == null)
@@ -3076,7 +3102,6 @@ namespace JsonDictionaryCore
             var propertyNames = new SchemaPropertyNames();
 
             var propertyName = node.Text.TrimEnd(']', '}').TrimEnd('[', '{');
-            var nodePath = parentPath + propertyNames.Divider + propertyName;
 
             var nodeDescription = "";
 
@@ -3098,7 +3123,6 @@ namespace JsonDictionaryCore
                 {
                     Parent = parent,
                     Type = new List<string> { nodeType.ToString().ToLower() },
-                    Id = nodePath,
                     Description = nodeDescription,
                     Examples = nodeExamples?
                         .Where(n => (n.ObjectType == JsonPropertyTypes.Property
@@ -3112,6 +3136,7 @@ namespace JsonDictionaryCore
                         .ToList(),
                     UniqueItemsOnly = true
                 };
+                arrayNode.Id = arrayNode.GetReferencePath();
 
                 // check all items in array and create some average object
                 var objList = new List<ISchemaBase>();
@@ -3120,7 +3145,7 @@ namespace JsonDictionaryCore
                     var newItemsNode = ConvertSamplesTreeNodeToSchemaObject(
                         item,
                         arrayNode,
-                        nodePath + propertyNames.Divider + propertyNames.Items + propertyNames.Divider +
+                        arrayNode.GetReferencePath() + propertyNames.Divider + propertyNames.Items + propertyNames.Divider +
                         propertyNames.Properties, examples);
 
                     if (newItemsNode != null)
@@ -3131,11 +3156,12 @@ namespace JsonDictionaryCore
                 {
                     arrayNode.Items = new SchemaObject
                     {
-                        Id = nodePath + propertyNames.Divider + propertyNames.Items,
+                        //Id = nodePath + propertyNames.Divider + propertyNames.Items,
                         Name = propertyNames.Items,
                         Type = new List<string> { ISchemaBase.JsonSchemaTypes.Object },
                         Properties = objList
                     };
+                    arrayNode.Items.Id = arrayNode.Items.GetReferencePath();
 
                     return arrayNode;
                 }
@@ -3167,7 +3193,7 @@ namespace JsonDictionaryCore
 
                 arrayNode.Items = new SchemaProperty(propertyNames.Items)
                 {
-                    Id = nodePath + propertyNames.Divider + propertyNames.Items,
+                    //Id = nodePath + propertyNames.Divider + propertyNames.Items,
                     Type = typesList,
                     Enum = enumList,
                     Description = nodeDescription,
@@ -3179,6 +3205,7 @@ namespace JsonDictionaryCore
                         .OrderBy(n => n)
                         .ToList()
                 };
+                arrayNode.Items.Id = arrayNode.Items.GetReferencePath();
 
                 return arrayNode;
             }
@@ -3214,7 +3241,7 @@ namespace JsonDictionaryCore
                     Parent = parent,
                     Name = propertyName,
                     Type = nodeVariableTypes,
-                    Id = nodePath,
+                    //Id = nodePath,
                     Description = nodeDescription,
                     Examples = nodeExamples?
                         .Where(n => (n.ObjectType == JsonPropertyTypes.Property
@@ -3228,10 +3255,11 @@ namespace JsonDictionaryCore
                         .ToList(),
                     AdditionalProperties = false
                 };
+                objectNode.Id = objectNode.GetReferencePath();
 
                 foreach (TreeNode item in node.Nodes)
                 {
-                    var newProperty = ConvertSamplesTreeNodeToSchemaObject(item, objectNode, nodePath + "/properties", examples);
+                    var newProperty = ConvertSamplesTreeNodeToSchemaObject(item, objectNode, objectNode.GetReferencePath() + "/properties", examples);
                     if (newProperty != null) objectNode.Properties.Add(newProperty);
                 }
 
@@ -3242,7 +3270,7 @@ namespace JsonDictionaryCore
             {
                 Parent = parent,
                 Type = nodeVariableTypes,
-                Id = nodePath,
+                //Id = nodePath,
                 Description = nodeDescription,
                 Examples = nodeExamples?
                     .Where(n => (n.ObjectType == JsonPropertyTypes.Property
@@ -3255,6 +3283,7 @@ namespace JsonDictionaryCore
                     .OrderBy(n => n)
                     .ToList()
             };
+            propertyNode.Id = propertyNode.GetReferencePath();
 
             // if all property types are "string" create Enum
             if (nodeVariableTypes.Any(n => n == ISchemaBase.JsonSchemaTypes.String))

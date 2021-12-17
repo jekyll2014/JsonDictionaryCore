@@ -105,11 +105,6 @@
             this.button_saveRightSchema = new System.Windows.Forms.Button();
             this.button_loadSchema = new System.Windows.Forms.Button();
             this.treeView_rightSchema = new System.Windows.Forms.TreeView();
-            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
-            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
-            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.contextMenuStrip_rightSchema = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItem_unfoldRS = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_foldRS = new System.Windows.Forms.ToolStripMenuItem();
@@ -119,6 +114,12 @@
             this.toolStripMenuItem_addArrayRS = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_renameRS = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem_deleteRS = new System.Windows.Forms.ToolStripMenuItem();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripMenuItem_generateSchema = new System.Windows.Forms.ToolStripMenuItem();
             this.tabControl1.SuspendLayout();
             this.tabPage_DataCollection.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer_buttons)).BeginInit();
@@ -154,8 +155,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer_schemaRight)).BeginInit();
             this.splitContainer_schemaRight.Panel1.SuspendLayout();
             this.splitContainer_schemaRight.SuspendLayout();
-            this.statusStrip1.SuspendLayout();
             this.contextMenuStrip_rightSchema.SuspendLayout();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl1
@@ -396,9 +397,10 @@
             this.toolStripMenuItem_unfoldAll,
             this.toolStripMenuItem_foldAll,
             this.toolStripMenuItem_treeCopy,
-            this.toolStripMenuItem_treeDelete});
+            this.toolStripMenuItem_treeDelete,
+            this.toolStripMenuItem_generateSchema});
             this.contextMenuStrip_tree.Name = "contextMenuStrip_tree";
-            this.contextMenuStrip_tree.Size = new System.Drawing.Size(190, 114);
+            this.contextMenuStrip_tree.Size = new System.Drawing.Size(190, 158);
             // 
             // toolStripMenuItem_treeShow
             // 
@@ -717,7 +719,7 @@
             // 
             this.label_edit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.label_edit.AutoSize = true;
-            this.label_edit.Location = new System.Drawing.Point(542, 43);
+            this.label_edit.Location = new System.Drawing.Point(542, 42);
             this.label_edit.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label_edit.Name = "label_edit";
             this.label_edit.Size = new System.Drawing.Size(111, 15);
@@ -728,7 +730,7 @@
             // 
             this.label_descSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.label_descSave.AutoSize = true;
-            this.label_descSave.Location = new System.Drawing.Point(478, 43);
+            this.label_descSave.Location = new System.Drawing.Point(478, 42);
             this.label_descSave.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label_descSave.Name = "label_descSave";
             this.label_descSave.Size = new System.Drawing.Size(175, 15);
@@ -1088,37 +1090,6 @@
             this.treeView_rightSchema.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.TreeView_NodeMouseClick);
             this.treeView_rightSchema.Enter += new System.EventHandler(this.TreeView_rightSchema_Enter);
             // 
-            // openFileDialog1
-            // 
-            this.openFileDialog1.FileName = "openFileDialog1";
-            this.openFileDialog1.FileOk += new System.ComponentModel.CancelEventHandler(this.OpenFileDialog1_FileOk);
-            // 
-            // folderBrowserDialog1
-            // 
-            this.folderBrowserDialog1.Description = "Select root folder";
-            this.folderBrowserDialog1.RootFolder = System.Environment.SpecialFolder.MyComputer;
-            this.folderBrowserDialog1.ShowNewFolderButton = false;
-            // 
-            // saveFileDialog1
-            // 
-            this.saveFileDialog1.FileOk += new System.ComponentModel.CancelEventHandler(this.SaveFileDialog1_FileOk);
-            // 
-            // statusStrip1
-            // 
-            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripStatusLabel1});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 625);
-            this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Padding = new System.Windows.Forms.Padding(1, 0, 16, 0);
-            this.statusStrip1.Size = new System.Drawing.Size(915, 22);
-            this.statusStrip1.TabIndex = 2;
-            this.statusStrip1.Text = "statusStrip1";
-            // 
-            // toolStripStatusLabel1
-            // 
-            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(0, 17);
-            // 
             // contextMenuStrip_rightSchema
             // 
             this.contextMenuStrip_rightSchema.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -1198,6 +1169,44 @@
             this.toolStripMenuItem_deleteRS.Text = "Delete";
             this.toolStripMenuItem_deleteRS.Click += new System.EventHandler(this.ToolStripMenuItem_deleteRS_Click);
             // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.FileName = "openFileDialog1";
+            this.openFileDialog1.FileOk += new System.ComponentModel.CancelEventHandler(this.OpenFileDialog1_FileOk);
+            // 
+            // folderBrowserDialog1
+            // 
+            this.folderBrowserDialog1.Description = "Select root folder";
+            this.folderBrowserDialog1.RootFolder = System.Environment.SpecialFolder.MyComputer;
+            this.folderBrowserDialog1.ShowNewFolderButton = false;
+            // 
+            // saveFileDialog1
+            // 
+            this.saveFileDialog1.FileOk += new System.ComponentModel.CancelEventHandler(this.SaveFileDialog1_FileOk);
+            // 
+            // statusStrip1
+            // 
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripStatusLabel1});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 625);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Padding = new System.Windows.Forms.Padding(1, 0, 16, 0);
+            this.statusStrip1.Size = new System.Drawing.Size(915, 22);
+            this.statusStrip1.TabIndex = 2;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // toolStripStatusLabel1
+            // 
+            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(0, 17);
+            // 
+            // toolStripMenuItem_generateSchema
+            // 
+            this.toolStripMenuItem_generateSchema.Name = "toolStripMenuItem_generateSchema";
+            this.toolStripMenuItem_generateSchema.Size = new System.Drawing.Size(189, 22);
+            this.toolStripMenuItem_generateSchema.Text = "Generate schema";
+            this.toolStripMenuItem_generateSchema.Click += new System.EventHandler(this.ToolStripMenuItem_generateSchema_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -1255,9 +1264,9 @@
             this.splitContainer_schemaRight.Panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer_schemaRight)).EndInit();
             this.splitContainer_schemaRight.ResumeLayout(false);
+            this.contextMenuStrip_rightSchema.ResumeLayout(false);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
-            this.contextMenuStrip_rightSchema.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1352,6 +1361,7 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_addArrayLS;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_addObjectRS;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_addArrayRS;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem_generateSchema;
     }
 }
 
