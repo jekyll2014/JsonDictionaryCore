@@ -1233,7 +1233,7 @@ namespace JsonDictionaryCore
             DeleteNodeFromSchema(treeView_rightSchema);
         }
 
-        private void AddItemToSchemaTree(string newNodeName, TreeView tree, int itemType)
+        private static void AddItemToSchemaTree(string newNodeName, TreeView tree, int itemType)
         {
             if (tree.SelectedNode != null
                 && tree.SelectedNode.Tag == null
@@ -1303,7 +1303,7 @@ namespace JsonDictionaryCore
             }
         }
 
-        private void contextMenuStrip_leftSchema_Opening(object sender, CancelEventArgs e)
+        private void ContextMenuStrip_leftSchema_Opening(object sender, CancelEventArgs e)
         {
             bool enableAdd = treeView_leftSchema.SelectedNode != null
                              && treeView_leftSchema.SelectedNode.Tag == null
@@ -1312,6 +1312,8 @@ namespace JsonDictionaryCore
             contextMenuStrip_leftSchema.Items["toolStripMenuItem_addPropertyLS"].Enabled = enableAdd;
             contextMenuStrip_leftSchema.Items["toolStripMenuItem_addObjectLS"].Enabled = enableAdd;
             contextMenuStrip_leftSchema.Items["toolStripMenuItem_addArrayLS"].Enabled = enableAdd;
+            contextMenuStrip_leftSchema.Items["toolStripMenuItem_renameLS"].Enabled = !enableAdd;
+            contextMenuStrip_leftSchema.Items["toolStripMenuItem_deleteLS"].Enabled = !enableAdd;
         }
 
         private void ToolStripMenuItem_addPropertyLS_Click(object sender, EventArgs e)
@@ -1338,6 +1340,8 @@ namespace JsonDictionaryCore
             contextMenuStrip_rightSchema.Items["toolStripMenuItem_addPropertyRS"].Enabled = enableAdd;
             contextMenuStrip_rightSchema.Items["toolStripMenuItem_addObjectRS"].Enabled = enableAdd;
             contextMenuStrip_rightSchema.Items["toolStripMenuItem_addArrayRS"].Enabled = enableAdd;
+            contextMenuStrip_leftSchema.Items["toolStripMenuItem_renameRS"].Enabled = !enableAdd;
+            contextMenuStrip_leftSchema.Items["toolStripMenuItem_deleteRS"].Enabled = !enableAdd;
         }
 
         private void ToolStripMenuItem_addPropertyRS_Click(object sender, EventArgs e)
@@ -1350,7 +1354,7 @@ namespace JsonDictionaryCore
             AddItemToSchemaTree("newNode", treeView_rightSchema, 1);
         }
 
-        private void toolStripMenuItem_addArrayRS_Click(object sender, EventArgs e)
+        private void ToolStripMenuItem_addArrayRS_Click(object sender, EventArgs e)
         {
             AddItemToSchemaTree("newNode", treeView_rightSchema, 2);
         }
@@ -2176,23 +2180,26 @@ namespace JsonDictionaryCore
             tabControl1.SelectedTab = tabControl1.TabPages[1];
             ActivateUiControls(true, false);
 
-            try
+            if (rootNodeExamples.Nodes.Count > 0)
             {
-                var t = Task.Run(() =>
-                    {
-                        exampleLinkCollection = LoadBinary<Dictionary<string, List<JsonProperty>>>(examplesFile);
-                    }
-                );
-                await Task.WhenAll(t).ConfigureAwait(true);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"File read exception [{longFileName}]: {ex.Message}");
-                toolStripStatusLabel1.Text = "Failed to load database";
-            }
+                try
+                {
+                    var t = Task.Run(() =>
+                        {
+                            exampleLinkCollection = LoadBinary<Dictionary<string, List<JsonProperty>>>(examplesFile);
+                        }
+                    );
+                    await Task.WhenAll(t).ConfigureAwait(true);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"File read exception [{longFileName}]: {ex.Message}");
+                    toolStripStatusLabel1.Text = "Failed to load database";
+                }
 
-            if (exampleLinkCollection != null)
-                _exampleLinkCollection = exampleLinkCollection;
+                if (exampleLinkCollection != null)
+                    _exampleLinkCollection = exampleLinkCollection;
+            }
 
             toolStripStatusLabel1.Text = "";
 

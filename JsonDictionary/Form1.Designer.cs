@@ -961,7 +961,7 @@
             this.toolStripMenuItem_deleteLS});
             this.contextMenuStrip_leftSchema.Name = "contextMenuStrip_schema";
             this.contextMenuStrip_leftSchema.Size = new System.Drawing.Size(220, 180);
-            this.contextMenuStrip_leftSchema.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip_leftSchema_Opening);
+            this.contextMenuStrip_leftSchema.Opening += new System.ComponentModel.CancelEventHandler(this.ContextMenuStrip_leftSchema_Opening);
             // 
             // toolStripMenuItem_unfoldLS
             // 
@@ -1180,7 +1180,7 @@
             this.toolStripMenuItem_addArrayRS.Name = "toolStripMenuItem_addArrayRS";
             this.toolStripMenuItem_addArrayRS.Size = new System.Drawing.Size(225, 22);
             this.toolStripMenuItem_addArrayRS.Text = "Add array";
-            this.toolStripMenuItem_addArrayRS.Click += new System.EventHandler(this.toolStripMenuItem_addArrayRS_Click);
+            this.toolStripMenuItem_addArrayRS.Click += new System.EventHandler(this.ToolStripMenuItem_addArrayRS_Click);
             // 
             // toolStripMenuItem_renameRS
             // 
