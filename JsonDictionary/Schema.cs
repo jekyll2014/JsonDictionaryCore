@@ -2029,10 +2029,10 @@ namespace JsonDictionaryCore
             if (!string.IsNullOrEmpty(referencePath)) referencePath += "/";
             referencePath += Name;
 
-            if (child != null)
+            /*if (child != null)
             {
                 referencePath += "/items/properties";
-            }
+            }*/
 
             return referencePath;
         }
