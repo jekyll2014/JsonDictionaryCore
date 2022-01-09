@@ -627,7 +627,7 @@ namespace JsonDictionaryCore
 
                 var jsonSample = dataGridView_examples.Rows[rowNumber].Cells[1]?.Value?.ToString();
 
-                if (jsonPaths?.Length > 0)
+                if (jsonPaths != null && jsonPaths?.Length > 0)
                 {
                     var jsonPath = _appConfig.ConfigStorage.JsonPathDiv + jsonPaths[0];
                     var samplesCollection = _exampleLinkCollection?.Where(n => n.Key == jsonPath);
@@ -719,7 +719,7 @@ namespace JsonDictionaryCore
             var fileName = listBox_fileList.Items[fileNumber].ToString();
             var jsonPath = "";
 
-            if (jsonPaths?.Length >= fileNumber)
+            if (jsonPaths != null && jsonPaths?.Length >= fileNumber)
                 jsonPath = jsonPaths[fileNumber];
 
             _exampleLinkCollection[jsonPath].RemoveAll(n => n.FullFileName == fileName);
@@ -774,10 +774,12 @@ namespace JsonDictionaryCore
             _rootNodeRightSchema = ConvertSchemaObjectToTreeNode(_rightSchema);
             treeView_rightSchema.Nodes.Clear();
             treeView_rightSchema.Nodes.Add(_rootNodeRightSchema);
-            treeView_rightSchema.Sort();
 
-            if (treeView_rightSchema != null && treeView_rightSchema.Nodes != null && treeView_rightSchema.Nodes.Count > 0)
+            if (treeView_rightSchema != null && treeView_rightSchema.Nodes.Count > 0)
+            {
+                treeView_rightSchema.Sort();
                 treeView_rightSchema.Nodes[0].Expand();
+            }
 
             if (_rightDataPanel != null) splitContainer_schemaRight.Panel2.Controls.Remove(_rightDataPanel);
 
@@ -1321,9 +1323,12 @@ namespace JsonDictionaryCore
                 // refresh tree from current point
                 var newTree = ConvertSchemaObjectToTreeNode(currentSchemaNode);
                 currentTreeNode.Nodes.Clear();
-                foreach (TreeNode node in newTree.Nodes)
+                if (newTree != null && newTree.Nodes != null)
                 {
-                    currentTreeNode.Nodes.Add(node);
+                    foreach (TreeNode node in newTree.Nodes)
+                    {
+                        currentTreeNode.Nodes.Add(node);
+                    }
                 }
 
                 // select the current node again
@@ -1567,10 +1572,10 @@ namespace JsonDictionaryCore
             if (node == null || node.Nodes == null)
                 return result;
 
-            foreach(TreeNode subNode in node.Nodes)
+            foreach (TreeNode subNode in node.Nodes)
             {
                 result.Add(subNode.Name);
-                result.AddRange( GetNodeNamesRecursive(subNode));
+                result.AddRange(GetNodeNamesRecursive(subNode));
             }
 
             return result;
@@ -2236,7 +2241,7 @@ namespace JsonDictionaryCore
             tabControl1.SelectedTab = tabControl1.TabPages[1];
             ActivateUiControls(true, false);
 
-            if (rootNodeExamples.Nodes.Count > 0)
+            if (_rootNodeExamples.Nodes.Count > 0)
             {
                 try
                 {
@@ -2621,7 +2626,7 @@ namespace JsonDictionaryCore
             var fileNumber = listBox_fileList.SelectedIndex;
             var fileName = listBox_fileList.Items[fileNumber].ToString();
 
-            if (jsonPaths?.Length >= fileNumber)
+            if (jsonPaths != null && jsonPaths?.Length >= fileNumber)
             {
                 var jsonPath = jsonPaths[fileNumber];
                 ShowPreviewEditor(fileName, jsonPath, jsonSample, standAloneEditor);
@@ -3352,7 +3357,7 @@ namespace JsonDictionaryCore
 
             var propertyNames = new SchemaPropertyNames();
             if (!string.IsNullOrEmpty(parentPath) && parentPath.EndsWith(propertyNames.Divider))
-                parentPath.TrimEnd(propertyNames.Divider);
+                parentPath = parentPath.TrimEnd(propertyNames.Divider);
 
             var currentNodePath = string.IsNullOrEmpty(parentPath) ? schema.Name : parentPath + propertyNames.Divider + schema.Name;
             var node = new TreeNode(schema.Name)
@@ -3407,7 +3412,7 @@ namespace JsonDictionaryCore
                 node.Text += "[]";
                 var newNodes = ConvertSchemaObjectToTreeNode(schemaArray.Items, node.Name);
 
-                if (newNodes!=null) 
+                if (newNodes != null)
                     node.Nodes.Add(newNodes);
             }
 
