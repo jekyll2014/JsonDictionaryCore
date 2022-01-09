@@ -1275,7 +1275,7 @@ namespace JsonDictionaryCore
                 {
                     newSchemaNode = new SchemaProperty(newNodeName);
                 }
-                if (itemType == 1)
+                else if (itemType == 1)
                 {
                     newSchemaNode = new SchemaObject(newNodeName)
                     {
@@ -1283,8 +1283,7 @@ namespace JsonDictionaryCore
                         Properties = new List<ISchemaBase>()
                     };
                 }
-
-                if (itemType == 2)
+                else if (itemType == 2)
                 {
                     newSchemaNode = new SchemaArray(newNodeName)
                     {
@@ -1292,9 +1291,11 @@ namespace JsonDictionaryCore
                         Items = new SchemaObject("properties") { Parent = newSchemaNode }
                     };
                 }
+                else
+                    return;
 
                 //add node to the schema
-                ISchemaBase currentSchemaNode = null;
+                ISchemaBase currentSchemaNode;
                 var currentTreeNode = tree.SelectedNode.Parent;
 
                 if (tree.SelectedNode.Parent?.Tag is SchemaObject schemaObject)
@@ -3406,7 +3407,8 @@ namespace JsonDictionaryCore
                 node.Text += "[]";
                 var newNodes = ConvertSchemaObjectToTreeNode(schemaArray.Items, node.Name);
 
-                node.Nodes.Add(newNodes);
+                if (newNodes!=null) 
+                    node.Nodes.Add(newNodes);
             }
 
             return node;
