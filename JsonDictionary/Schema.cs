@@ -668,7 +668,7 @@ namespace JsonDictionaryCore
             if (rootCollection == null) return null;
 
             // select properties describing current node from complete collection
-            var properties = rootCollection.Where(n => n.ParentPath == startPath);
+            var properties = rootCollection.Where(n => n.ParentPath == startPath).ToArray();
 
             if (!properties.Any())
                 return null;
@@ -691,7 +691,7 @@ namespace JsonDictionaryCore
             var currentNodeType = properties.FirstOrDefault(n => n.Path == typePropertyPathSample) ??
                                   new ParsedProperty();
 
-            if (currentNodeType.JsonPropertyType == JsonPropertyTypes.Array)
+            if (currentNodeType.JsonPropertyType == JsonPropertyType.Array)
             {
                 var childNodesTypes = rootCollection
                     .Where(n => n.ParentPath == typePropertyPathSample)

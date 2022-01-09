@@ -6,8 +6,8 @@
         public int EndPosition = -1;
         public string Name = "";
         public string Value = "";
-        public JsonPropertyTypes JsonPropertyType = JsonPropertyTypes.Unknown;
-        public JsonValueTypes ValueType;
+        public JsonPropertyType JsonPropertyType = JsonPropertyType.Unknown;
+        public JsonValueType ValueType;
         public char PathDivider = '.';
         private string _path = "";
         public string Path

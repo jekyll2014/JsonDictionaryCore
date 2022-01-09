@@ -16,8 +16,8 @@ namespace JsonDictionaryCore
         [DataMember] public string FullFileName; // original path + file name
         [DataMember] public string Name; // property name
         [DataMember] public string Value; // property value
-        [DataMember] public JsonValueTypes VariableType; // type of the variable (array, object, property, ...)
-        [DataMember] public JsonPropertyTypes ObjectType; // if variable is a property/array/object
+        [DataMember] public JsonValueType VariableType; // type of the variable (array, object, property, ...)
+        [DataMember] public JsonPropertyType ObjectType; // if variable is a property/array/object
         [DataMember] public string ContentType; // file type (event, string, rules, ...)
         [DataMember] public string Version; // schema version declared in the beginning of the file
 
@@ -127,8 +127,8 @@ namespace JsonDictionaryCore
             JsonPath = "";
             Name = "";
             Value = "";
-            VariableType = JsonValueTypes.Unknown;
-            ObjectType = JsonPropertyTypes.Unknown;
+            VariableType = JsonValueType.Unknown;
+            ObjectType = JsonPropertyType.Unknown;
             ContentType = "";
             Version = "";
         }

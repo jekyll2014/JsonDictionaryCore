@@ -759,11 +759,11 @@ namespace JsonDictionaryCore
 
             var schemaProperties = parser.ParseJsonToPathList(schemaData, out _, out _)?
                 .Where(n =>
-                    n.JsonPropertyType == JsonPropertyTypes.Array
-                    || n.JsonPropertyType == JsonPropertyTypes.Object
-                    || n.JsonPropertyType == JsonPropertyTypes.Property
-                    || n.JsonPropertyType == JsonPropertyTypes.ArrayValue
-                    || n.JsonPropertyType == JsonPropertyTypes.KeywordOrNumberProperty);
+                    n.JsonPropertyType == JsonPropertyType.Array
+                    || n.JsonPropertyType == JsonPropertyType.Object
+                    || n.JsonPropertyType == JsonPropertyType.Property
+                    || n.JsonPropertyType == JsonPropertyType.ArrayValue
+                    || n.JsonPropertyType == JsonPropertyType.KeywordOrNumberProperty);
 
             var treeSchemaProperties = parser.ConvertForTreeProcessing(schemaProperties);
             _rightSchema = JsonPropertyListToSchemaObject(null,
@@ -1958,11 +1958,11 @@ namespace JsonDictionaryCore
             };
 
             var jsonProperties = parser.ParseJsonToPathList(jsonStr, out var endPos, out var errorFound)?
-                .Where(item => item.JsonPropertyType != JsonPropertyTypes.Comment
-                               && item.JsonPropertyType != JsonPropertyTypes.EndOfArray
-                               && item.JsonPropertyType != JsonPropertyTypes.EndOfObject
-                               && item.JsonPropertyType != JsonPropertyTypes.Error
-                               && item.JsonPropertyType != JsonPropertyTypes.Unknown)
+                .Where(item => item.JsonPropertyType != JsonPropertyType.Comment
+                               && item.JsonPropertyType != JsonPropertyType.EndOfArray
+                               && item.JsonPropertyType != JsonPropertyType.EndOfObject
+                               && item.JsonPropertyType != JsonPropertyType.Error
+                               && item.JsonPropertyType != JsonPropertyType.Unknown)
                 .ToList();
 
             if (jsonProperties == null || !jsonProperties.Any())
@@ -1973,7 +1973,7 @@ namespace JsonDictionaryCore
                 .Value ?? "";
 
             var rootObject = jsonProperties
-                .FirstOrDefault(n => n.JsonPropertyType == JsonPropertyTypes.Object
+                .FirstOrDefault(n => n.JsonPropertyType == JsonPropertyType.Object
                                      && string.IsNullOrEmpty(n.Name)
                                      && string.IsNullOrEmpty(n.Path));
 
@@ -2117,7 +2117,7 @@ namespace JsonDictionaryCore
                     $"<{propertyItem.ContentType}>{_appConfig.ConfigStorage.JsonPathDiv}{propertyItem.UnifiedFlattenedJsonPath}"
                         .TrimEnd(_appConfig.ConfigStorage.JsonPathDiv);
 
-                if (propertyItem.ObjectType != JsonPropertyTypes.Array)
+                if (propertyItem.ObjectType != JsonPropertyType.Array)
                 {
                     if (!_exampleLinkCollection.ContainsKey(itemName))
                         _exampleLinkCollection.Add(itemName, new List<JsonProperty> { propertyItem });
@@ -2150,9 +2150,9 @@ namespace JsonDictionaryCore
                         if (tagItem == null)
                             tagItem = new JsonProperty
                             {
-                                VariableType = JsonValueTypes.Object,
+                                VariableType = JsonValueType.Object,
                                 FullFileName = propertyItem.FullFileName,
-                                ObjectType = JsonPropertyTypes.Object,
+                                ObjectType = JsonPropertyType.Object,
                                 Name = $"<{propertyItem.ContentType}>{_appConfig.ConfigStorage.JsonPathDiv}",
                                 JsonPath = "",
                                 Value = "",
@@ -2161,9 +2161,9 @@ namespace JsonDictionaryCore
                                 PathDelimiter = _appConfig.ConfigStorage.JsonPathDiv
                             };
 
-                        if (tagItem.ObjectType == JsonPropertyTypes.Array)
+                        if (tagItem.ObjectType == JsonPropertyType.Array)
                             nodeName += "[]";
-                        else if (tagItem.ObjectType == JsonPropertyTypes.Object)
+                        else if (tagItem.ObjectType == JsonPropertyType.Object)
                             nodeName += "{}";
 
                         var newNode = new TreeNode(nodeName)
@@ -2953,7 +2953,7 @@ namespace JsonDictionaryCore
             var currentNodeType = properties
                                       .FirstOrDefault(n => n.Path == typePropertyPathSample) ?? new ParsedProperty();
 
-            if (currentNodeType.JsonPropertyType == JsonPropertyTypes.Array)
+            if (currentNodeType.JsonPropertyType == JsonPropertyType.Array)
             {
                 var childNodesTypes = rootCollection
                     .Where(n => n.ParentPath == typePropertyPathSample)
@@ -3136,7 +3136,7 @@ namespace JsonDictionaryCore
 
             var nodeDescription = "";
 
-            var nodeType = JsonPropertyTypes.Unknown;
+            var nodeType = JsonPropertyType.Unknown;
             if (node.Tag is JsonProperty p)
             {
                 nodeType = p.ObjectType;
@@ -3148,7 +3148,7 @@ namespace JsonDictionaryCore
             List<JsonProperty> nodeExamples = null;
             examples?.TryGetValue(node.Name, out nodeExamples);
 
-            if (nodeType == JsonPropertyTypes.Array)
+            if (nodeType == JsonPropertyType.Array)
             {
                 var arrayNode = new SchemaArray(propertyName)
                 {
@@ -3156,9 +3156,9 @@ namespace JsonDictionaryCore
                     Type = new List<string> { nodeType.ToString().ToLower() },
                     Description = nodeDescription,
                     Examples = nodeExamples?
-                        .Where(n => (n.ObjectType == JsonPropertyTypes.Property
-                                    || n.ObjectType == JsonPropertyTypes.ArrayValue
-                                    || n.VariableType == JsonValueTypes.String)
+                        .Where(n => (n.ObjectType == JsonPropertyType.Property
+                                    || n.ObjectType == JsonPropertyType.ArrayValue
+                                    || n.VariableType == JsonValueType.String)
                                     && !string.IsNullOrEmpty(n.Value))
                         .Select(n => n.Value)
                         .Distinct()
@@ -3246,20 +3246,19 @@ namespace JsonDictionaryCore
             var nodeVariableTypes = nodeExamples?
                 .Select(n => n.VariableType)
                 .Distinct()
-                .Where(n => n == JsonValueTypes.String
-                            || n == JsonValueTypes.Integer
-                            || n == JsonValueTypes.Number
-                            || n == JsonValueTypes.Null
-                            || n == JsonValueTypes.Boolean)
+                .Where(n => n == JsonValueType.String
+                            || n == JsonValueType.Number
+                            || n == JsonValueType.Null
+                            || n == JsonValueType.Boolean)
                 .Select(n => n.ToString().ToLower())
                 .ToList() ?? new List<string>();
 
             var nodeObjectTypes = nodeExamples?
                 .Select(n => n.ObjectType)
                 .Distinct()
-                .Where(n => n == JsonPropertyTypes.Object
-                            || n == JsonPropertyTypes.Array
-                            || n == JsonPropertyTypes.ArrayValue)
+                .Where(n => n == JsonPropertyType.Object
+                            || n == JsonPropertyType.Array
+                            || n == JsonPropertyType.ArrayValue)
                 .Select(n => n.ToString()
                     .ToLower()
                     .Replace("arrayvalue", ISchemaBase.JsonSchemaTypes.Array)) ?? new List<string>();
@@ -3267,7 +3266,7 @@ namespace JsonDictionaryCore
             nodeVariableTypes.AddRange(nodeObjectTypes);
             nodeVariableTypes = nodeVariableTypes.Distinct().OrderBy(n => n).ToList();
 
-            if (nodeType == JsonPropertyTypes.Object)
+            if (nodeType == JsonPropertyType.Object)
             {
                 var objectNode = new SchemaObject
                 {
@@ -3277,9 +3276,9 @@ namespace JsonDictionaryCore
                     //Id = nodePath,
                     Description = nodeDescription,
                     Examples = nodeExamples?
-                        .Where(n => (n.ObjectType == JsonPropertyTypes.Property
-                                    || n.ObjectType == JsonPropertyTypes.ArrayValue
-                                    || n.VariableType == JsonValueTypes.String)
+                        .Where(n => (n.ObjectType == JsonPropertyType.Property
+                                    || n.ObjectType == JsonPropertyType.ArrayValue
+                                    || n.VariableType == JsonValueType.String)
                                     && !string.IsNullOrEmpty(n.Value))
                         .Select(n => n.Value)
                         .Distinct()
@@ -3306,9 +3305,9 @@ namespace JsonDictionaryCore
                 //Id = nodePath,
                 Description = nodeDescription,
                 Examples = nodeExamples?
-                    .Where(n => (n.ObjectType == JsonPropertyTypes.Property
-                                || n.ObjectType == JsonPropertyTypes.ArrayValue
-                                || n.VariableType == JsonValueTypes.String)
+                    .Where(n => (n.ObjectType == JsonPropertyType.Property
+                                || n.ObjectType == JsonPropertyType.ArrayValue
+                                || n.VariableType == JsonValueType.String)
                                 && !string.IsNullOrEmpty(n.Value))
                     .Select(n => n.Value)
                     .Distinct()
@@ -3322,7 +3321,7 @@ namespace JsonDictionaryCore
             if (nodeVariableTypes.Any(n => n == ISchemaBase.JsonSchemaTypes.String))
             {
                 propertyNode.Enum = nodeExamples?
-                    .Where(n => n.VariableType == JsonValueTypes.String && !string.IsNullOrEmpty(n.Value))
+                    .Where(n => n.VariableType == JsonValueType.String && !string.IsNullOrEmpty(n.Value))
                     .Select(n => n.Value)
                     .Distinct()
                     .Select(n => ConvertStringForJson(n))

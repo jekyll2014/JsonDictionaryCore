@@ -1,6 +1,6 @@
 ﻿namespace JsonPathParserLib
 {
-    public enum JsonValueTypes
+    public enum JsonValueType
     {
         Unknown,
         String,
