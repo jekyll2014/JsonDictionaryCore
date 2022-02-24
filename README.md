@@ -3,6 +3,8 @@
 The tool is intended to build a combined tree based on a collection of JSON files. This allow user to see the visual representation of structure and see all properties and values possible. This is especially useful for JSON documents with no schema defined.
 As a bonus it allows to save comments for every node of the tree which could be a way to describe the structure.
 
+Please look at the "SchemaGenerator" branch to try Schema generation feature. It's under development now.
+
 English
 Short manual:
 1) Push "Collect database" button to show root folder of the MetaUI repository. It'll search all files marked before to parse. A tree and a examples table is generated. It may take a couple of minutes.
