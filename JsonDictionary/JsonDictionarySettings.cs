@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using JsonDictionaryCore.Panels;
+
+using Newtonsoft.Json;
 
 using static JsonDictionaryCore.Form1;
 

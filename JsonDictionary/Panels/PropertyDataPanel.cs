@@ -5,7 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
-namespace JsonDictionaryCore
+using JsonDictionaryCore.SchemaGenerator;
+
+namespace JsonDictionaryCore.Panels
 {
     public partial class PropertyDataPanel : UserControl
     {
@@ -156,7 +158,7 @@ namespace JsonDictionaryCore
             valueList.AddRange(textBox_type.Text.ToLower().Split(';'));
             for (var i = 0; i < valueList.Count; i++)
             {
-                if (!ISchemaBase.AllowedDataTypes.Contains(valueList[i]))
+                if (!ISchemaBase.SchemaDataTypes.Contains(valueList[i]))
                 {
                     valueList.RemoveAt(i);
                     i--;

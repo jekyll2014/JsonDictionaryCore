@@ -6,11 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace JsonDictionaryCore
+namespace JsonDictionaryCore.SchemaGenerator
 {
     public interface ISchemaBase
     {
-        public static string[] AllowedDataTypes = new[]
+        public static readonly string[] SchemaDataTypes = new[]
         {
             "string",
             "number",
@@ -21,7 +21,7 @@ namespace JsonDictionaryCore
             "object"
         };
 
-        public static string[] AllowedBoolTypes = new[]
+        public static readonly string[] SchemaBoolTypes = new[]
         {
             "true",
             "false",
@@ -678,12 +678,9 @@ namespace JsonDictionaryCore
             // get "schema"
             var nodeSchemaVersion = properties.FirstOrDefault(n => n.Name == propertyNames.Schema)?.Value;
 
-            if (!string.IsNullOrEmpty(nodeSchemaVersion))
-            {
-                if (nodeSchemaVersion.Equals("http://json-schema.org/draft-04/schema#",
+            if (!string.IsNullOrEmpty(nodeSchemaVersion) && nodeSchemaVersion.Equals("http://json-schema.org/draft-04/schema#",
                     StringComparison.OrdinalIgnoreCase))
-                    propertyNames.Id = "id";
-            }
+                propertyNames.Id = "id";
 
             //get "type" of the object
             var nodeTypes = new List<string>();
@@ -809,10 +806,10 @@ namespace JsonDictionaryCore
                     .Where(n => n.ParentPath == startPath + jsonPathDiv + propertyNames.Enum)
                     .Select(n => n.Value)
                     .OrderBy(n => n)
-                    .ToList()
+                    .ToList(),
+                Default = JsonPropertyListToSchemaObject_v7(rootCollection,
+                startPath + jsonPathDiv + propertyNames.Default, propertyNames.Default, jsonPathDiv)
             };
-            propertyNode.Default = JsonPropertyListToSchemaObject_v7(rootCollection,
-                startPath + jsonPathDiv + propertyNames.Default, propertyNames.Default, jsonPathDiv);
 
             return propertyNode;
         }
@@ -840,7 +837,7 @@ namespace JsonDictionaryCore
         public string GetReferencePath(ISchemaBase child = null)
         {
             if (child != null)
-                throw new ArgumentOutOfRangeException("Property can not have child");
+                throw new ArgumentOutOfRangeException(nameof(child), "Property can not have child");
 
             var referencePath = "";
 
@@ -874,14 +871,14 @@ namespace JsonDictionaryCore
 
         public void RenameNode(string newName)
         {
-            this.Name = newName;
+            Name = newName;
         }
 
         public bool DeleteNode()
         {
             ISchemaBase result = null;
-            var parent = this.Parent;
-            var name = this.Name;
+            var parent = Parent;
+            var name = Name;
 
             if (parent is SchemaObject schemaObject)
             {
@@ -1142,7 +1139,7 @@ namespace JsonDictionaryCore
         public string GetReferencePath(ISchemaBase child = null)
         {
             if (child != null)
-                throw new ArgumentOutOfRangeException("Property can not have child");
+                throw new ArgumentOutOfRangeException(nameof(child), "Property can not have child");
 
             var referencePath = "";
 
@@ -1178,7 +1175,7 @@ namespace JsonDictionaryCore
         public void RenameNode(string newName)
         {
             var oldRefPath = GetReferencePath();
-            this.Name = newName;
+            Name = newName;
             var newRefPath = GetReferencePath();
 
             ISchemaBase rootNode = this;
@@ -1198,8 +1195,8 @@ namespace JsonDictionaryCore
         public bool DeleteNode()
         {
             ISchemaBase result = null;
-            var parent = this.Parent;
-            var name = this.Name;
+            var parent = Parent;
+            var name = Name;
 
             if (parent is SchemaObject schemaObject)
             {
@@ -1602,7 +1599,7 @@ namespace JsonDictionaryCore
         public void RenameNode(string newName)
         {
             var oldRefPath = GetReferencePath();
-            this.Name = newName;
+            Name = newName;
             var newRefPath = GetReferencePath();
 
             ISchemaBase rootNode = this;
@@ -1622,8 +1619,8 @@ namespace JsonDictionaryCore
         public bool DeleteNode()
         {
             ISchemaBase result = null;
-            var parent = this.Parent;
-            var name = this.Name;
+            var parent = Parent;
+            var name = Name;
 
             if (parent is SchemaObject schemaObject)
             {
@@ -2077,7 +2074,7 @@ namespace JsonDictionaryCore
         public void RenameNode(string newName)
         {
             var oldRefPath = GetReferencePath();
-            this.Name = newName;
+            Name = newName;
             var newRefPath = GetReferencePath();
 
             ISchemaBase rootNode = this;
@@ -2097,8 +2094,8 @@ namespace JsonDictionaryCore
         public bool DeleteNode()
         {
             ISchemaBase result = null;
-            var parent = this.Parent;
-            var name = this.Name;
+            var parent = Parent;
+            var name = Name;
 
             if (parent is SchemaObject schemaObject)
             {

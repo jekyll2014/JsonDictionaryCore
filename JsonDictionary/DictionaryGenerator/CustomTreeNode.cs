@@ -8,7 +8,7 @@ using MessagePack.Resolvers;
 
 using Newtonsoft.Json;
 
-namespace JsonDictionaryCore
+namespace JsonDictionaryCore.DictionaryGenerator
 {
     public class CustomTreeNode
     {
@@ -90,7 +90,7 @@ namespace JsonDictionaryCore
 
             string nodeDesc = null;
             nodeDescriptions?.TryGetValue(rootNode.Name, out nodeDesc);
-            var root = new CustomTreeNode(rootNode.Text, nodeDesc, rootNode.Name, (JsonProperty) rootNode.Tag);
+            var root = new CustomTreeNode(rootNode.Text, nodeDesc, rootNode.Name, (JsonProperty)rootNode.Tag);
 
             var children = new List<CustomTreeNode>();
             foreach (TreeNode node1 in rootNode.Nodes)
@@ -123,7 +123,7 @@ namespace JsonDictionaryCore
             {
                 NodeText = rootNode.Text,
                 NodePath = rootNode.Name,
-                NodeTag = (JsonProperty) rootNode.Tag
+                NodeTag = (JsonProperty)rootNode.Tag
             };
 
             foreach (TreeNode node1 in rootNode.Nodes)

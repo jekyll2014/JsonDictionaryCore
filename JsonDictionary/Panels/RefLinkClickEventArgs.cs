@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace JsonDictionaryCore
+namespace JsonDictionaryCore.Panels
 {
     public class RefLinkClickEventArgs : EventArgs
     {

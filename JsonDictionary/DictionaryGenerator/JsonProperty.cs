@@ -7,7 +7,7 @@ using System.Text;
 
 using JsonPathParserLib;
 
-namespace JsonDictionaryCore
+namespace JsonDictionaryCore.DictionaryGenerator
 {
     [DataContract]
     public class JsonProperty

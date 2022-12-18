@@ -20,6 +20,9 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json;
 using static JsonDictionaryCore.JsonIo;
+using JsonDictionaryCore.DictionaryGenerator;
+using JsonDictionaryCore.SchemaGenerator;
+using JsonDictionaryCore.Panels;
 
 namespace JsonDictionaryCore
 {
@@ -627,7 +630,7 @@ namespace JsonDictionaryCore
 
                 var jsonSample = dataGridView_examples.Rows[rowNumber].Cells[1]?.Value?.ToString();
 
-                if (jsonPaths != null && jsonPaths?.Length > 0)
+                if (jsonPaths != null && jsonPaths.Length > 0)
                 {
                     var jsonPath = _appConfig.ConfigStorage.JsonPathDiv + jsonPaths[0];
                     var samplesCollection = _exampleLinkCollection?.Where(n => n.Key == jsonPath);
@@ -719,7 +722,7 @@ namespace JsonDictionaryCore
             var fileName = listBox_fileList.Items[fileNumber].ToString();
             var jsonPath = "";
 
-            if (jsonPaths != null && jsonPaths?.Length >= fileNumber)
+            if (jsonPaths != null && jsonPaths.Length >= fileNumber)
                 jsonPath = jsonPaths[fileNumber];
 
             _exampleLinkCollection[jsonPath].RemoveAll(n => n.FullFileName == fileName);
@@ -771,11 +774,11 @@ namespace JsonDictionaryCore
                 rootName,
                 rootName,
                 _appConfig.ConfigStorage.JsonPathDiv);
-            _rootNodeRightSchema = ConvertSchemaObjectToTreeNode(_rightSchema);
-            treeView_rightSchema.Nodes.Clear();
-            treeView_rightSchema.Nodes.Add(_rootNodeRightSchema);
+            _rootNodeRightSchema = ConvertSchemaObjectToTreeNodeRecursive(_rightSchema);
+            treeView_rightSchema?.Nodes?.Clear();
+            treeView_rightSchema?.Nodes?.Add(_rootNodeRightSchema);
 
-            if (treeView_rightSchema != null && treeView_rightSchema.Nodes.Count > 0)
+            if (treeView_rightSchema != null && treeView_rightSchema.Nodes?.Count > 0)
             {
                 treeView_rightSchema.Sort();
                 treeView_rightSchema.Nodes[0].Expand();
@@ -916,7 +919,7 @@ namespace JsonDictionaryCore
 
             var rootName = "#";
             _leftSchema = GenerateSchemaFromSamplesTree(treeView_examples.SelectedNode, _exampleLinkCollection, rootName, null);
-            _rootNodeLeftSchema = ConvertSchemaObjectToTreeNode(_leftSchema);
+            _rootNodeLeftSchema = ConvertSchemaObjectToTreeNodeRecursive(_leftSchema);
 
             if (_rootNodeLeftSchema == null)
                 return;
@@ -1199,7 +1202,10 @@ namespace JsonDictionaryCore
         private void TreeView_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
         {
             if (e.Label == null)
+            {
                 e.CancelEdit = true;
+                return;
+            }
 
             try
             {
@@ -1321,7 +1327,7 @@ namespace JsonDictionaryCore
                 var currentNodePath = tree.SelectedNode.Name;
 
                 // refresh tree from current point
-                var newTree = ConvertSchemaObjectToTreeNode(currentSchemaNode);
+                var newTree = ConvertSchemaObjectToTreeNodeRecursive(currentSchemaNode);
                 currentTreeNode.Nodes.Clear();
                 if (newTree != null && newTree.Nodes != null)
                 {
@@ -2251,6 +2257,7 @@ namespace JsonDictionaryCore
                         }
                     );
                     await Task.WhenAll(t).ConfigureAwait(true);
+                    toolStripStatusLabel1.Text = "";
                 }
                 catch (Exception ex)
                 {
@@ -2261,8 +2268,6 @@ namespace JsonDictionaryCore
                 if (exampleLinkCollection != null)
                     _exampleLinkCollection = exampleLinkCollection;
             }
-
-            toolStripStatusLabel1.Text = "";
 
             return true;
         }
@@ -2626,7 +2631,7 @@ namespace JsonDictionaryCore
             var fileNumber = listBox_fileList.SelectedIndex;
             var fileName = listBox_fileList.Items[fileNumber].ToString();
 
-            if (jsonPaths != null && jsonPaths?.Length >= fileNumber)
+            if (jsonPaths != null && jsonPaths.Length >= fileNumber)
             {
                 var jsonPath = jsonPaths[fileNumber];
                 ShowPreviewEditor(fileName, jsonPath, jsonSample, standAloneEditor);
@@ -3114,12 +3119,9 @@ namespace JsonDictionaryCore
                 SchemaName = "http://json-schema.org/draft-07/schema#"
             };
 
-            var propertyNames = new SchemaPropertyNames();
-
             foreach (TreeNode node in treeRoot.Nodes)
             {
-                var result = ConvertSamplesTreeNodeToSchemaObject(node, newSchemaRoot, nodeName + propertyNames.Divider + propertyNames.Properties,
-                    examples);
+                var result = ConvertSamplesTreeNodeToSchemaObjectRecursive(node, newSchemaRoot, examples);
 
                 if (result != null)
                     newSchemaRoot.Properties.Add(result);
@@ -3128,9 +3130,8 @@ namespace JsonDictionaryCore
             return newSchemaRoot;
         }
 
-        private ISchemaBase ConvertSamplesTreeNodeToSchemaObject(TreeNode node,
+        private ISchemaBase ConvertSamplesTreeNodeToSchemaObjectRecursive(TreeNode node,
             ISchemaBase parent,
-            string parentPath,
             Dictionary<string, List<JsonProperty>> examples)
         {
             if (node == null)
@@ -3179,11 +3180,10 @@ namespace JsonDictionaryCore
                 var objList = new List<ISchemaBase>();
                 foreach (TreeNode item in node.Nodes)
                 {
-                    var newItemsNode = ConvertSamplesTreeNodeToSchemaObject(
+                    var newItemsNode = ConvertSamplesTreeNodeToSchemaObjectRecursive(
                         item,
                         arrayNode,
-                        arrayNode.GetReferencePath() + propertyNames.Divider + propertyNames.Items + propertyNames.Divider +
-                        propertyNames.Properties, examples);
+                        examples);
 
                     if (newItemsNode != null)
                         objList.Add(newItemsNode);
@@ -3297,7 +3297,7 @@ namespace JsonDictionaryCore
 
                 foreach (TreeNode item in node.Nodes)
                 {
-                    var newProperty = ConvertSamplesTreeNodeToSchemaObject(item, objectNode, objectNode.GetReferencePath() + "/properties", examples);
+                    var newProperty = ConvertSamplesTreeNodeToSchemaObjectRecursive(item, objectNode, examples);
                     if (newProperty != null) objectNode.Properties.Add(newProperty);
                 }
 
@@ -3347,7 +3347,7 @@ namespace JsonDictionaryCore
             return propertyNode;
         }
 
-        private static TreeNode ConvertSchemaObjectToTreeNode(ISchemaBase schema, string parentPath = "")
+        private static TreeNode ConvertSchemaObjectToTreeNodeRecursive(ISchemaBase schema, string parentPath = "")
         {
             if (schema == null)
                 return null;
@@ -3381,7 +3381,7 @@ namespace JsonDictionaryCore
                 {
                     foreach (var property in schemaObject.Properties)
                     {
-                        var newNodes = ConvertSchemaObjectToTreeNode(property, newNodeProperties.Name);
+                        var newNodes = ConvertSchemaObjectToTreeNodeRecursive(property, newNodeProperties.Name);
 
                         if (newNodes != null)
                             newNodeProperties.Nodes.Add(newNodes);
@@ -3399,7 +3399,7 @@ namespace JsonDictionaryCore
 
                     foreach (var definition in schemaObject.Definitions)
                     {
-                        var newNodes = ConvertSchemaObjectToTreeNode(definition, newNode.Name);
+                        var newNodes = ConvertSchemaObjectToTreeNodeRecursive(definition, newNode.Name);
                         if (newNodes != null)
                             newNode.Nodes.Add(newNodes);
                     }
@@ -3410,7 +3410,7 @@ namespace JsonDictionaryCore
             else if (schema is SchemaArray schemaArray)
             {
                 node.Text += "[]";
-                var newNodes = ConvertSchemaObjectToTreeNode(schemaArray.Items, node.Name);
+                var newNodes = ConvertSchemaObjectToTreeNodeRecursive(schemaArray.Items, node.Name);
 
                 if (newNodes != null)
                     node.Nodes.Add(newNodes);

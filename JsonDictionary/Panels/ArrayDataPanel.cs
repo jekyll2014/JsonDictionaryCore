@@ -5,18 +5,20 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
-namespace JsonDictionaryCore
-{
-    public partial class ObjectDataPanel : UserControl
-    {
-        private readonly SchemaObject _sourceSchemaObject;
+using JsonDictionaryCore.SchemaGenerator;
 
-        public string ObjectPathText => textBox_path.Text;
+namespace JsonDictionaryCore.Panels
+{
+    public partial class ArrayDataPanel : UserControl
+    {
+        private readonly SchemaArray _sourceSchemaObject;
+
+        public string ObjectPathText => textBox_id.Text;
 
         public Color ObjectPathBackColor
         {
-            get => textBox_path.BackColor;
-            set => textBox_path.BackColor = value;
+            get => textBox_id.BackColor;
+            set => textBox_id.BackColor = value;
         }
 
         public string ObjectTypeText => textBox_type.Text;
@@ -43,44 +45,35 @@ namespace JsonDictionaryCore
             set => textBox_reference.BackColor = value;
         }
 
-        public string ObjectAdditionalText => textBox_additional.Text;
+        public string ObjectUniqueText => textBox_unique.Text;
 
-        public Color ObjectAdditionalBackColor
+        public Color ObjectUniqueBackColor
         {
-            get => textBox_additional.BackColor;
-            set => textBox_additional.BackColor = value;
+            get => textBox_unique.BackColor;
+            set => textBox_unique.BackColor = value;
         }
 
-        public string ObjectRequiredText => textBox_required.Text;
-
-        public Color ObjectRequiredBackColor
-        {
-            get => textBox_required.BackColor;
-            set => textBox_required.BackColor = value;
-        }
-
-        public ObjectDataPanel()
+        public ArrayDataPanel()
         {
             InitializeComponent();
         }
 
-        //public ObjectDataPanel(SchemaObject dataObject, string treePath)
-        public ObjectDataPanel(SchemaObject dataObject)
+        //public ArrayDataPanel(SchemaArray dataObject, string treePath)
+        public ArrayDataPanel(SchemaArray dataObject)
         {
             _sourceSchemaObject = dataObject;
 
-            if (_sourceSchemaObject == null)
-                return;
+            if (_sourceSchemaObject == null) return;
 
             InitializeComponent();
-            textBox_path.Text = _sourceSchemaObject.Id;
+            textBox_id.Text = _sourceSchemaObject.Id;
 
             /*if (!string.IsNullOrEmpty(treePath))
             {
                 treePath = treePath.Replace('\\', '/');
                 if (treePath.EndsWith("/properties"))
                 {
-                    var pos = treePath.LastIndexOf("/properties", StringComparison.OrdinalIgnoreCase);
+                    var pos = treePath.LastIndexOf("/properties", StringComparison.Ordinal);
                     treePath = treePath.Substring(0, pos);
                 }
             }*/
@@ -89,7 +82,7 @@ namespace JsonDictionaryCore
             if (_sourceSchemaObject.Type != null && _sourceSchemaObject.Type.Count > 0)
             {
                 foreach (var e in _sourceSchemaObject.Type)
-                    t.Append(e + ";");
+                    t.Append(e + "; ");
 
                 textBox_type.Text = t.ToString();
             }
@@ -106,16 +99,7 @@ namespace JsonDictionaryCore
             }
 
             textBox_reference.Text = _sourceSchemaObject.Reference;
-            textBox_additional.Text = _sourceSchemaObject.AdditionalProperties.ToString();
-
-            if (_sourceSchemaObject.Required != null && _sourceSchemaObject.Required.Count > 0)
-            {
-                t = new StringBuilder();
-                foreach (var e in _sourceSchemaObject.Required)
-                    t.AppendLine(e);
-
-                textBox_required.Text = t.ToString();
-            }
+            textBox_unique.Text = _sourceSchemaObject.UniqueItemsOnly.ToString();
         }
 
         public event EventHandler<RefLinkClickEventArgs> OnRefClick;
@@ -130,7 +114,6 @@ namespace JsonDictionaryCore
 
         private void Button_save_Click(object sender, EventArgs e)
         {
-            // common properties
             _sourceSchemaObject.Type.Clear();
             _sourceSchemaObject.Type.AddRange(textBox_type.Text.Split(';'));
 
@@ -140,13 +123,10 @@ namespace JsonDictionaryCore
             _sourceSchemaObject.Examples.AddRange(textBox_examples.Text.Split(Environment.NewLine));
 
             // specific properties
-            if (bool.TryParse(textBox_additional.Text, out var ap))
-                _sourceSchemaObject.AdditionalProperties = ap;
+            if (bool.TryParse(textBox_unique.Text, out var ap))
+                _sourceSchemaObject.UniqueItemsOnly = ap;
             else
-                _sourceSchemaObject.AdditionalProperties = null;
-
-            _sourceSchemaObject.Required.Clear();
-            _sourceSchemaObject.Required.AddRange(textBox_required.Text.Split(Environment.NewLine));
+                _sourceSchemaObject.UniqueItemsOnly = null;
         }
 
         private void TextBox_type_Leave(object sender, EventArgs e)
@@ -155,7 +135,7 @@ namespace JsonDictionaryCore
             valueList.AddRange(textBox_type.Text.ToLower().Split(';'));
             for (var i = 0; i < valueList.Count; i++)
             {
-                if (!ISchemaBase.AllowedDataTypes.Contains(valueList[i]))
+                if (!ISchemaBase.SchemaDataTypes.Contains(valueList[i]))
                 {
                     valueList.RemoveAt(i);
                     i--;
@@ -163,18 +143,18 @@ namespace JsonDictionaryCore
             }
 
             var t = new StringBuilder();
-
             foreach (var l in valueList)
                 t.Append(l + "; ");
+
             textBox_type.Text = t.ToString();
         }
 
-        private void TextBox_additional_Leave(object sender, EventArgs e)
+        private void TextBox_unique_Leave(object sender, EventArgs e)
         {
-            var newValue = textBox_additional.Text.Trim().ToLower();
+            var newValue = textBox_unique.Text.Trim().ToLower();
 
-            if (!ISchemaBase.AllowedBoolTypes.Contains(newValue))
-                textBox_additional.Text = string.Empty;
+            if (!ISchemaBase.SchemaBoolTypes.Contains(newValue))
+                textBox_unique.Text = string.Empty;
         }
     }
 }
