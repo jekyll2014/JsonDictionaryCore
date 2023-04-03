@@ -1,0 +1,130 @@
+{
+  "FileTypes": [
+    {
+      "FileTypeMask": "dataviews.jsonc",
+      "PropertyTypeName": "dataviews",
+      "FileType": "dataviews"
+    },
+    {
+      "FileTypeMask": "events.jsonc",
+      "PropertyTypeName": "events",
+      "FileType": "events"
+    },
+    {
+      "FileTypeMask": "layout.jsonc",
+      "PropertyTypeName": "layout",
+      "FileType": "layout"
+    },
+    {
+      "FileTypeMask": "rules.jsonc",
+      "PropertyTypeName": "rules",
+      "FileType": "rules"
+    },
+    {
+      "FileTypeMask": "tools.jsonc",
+      "PropertyTypeName": "tools",
+      "FileType": "tools"
+    },
+    {
+      "FileTypeMask": "strings.jsonc",
+      "PropertyTypeName": "strings",
+      "FileType": "strings"
+    },
+    {
+      "FileTypeMask": "patch.jsonc",
+      "PropertyTypeName": "patch",
+      "FileType": "patch"
+    },
+    {
+      "FileTypeMask": "search.jsonc",
+      "PropertyTypeName": "search",
+      "FileType": "search"
+    },
+    {
+      "FileTypeMask": "combo.jsonc",
+      "PropertyTypeName": "combo",
+      "FileType": "combo"
+    }
+  ],
+  "FlattenParameters": [
+    {
+      "ContentType": "2",
+      "ItemName": "type",
+      "ParentNames": [
+        "actions",
+        "onsuccess",
+        "onfailure",
+        "onerror",
+        "onsinglematch",
+        "onmultiplematch",
+        "onnomatch",
+        "onyes",
+        "onno",
+        "onok",
+        "oncancel",
+        "onabort",
+        "onempty"
+      ]
+    },
+    {
+      "ContentType": "3",
+      "ItemName": "sourcetypeid",
+      "ParentNames": [
+        "components"
+      ]
+    },
+    {
+      "ContentType": "4",
+      "ItemName": "action",
+      "ParentNames": [
+        "actions"
+      ]
+    },
+    {
+      "ContentType": "5",
+      "ItemName": "sourcetypeid",
+      "ParentNames": [
+        "component"
+      ]
+    }
+  ],
+  "LastRootFolder": "C:\\_test\\epicor\\MetaUI",
+  "ReformatJson": false,
+  "LastDbName": "D:\\6\\KineticDictionary_03.08.2021_ApInvoice.tree",
+  "ShowPreview": true,
+  "AlwaysOnTop": false,
+  "LoadDbOnStart": false,
+  "UseVsCode": false,
+  "SaveJsonTree": true,
+  "DefaultDescriptionFileName": "descriptions.json",
+  "FileMask": "*.jsonc",
+  "TreeSplitterDistance": 241,
+  "DescriptionSplitterDistance": 901,
+  "FileListSplitterDistance": 506,
+  "DefaultVersionCaption": "Any",
+  "VersionTagName": ".contentVersion",
+  "TableListDelimiter": ";",
+  "JsonPathDiv": ".",
+  "RootNodeName": "Kinetic",
+  "CellSizeAdjust": 0.7,
+  "PreViewCaption": "[Preview] ",
+  "DefaultEditorFormCaption": "JsonDictionary [EPICOR]",
+  "DefaultTreeFileExtension": "tree",
+  "DefaultExamplesFileExtension": "examples",
+  "DefaultFiledialogFormCaption": "JsonScheme data",
+  "DefaultSaveFileName": "JsonDictionary_",
+  "EditorPosition": {
+    "WinX": 0,
+    "WinY": 0,
+    "WinW": 0,
+    "WinH": 0,
+    "Initialized": false
+  },
+  "MainWindowPosition": {
+    "WinX": 0,
+    "WinY": 0,
+    "WinW": 960,
+    "WinH": 1040,
+    "Initialized": true
+  }
+}

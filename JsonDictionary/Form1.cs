@@ -1927,7 +1927,7 @@ namespace JsonDictionaryCore
             var fileNumber = 0;
             Parallel.ForEach(filesList, fileName =>
             {
-                var fileType = GetFileTypeFromFileName(fileName, _appConfig.ConfigStorage.FileTypes);
+                var fileType = GetFileTypeFromFileName(fileName, _appConfig.ConfigStorage.FileTypes, _appConfig.ConfigStorage.DefaultContentType);
                 DeserializeFile(fileName, fileType, jsonPropertiesCollection);
 
                 if (fileNumber % 10 == 0)
@@ -1996,7 +1996,7 @@ namespace JsonDictionaryCore
             {
                 item.Path = item.Path.TrimStart(_appConfig.ConfigStorage.JsonPathDiv);
 
-                foreach (var fType in _appConfig.ConfigStorage.FileTypes)
+                foreach (var fType in _appConfig.ConfigStorage.FileTypes.Where(n => !string.IsNullOrEmpty(n.PropertyTypeName)))
                 {
                     if (item.Path.StartsWith(fType.PropertyTypeName))
                     {
@@ -2729,20 +2729,24 @@ namespace JsonDictionaryCore
 
         #region Utilities
 
-        private static string GetFileTypeFromFileName(string longFileName, IEnumerable<ContentTypeItem> fileTypes)
+        private static string GetFileTypeFromFileName(string longFileName, IEnumerable<ContentTypeItem> fileTypes, string defaultContentType)
         {
             if (string.IsNullOrEmpty(longFileName) || fileTypes == null)
-                return "?";
-
+                return defaultContentType;
 
             if (fileTypes.Any(n => n.FileTypeSign.EndsWith('\\') || n.FileTypeSign.EndsWith('/')))
             {
                 var dirName = GetDirectoryName(longFileName);
 
-                return fileTypes
-                        .Where(n => dirName.EndsWith(n.FileTypeSign.TrimEnd('\\', '/')))
-                        .Select(n => n.ContentType)
-                        .FirstOrDefault() ?? "?";
+                if (!string.IsNullOrEmpty(dirName))
+                {
+                    var dirFileType = fileTypes?
+                            .FirstOrDefault(n => dirName.EndsWith(n.FileTypeSign.TrimEnd('\\', '/')))?
+                            .ContentType;
+
+                    if (!string.IsNullOrEmpty(dirFileType))
+                        return dirFileType;
+                }
             }
 
             var shortFileName = GetShortFileName(longFileName);
@@ -2750,7 +2754,7 @@ namespace JsonDictionaryCore
             return fileTypes
                 .Where(n => shortFileName.EndsWith(n.FileTypeSign))
                 .Select(n => n.ContentType)
-                .FirstOrDefault() ?? "?";
+                .FirstOrDefault() ?? defaultContentType;
         }
 
         private static string GetShortFileName(string longFileName)
@@ -2768,7 +2772,7 @@ namespace JsonDictionaryCore
                 return longFileName;
 
             var file = new FileInfo(longFileName);
-            return file.Directory?.Name;
+            return file?.Directory?.Name;
         }
 
         // this is to get rid of exception on "dataGridView_examples.AutoSizeRowsMode" change

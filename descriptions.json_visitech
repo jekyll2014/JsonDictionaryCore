@@ -1,0 +1,11 @@
+{
+  "<*-works>.actions.createTasks": "Description: Создание задачки\r\n*Note: Все, что угодно",
+  "<*-works>.actions": "Description: действия по нажатию кнопки\r\n*Note: все, что угодно - области применения и т.п.",
+  "<*-works>.buttons": "Description: Кнопки под документом\r\n*Note: кнопки - они и есть кнопки",
+  "<*-works>.default": "Description: какое-то умолчание\r\n*Note: странно, что тут three-state - булевая переменная такой быть не может. Надо либо буль (и по умолчанию false, либо enum)",
+  "<*-works>.description": "Description: надпись на ???\r\n*Note: я бы обозвал это поле descriptionText, а-то просто \"description\" сильно похоже не служебное описание, которое просто для помощи читающему json.",
+  "<*-works>.email": "Description: Параметры уведомление по e-mail\r\n*Note: ",
+  "<*-works>.fieldWork": "Description: ???\r\n*Note: тоже странно - как-то не по булевски null присваивать...",
+  "<*-works>.relationLink": "Description: имя REST-метода, куда слать данные?\r\n*Note: ",
+  "<*-works>.toast": "Description: Параметры всплывающего уведомления\r\n*Note: "
+}

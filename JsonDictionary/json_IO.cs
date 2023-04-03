@@ -139,8 +139,10 @@ namespace JsonDictionaryCore
             {
                 using (Stream file = File.Open(fileName, FileMode.Create))
                 {
+#pragma warning disable SYSLIB0011
                     var bf = new BinaryFormatter();
                     bf.Serialize(file, data);
+#pragma warning restore SYSLIB0011
                 }
             }
             catch
@@ -159,8 +161,10 @@ namespace JsonDictionaryCore
 
             using (Stream file = File.Open(fileName, FileMode.Open))
             {
+#pragma warning disable SYSLIB0011
                 var bf = new BinaryFormatter();
                 nodeList = (T)bf.Deserialize(file);
+#pragma warning restore SYSLIB0011
             }
 
             return nodeList;

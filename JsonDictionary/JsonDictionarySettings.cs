@@ -2,8 +2,6 @@
 
 using Newtonsoft.Json;
 
-using static JsonDictionaryCore.Form1;
-
 namespace JsonDictionaryCore
 {
     public struct ProcessingOptions
@@ -54,6 +52,8 @@ namespace JsonDictionaryCore
         public string DefaultExamplesFileExtension { get; set; } = "examples";
         public string DefaultFiledialogFormCaption { get; set; } = "Kinetic data";
         public string DefaultSaveFileName { get; set; } = "KineticDictionary_";
+        public string DefaultContentType { get; set; } = "?";
+
 
         public WinPosition EditorPosition { get; set; } = new WinPosition
         {

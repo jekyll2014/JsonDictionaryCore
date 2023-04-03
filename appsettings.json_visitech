@@ -1,0 +1,85 @@
+{
+  "FileTypes": [
+    {
+      "FileTypeSign": "version.json",
+      "PropertyTypeName": "",
+      "ContentType": "version"
+    },
+    {
+      "FileTypeSign": "WorkTypes.json",
+      "PropertyTypeName": "",
+      "ContentType": "WorkTypes"
+    },
+    {
+      "FileTypeSign": "WorkTypes_audit.json",
+      "PropertyTypeName": "",
+      "ContentType": "WorkTypes_audit"
+    },
+    {
+      "FileTypeSign": "WorkTypes_preparation.json",
+      "PropertyTypeName": "",
+      "ContentType": "WorkTypes_preparation"
+    },
+    {
+      "FileTypeSign": "WorkTypes_risk.json",
+      "PropertyTypeName": "",
+      "ContentType": "WorkTypes_risk"
+    },
+    {
+      "FileTypeSign": "WorkTypes_standard.json",
+      "PropertyTypeName": "",
+      "ContentType": "WorkTypes_standard"
+    },
+    {
+      "FileTypeSign": "Notifications\\",
+      "PropertyTypeName": "",
+      "ContentType": "Notifications"
+    },
+    {
+      "FileTypeSign": "*.json",
+      "PropertyTypeName": "",
+      "ContentType": "WorkFlow"
+    }
+  ],
+  "FlattenParameters": [],
+  "LastRootFolder": "C:\\jekyll\\_t",
+  "ReformatJson": false,
+  "BeautifyJson": false,
+  "LastDbName": "",
+  "ShowPreview": false,
+  "AlwaysOnTop": false,
+  "LoadDbOnStart": false,
+  "UseVsCode": false,
+  "SchemaFollowSelection": false,
+  "SaveJsonTree": true,
+  "DefaultDescriptionFileName": "descriptions.json",
+  "FileMask": "*.json",
+  "TreeSplitterDistance": 315,
+  "DescriptionSplitterDistance": 771,
+  "FileListSplitterDistance": 704,
+  "DefaultVersionCaption": "Any",
+  "VersionTagName": ".contentVersion",
+  "TableListDelimiter": ";",
+  "JsonPathDiv": ".",
+  "RootNodeName": "Kinetic",
+  "CellSizeAdjust": 0.7,
+  "PreViewCaption": "[Preview] ",
+  "DefaultEditorFormCaption": "JsonDictionary [Kinetic]",
+  "DefaultTreeFileExtension": "tree",
+  "DefaultExamplesFileExtension": "examples",
+  "DefaultFiledialogFormCaption": "Kinetic data",
+  "DefaultSaveFileName": "KineticDictionary_",
+  "DefaultContentType": "?",
+  "EditorPosition": {
+    "WinX": 400,
+    "WinY": 10,
+    "WinW": 200,
+    "WinH": 400
+  },
+  "MainWindowPosition": {
+    "WinX": 8,
+    "WinY": 8,
+    "WinW": 1936,
+    "WinH": 1056
+  }
+}
